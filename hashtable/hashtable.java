@@ -183,9 +183,113 @@ public class hashtable {
 
     /**
      * 四数相加II
+     * 也是没想到思路，可是看了答案之后又觉得好简单...
+     * 菜菜捞捞
+     * 而且思路明明和上面的两数之和有点类似...
      */
     public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
         
-        return 0;
+        // 统计数组1和数组2的两数之和出现的次数的map
+        Map<Integer, Integer> map = new HashMap<>();
+
+        // 统计数组1、2的两数之和出现的次数
+        for(int a : nums1) {
+            for(int b : nums2) {
+                int count = map.getOrDefault(a + b, 0);
+                count++;
+                map.put(a + b, count);
+            }
+        }
+
+        // 解法数量
+        int res = 0;
+
+        // 计算数组3、4的两数之和，看看所需要的数组1、2的两数之和，如果出现了，就累加到count
+        for(int c : nums3) {
+            for(int d : nums4) {
+                int need = 0 - c - d;
+                Integer count = map.get(need);
+                if (count != null) {
+                    res += count;
+                }
+            }
+        }
+
+        return res;
     }
+
+    /**
+     * 赎金信
+     * 同样是最直接的解法，时间复杂度和空间复杂度都不太优秀
+     * 或许这里应该直接用数组，因为ASCII的大小都是比较限定的
+     */
+    public boolean canConstruct(String ransomNote, String magazine) {
+        int lenR = ransomNote.length();
+        int lenM = magazine.length();
+        Map<Character, Integer> map = new HashMap<>(lenR);
+        for(int i=0;i<lenR;i++){
+            char ch = ransomNote.charAt(i);
+            int count = map.getOrDefault(ch, 0);
+            count++;
+            map.put(ch, count);
+        }
+        
+        for(int i=0;i<lenM;i++) {
+            char ch = magazine.charAt(i);
+            int count = map.getOrDefault(ch, 0);
+            count--;
+            map.put(ch, count);
+        }
+
+        for(int i=0;i<lenR;i++){
+            char ch = ransomNote.charAt(i);
+            if(map.get(ch) > 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 赎金信的数组解法
+     */
+    public boolean canConstructWithArray(String ransomNote, String magazine) {
+        int lenR = ransomNote.length();
+        int lenM = magazine.length();
+        
+        int[] chars = new int[26];
+        // 这个赋值是多余的，int基本类型有默认值0
+        // Arrays.fill(chars, 0);
+
+        for(int i=0;i<lenR;i++){
+            char ch = ransomNote.charAt(i);
+            int index = ch - 'a';
+            chars[index]++;
+        }
+
+        for(int i=0;i<lenM;i++) {
+            char ch = magazine.charAt(i);
+            int index = ch - 'a';
+            chars[index]--;
+        }
+
+        for(int i=0;i<lenR;i++){
+            char ch = ransomNote.charAt(i);
+            int index = ch - 'a';
+            if (chars[index] > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 三数之和
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        
+        return null;
+    }
+
 }
