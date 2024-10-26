@@ -2,10 +2,12 @@ package hashtable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -286,10 +288,44 @@ public class hashtable {
 
     /**
      * 三数之和
+     * 感觉这题和四数相加很像？？？
+     * 既然要不重复的元组的话，我想加个Set
+     * 时空间复杂度都糟糕透了
+     * 比较好的思路应该是双指针的实现
      */
     public List<List<Integer>> threeSum(int[] nums) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            map.put(-nums[i], i);
+        }
+
+        List<List<Integer>> res = new ArrayList<>();
+        Set<List<Integer>> set = new HashSet<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = i + 1; j < nums.length; j++) {
+                int sum = nums[i] + nums[j];
+                Integer val = map.get(sum);
+                if (val != null && val != i && val != j) {
+                    List<Integer> list = Arrays.asList(nums[i], nums[j], nums[val]);
+                    Collections.sort(list);
+                    if (!set.contains(list)) {
+                        res.add(list);
+                        set.add(list);
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 三数之和
+     * 双指针的实现
+     */
+    public List<List<Integer>> threeSumWithDoublePointer(int[] nums) {
         
-        return null;
     }
 
 }
