@@ -294,12 +294,16 @@ public class hashtable {
      * 比较好的思路应该是双指针的实现
      */
     public List<List<Integer>> threeSum(int[] nums) {
+        
+        // 思路还是两数之和那一套
         Map<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < nums.length; i++) {
             map.put(-nums[i], i);
         }
 
         List<List<Integer>> res = new ArrayList<>();
+
+        // 去重用的
         Set<List<Integer>> set = new HashSet<>();
 
         for (int i = 0; i < nums.length; i++) {
@@ -323,9 +327,37 @@ public class hashtable {
     /**
      * 三数之和
      * 双指针的实现
+     * 核心是先给数组排序，然后左右指针，然后去重
+     * 可惜，最后的思路基本是一模一样的，只是用代码实现的能力太弱了
      */
     public List<List<Integer>> threeSumWithDoublePointer(int[] nums) {
-        
-    }
+        Arrays.sort(nums);
+        int len = nums.length;
+        if (len < 3) {
+            return new ArrayList<>();
+        }
 
+        List<List<Integer>> res = new ArrayList<>();
+        for (int cur = 0; cur < len - 2; cur++) {
+            // 跳过重复的元素
+            if (cur > 0 && nums[cur] == nums[cur - 1]) continue;
+
+            int left = cur + 1, right = len - 1;
+            while (left < right) {
+                int sum = nums[cur] + nums[left] + nums[right];
+                if (sum == 0) {
+                    res.add(Arrays.asList(nums[cur], nums[left], nums[right]));
+
+                    // 跳过重复的元素
+                    while (left < right && nums[left] == nums[++left]);
+                    while (left < right && nums[right] == nums[--right]);
+                } else if (sum < 0) {
+                    left++;
+                } else {
+                    right--;
+                }
+            }
+        }
+        return res;
+    }
 }
