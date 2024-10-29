@@ -328,6 +328,8 @@ public class hashtable {
      * 三数之和
      * 双指针的实现
      * 核心是先给数组排序，然后左右指针，然后去重
+     * 这里去重的逻辑很巧妙，因为先对数据进行了排序
+     * 所以只需要在等于0的下一步之后把left和right指针都移动到和其上一个不相等元素的地方就可以
      * 可惜，最后的思路基本是一模一样的，只是用代码实现的能力太弱了
      */
     public List<List<Integer>> threeSumWithDoublePointer(int[] nums) {
@@ -360,4 +362,61 @@ public class hashtable {
         }
         return res;
     }
+
+    /**
+     * 四数之和
+     * 相当于是在三数之和的基础上再套一层for循环
+     * 需要额外注意的是大数溢出问题
+     * 剪枝没剪明白，难蚌...
+     */
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        List<List<Integer>> res = new ArrayList<>();
+        int len = nums.length;
+        Arrays.sort(nums);
+        for(int cur = 0; cur < len - 3; cur++) {
+            // 跳过重复的元素
+            if (cur > 0 && nums[cur] == nums[cur - 1]){
+                continue;
+            }
+
+            // 剪枝处理
+            if (nums[cur] > target && nums[cur] >= 0) {
+                break;
+            }
+
+            // 找三数之和为target-nums[cur]的元组
+            long expected = target - nums[cur];
+            for(int head=cur+1;head<len-2;head++){
+                if (head > cur + 1 && nums[head] == nums[head -1]) {
+                    continue;
+                }
+                int mid = head + 1;
+                int tail = len - 1;
+                while (mid < tail) {
+                    long sum = (long) nums[head] + nums[mid] + nums[tail];
+                    if (sum == expected) {
+                        res.add(Arrays.asList(nums[cur], nums[head], nums[mid], nums[tail]));
+                        while (mid < tail && nums[mid] == nums[++mid]);
+                        while (mid < tail && nums[tail] == nums[--tail]);
+                    }
+                    else if (sum < expected) {
+                        mid++;
+                    }
+                    else if (sum > expected) {
+                        tail--;
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 做个HashTable专题的小总结吧
+     * 1. 数组作为哈希表：大小有明确限制
+     * 2. 没有限制数值的大小 Set
+     * 3. HashMap
+     * 4. 双指针 跳过去重
+     */
 }
