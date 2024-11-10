@@ -1,7 +1,10 @@
 package stack_and_queue;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class stack_and_queue {
@@ -253,6 +256,13 @@ public class stack_and_queue {
      * 好家伙，暴力解还超时了
      * 等等，我是不是可以同时维护窗口内第一大和第二大的值
      * 放弃了，看题解是用的单调队列解法
+     * 这里补充一下Deque接口的几个常用方法介绍
+     * offer默认是添加到末尾
+     * push是添加到头部
+     * poll是从头部弹出
+     * peek查看头部的元素但是不弹出
+     * pollLast从尾部弹出元素
+     * peekLast查看尾部的元素但是不弹出
      */
     public int[] maxSlidingWindow(int[] nums, int k) {
         // 单调队列,内部放的是元素索引
@@ -286,6 +296,51 @@ public class stack_and_queue {
         return res;
     }
 
+    /**
+     * 前K个高频元素
+     * 如果用HashMap来存储出现频率，每次put的时间复杂度O(1)
+     * 那么统计频率的时间复杂度是O(n)
+     * 然后就是要返回前k个高频元素
+     * 这个是不是也可以考虑使用单调队列
+     * 我还是考虑维护一个固定容量的小顶堆好了
+     * 思路是对了，但是手撕堆没有撕出来
+     * 校招最好还是手撕下堆排序，刚才我自己居然连这个都没有撕出来，有点小难过
+     * 要自己维护一个堆，核心是三点：
+     * 1. 父子节点下标关系
+     * 2. 删除，下沉
+     * 3. 增加，上浮
+     * 4. heapify在下沉时维护堆的性质，最下一层的非叶子节点开始
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        // 统计每个数字的出现频率
+        HashMap<Integer, Integer> frequencyMap = new HashMap<>();
+        for (int num : nums) {
+            frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
+        }
+
+        // 使用优先队列（最小堆），根据频率排序
+        PriorityQueue<Map.Entry<Integer, Integer>> minHeap = new PriorityQueue<>(
+            (a, b) -> a.getValue() - b.getValue()
+        );
+
+        // 将频率信息添加到最小堆中，只保留频率最高的 k 个元素
+        for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+            minHeap.offer(entry);
+            if (minHeap.size() > k) {
+                minHeap.poll(); // 移除频率最低的元素
+            }
+        }
+
+        // 构建结果数组，存放频率最高的 k 个元素
+        int[] result = new int[k];
+        int i = 0;
+        while (!minHeap.isEmpty()) {
+            result[i++] = minHeap.poll().getKey();
+        }
+
+        return result;
+    }
+    
 
     
 
