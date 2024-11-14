@@ -3,6 +3,7 @@ package greedy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Collector;
@@ -377,9 +378,83 @@ public class greedy {
 
     /**
      * 柠檬水找零
+     * 核心就是意识到：
+     * 5是很宝贵的，无论是找10，20零都需要5，找20优先消耗10
+     * 然后围绕5的数量做文章
      */
     public boolean lemonadeChange(int[] bills) {
+        // 5 5 10 10 20
+
+        // 10 -> 5
+        // 20 -> 5 5 5
+        // 20 -> 10 5
+
+        int count5 = 0;
+        int count10 = 0;
+    
+        for(int i = 0; i < bills.length; i++) {
+           if (bills[i] == 5) {
+                count5++;
+           }
+           else if (bills[i] == 10) {
+                if (count5 > 0) {
+                    count5--;
+                    count10++;
+                }
+                else {
+                    return false;
+                }
+           }
+           else {
+                if (count10 > 0 && count5 > 0) {
+                    count10--;
+                    count5--;
+                }
+                else if (count5 >= 3) {
+                    count5 -= 3;
+                }
+                else {
+                    return false;
+                }
+           }
+        }
         
+        return true;
+    }
+
+    /**
+     * 根据身高重建队列
+     * 似乎想不到什么好的思路
+     * 呃，我似乎想到了
+     * 就是先按身高从大到小排序，如果身高相同就按照第二个数字从小到大排
+     * 然后直接从头到尾根据第二个数字，插入到指定位置即可
+     */
+    public int[][] reconstructQueue(int[][] people) {
+        // 先按身高降序排序，如果身高相同，则按ki升序排序
+        Arrays.sort(people, (e1, e2) -> {
+            if (e1[0] != e2[0]) {
+                return e2[0] - e1[0]; // 降序排序
+            }
+            return e1[1] - e2[1]; // 如果身高相同，按照ki升序排序
+        });
+
+        List<int[]> result = new ArrayList<>();
+
+        // 遍历排序后的数组，将每个人插入到指定位置
+        for (int[] person : people) {
+            result.add(person[1] > result.size() ? result.size() : person[1], person); 
+        }
+
+        return result.toArray(new int[result.size()][]);
+    }
+
+    /**
+     * 用最少数量的箭引爆气球
+     */
+    public int findMinArrowShots(int[][] points) {
+        int res = 0;
+
+        return res;
     }
 }
 
