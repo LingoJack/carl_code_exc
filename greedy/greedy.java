@@ -3,8 +3,10 @@ package greedy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -450,11 +452,68 @@ public class greedy {
 
     /**
      * 用最少数量的箭引爆气球
+     * 规定时间内没做出来
+     * 这个解法的思路很巧妙，可是是怎么想到的呢？
      */
     public int findMinArrowShots(int[][] points) {
-        int res = 0;
+        if (points.length == 0) return 0;
 
-        return res;
+        // 按照每个区间的右端点进行排序
+        Arrays.sort(points, (a, b) -> Integer.compare(a[1], b[1]));
+    
+        int arrows = 1;
+        int arrowPos = points[0][1]; // 当前箭射的位置设为第一个区间的右端点
+    
+        for (int i = 1; i < points.length; i++) {
+            // 如果当前区间的左端点在当前箭的射击范围外，则需要一个新的箭
+            if (points[i][0] > arrowPos) {
+                arrows++;
+                arrowPos = points[i][1]; // 更新射箭位置为当前区间的右端点
+            }
+        }
+    
+        return arrows;
+    }
+
+    /**
+     * 无重叠区间
+     * 关于compare(int o1, int o2)接口可以这么记忆：o1 => min, o2 => max
+     * o1 - o2 ==> min - max ==> 从小到大
+     * o2 - o1 ==> max - min ==> 从大到小
+     * 通过了但是执行用时仅击败了23.47%
+     */
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length <= 1) {
+            return 0;
+        }
+
+        int count = 0;
+
+        // [1,2] [2,3] [3,4]
+        // 
+        Arrays.sort(intervals, (e1, e2) -> {
+            return e1[0] - e2[0] == 0 ? e1[1] - e2[1] : e1[0] - e2[0];
+        });
+
+        // ,,,,,,,,,,,
+        // [-73,-26] [-65,-11] [-63,2] [-62,-49] [-52,31] [-40,-26] [-31,49] [30,47] [58,95] [66,98] [82,97] [95,99]
+        // 
+
+
+        // 上一个非重叠区间的有边界
+        int prevMax = intervals[0][1];
+
+        for(int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] < prevMax) {
+                count++;
+                prevMax = Math.min(prevMax, intervals[i][1]);
+            }
+            else {
+                prevMax = Math.max(prevMax, intervals[i][1]);
+            }
+        }
+
+        return count;
     }
 }
 
