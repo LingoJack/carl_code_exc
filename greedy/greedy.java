@@ -1,5 +1,7 @@
 package greedy;
 
+import java.lang.reflect.Array;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,6 +13,8 @@ import java.util.PriorityQueue;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import javax.swing.tree.TreeNode;
 
 public class greedy {
     /**
@@ -454,6 +458,7 @@ public class greedy {
      * 用最少数量的箭引爆气球
      * 规定时间内没做出来
      * 这个解法的思路很巧妙，可是是怎么想到的呢？
+     * 核心是先排序
      */
     public int findMinArrowShots(int[][] points) {
         if (points.length == 0) return 0;
@@ -481,6 +486,8 @@ public class greedy {
      * o1 - o2 ==> min - max ==> 从小到大
      * o2 - o1 ==> max - min ==> 从大到小
      * 通过了但是执行用时仅击败了23.47%
+     * 呃，但是我把comment1处稍微剔除了第二个参数的排序之后就好起来了，击败79.02%
+     * 核心是先排序
      */
     public int eraseOverlapIntervals(int[][] intervals) {
         if (intervals.length <= 1) {
@@ -492,13 +499,13 @@ public class greedy {
         // [1,2] [2,3] [3,4]
         // 
         Arrays.sort(intervals, (e1, e2) -> {
-            return e1[0] - e2[0] == 0 ? e1[1] - e2[1] : e1[0] - e2[0];
+            // comment 1: return e1[0] - e2[0] == 0 ? e1[1] - e2[1] : e1[0] - e2[0];
+            return e1[0] - e2[0];
         });
 
         // ,,,,,,,,,,,
         // [-73,-26] [-65,-11] [-63,2] [-62,-49] [-52,31] [-40,-26] [-31,49] [30,47] [58,95] [66,98] [82,97] [95,99]
         // 
-
 
         // 上一个非重叠区间的有边界
         int prevMax = intervals[0][1];
@@ -509,11 +516,198 @@ public class greedy {
                 prevMax = Math.min(prevMax, intervals[i][1]);
             }
             else {
-                prevMax = Math.max(prevMax, intervals[i][1]);
+                prevMax = intervals[i][1];
             }
         }
 
         return count;
+    }
+
+    /**
+     * 划分字母区间
+     * 完全自己想出来了，击败99.12%
+     * 核心思路是用一个数组记录字母出现的最后一个位置
+     * 然后遍历
+     */
+    public List<Integer> partitionLabels(String s) {
+
+        List<Integer> res = new ArrayList<>();
+        
+        char[] str = s.toCharArray();
+
+        // 每个单词最后出现的位置
+        int[] last = new int[26];
+        Arrays.fill(last, -1);
+
+        // ababcbacadefegdehijhklij
+        for(int i = 0; i < str.length; i++) {
+            last[str[i] - 97] = i;
+        }
+
+        // 当前串内的字母出现的最后边界
+        int edge = 0;
+
+        // 记录串长度
+        int count = 0;
+        for(int i = 0; i < str.length; i++) {
+            // 更新串内字母的最后边界
+            edge = Math.max(edge, last[str[i] - 97]);
+            count++;
+            if (i == edge) {
+                res.add(count);
+                count = 0;
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 合并区间
+     * 一次过
+     * 击败88.6%
+     * 核心依旧是先排序，然后用一个栈来存储临时的结果
+     * 为什么想到了用栈，因为排序是升序的，每一个要比较的都是上一个，
+     * 这与栈的LIFO的性质匹配
+     */
+    public int[][] merge(int[][] intervals) {
+        // [1,3],[2,6],[8,10],[15,18]
+        // [1,3] [2,6] [8,10] [15,18]
+        
+        Arrays.sort(intervals, (min, max) -> {
+            return min[0] - max[0];
+        });
+
+        ArrayDeque<int[]> stack = new ArrayDeque<>();
+        stack.push(intervals[0]);
+        int[] prev;
+        int[] cur;
+ 
+        for(int i = 1; i < intervals.length; i++) {
+            cur = intervals[i];
+            prev = stack.pop();
+            if (cur[0] >= prev[0] && cur[0] <= prev[1]) {
+                prev[1] = Math.max(cur[1], prev[1]);
+                stack.push(prev);
+            }
+            else {
+                stack.push(prev);
+                stack.push(cur);
+            }
+        }
+
+        int[][] res = new int[stack.size()][];
+
+        int index = stack.size() - 1;
+        while (!stack.isEmpty()) {
+            res[index] = stack.pop();
+            index--;
+        }
+
+        return res;
+    }
+
+    /**
+     * 单调递增的数字
+     * 没想出来
+     * 看了题解，本题的核心是意识到一点
+     * 这里以98为例子
+     * 98的最大位数递增数可以这么计算str[i - 1]>str[i]那么就是(str[i - 1] - 1)9，即89
+     * 而79，7 < 9 那么就是str[i - 1](str[i])，即79
+     * 根据这个思路，后一位决定前一位
+     * 所以需要的是从后往前的遍历
+     * 正确解决这道题的关键是：
+     * 1. 从左到右找到第一个不满足单调递增的数字
+     * 2. 调整这个位置的数字减 1，并将其右侧所有的数字变为 9。
+     * 3. 需要从右向左回溯，确保前一位也满足单调递增性。
+     */
+    public int monotoneIncreasingDigits(int n) {
+        char[] num = Integer.toString(n).toCharArray(); // 将数字转为字符数组方便操作
+        int len = num.length;
+        int marker = len; // 用于标记需要变成9的位置
+
+        // 3 3 2
+        //   i  
+
+        // 从右向左遍历，找到第一个不满足单调递增的数字
+        for (int i = len - 1; i > 0; i--) {
+            if (num[i - 1] > num[i]) {
+                num[i - 1]--;  // 当前位减 1
+                marker = i;    // 标记需要变成9的位置
+            }
+        }
+
+        // 将标记位置及其右侧所有的数字变为9
+        for (int i = marker; i < len; i++) {
+            num[i] = '9';
+        }
+
+        return Integer.parseInt(new String(num)); // 转换回整数
+    }
+
+    /**
+     * 监控二叉树
+     * 遇到的第五个hard
+     * 没做出来，因为做这个之前跳过了二叉树模块，熟练度上也吃了点亏
+     */
+    class Solution {
+        private int count = 0;
+    
+        public int minCameraCover(TreeNode root) {
+            if (dfs(root) == -1) {
+                count++;
+            }
+            return count;
+        }
+    
+        // 返回值:
+        // 0: 当前节点被覆盖
+        // 1: 当前节点未被覆盖，但不需要放置摄像头
+        // -1: 当前节点未被覆盖，需要放置摄像头
+        private int dfs(TreeNode node) {
+            if (node == null) return 0; // 空节点视为已覆盖
+    
+            int left = dfs(node.left);
+            int right = dfs(node.right);
+    
+            // 如果左右子节点至少有一个未被覆盖，则当前节点需要放置摄像头
+            if (left == -1 || right == -1) {
+                count++;
+                return 1;
+            }
+    
+            // 如果左右子节点至少有一个放置了摄像头，则当前节点已被覆盖
+            if (left == 1 || right == 1) {
+                return 0;
+            }
+    
+            // 当前节点未被覆盖，但不需要放置摄像头
+            return -1;
+        }
+    }
+    
+    /**
+     * Definition for a binary tree node.
+     */
+    public class TreeNode {
+        int val;          // 节点的值
+        TreeNode left;    // 左子节点
+        TreeNode right;   // 右子节点
+
+        // 无参构造方法
+        public TreeNode() {}
+
+        // 单参数构造方法
+        public TreeNode(int val) {
+            this.val = val;
+        }
+
+        // 全参数构造方法
+        public TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
     }
 }
 
