@@ -236,6 +236,7 @@ import stack_and_queue.stack_and_queue;
 
     /**
      * 01背包理论基础
+     * 背包问题的一大用处是可以找部分和为target
      */
     public static int zeroOnePackageProblemBase(int num, int space, int[] value, int[] cost) {
         // 只考虑i + 1个物品，容量为j时的能装的最大价值
@@ -260,7 +261,7 @@ import stack_and_queue.stack_and_queue;
         return dp[cost.length - 1][space];        
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         Scanner sc = new Scanner(System.in);
         int num = sc.nextInt();
         int space = sc.nextInt();
@@ -424,5 +425,238 @@ import stack_and_queue.stack_and_queue;
             }
         }
         return (sum - dp[stones.length - 1][target]) - dp[stones.length - 1][target];
+    }
+
+    /**
+     * 目标和
+     * 这题的关键还是想着怎么转成背包问题
+     * 既然这些nums里面取正数的数之和为x，取负数的数之和为-y
+     * 假设存在等于target的，那么就是 x - y = target
+     * x + y = nums数组之和 即 x + y = sum
+     * 得到 x = (target + sum) / 2
+     * 也就是从nums数组里面挑选和为x的组合数
+     * 好难，除了想到转换的方法
+     * 初始化也不好想
+     */
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for(int num : nums) {
+            sum += num;
+        }
+
+        int x = (target + sum);
+
+        if (x < 0 || x % 2 == 1){
+            return 0;
+        }
+
+        x /= 2;
+
+        // 只考虑[0, i]的物品的情况下，装满容量为j的背包的方法数
+        int[][] dp = new int[nums.length][x + 1];
+
+        // 无非放入、不放入
+        // dp[i][j] = dp[i - 1][j] + dp[i - 1][j - nums[i]]
+
+        int numZero = 0;
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] == 0) numZero++;
+            dp[i][0] = (int) Math.pow(2.0, numZero);
+        }
+
+        for(int j = 1; j < x + 1; j++) {
+            dp[0][j] = j == nums[0] ? 1 : 0;
+        }
+
+        for(int i = 1; i < nums.length; i++) {
+            for(int j = 1; j < x + 1;j++){
+                dp[i][j] = j >= nums[i] ? dp[i - 1][j] + dp[i - 1][j - nums[i]] : dp[i - 1][j];
+            }
+        }
+        
+        return dp[nums.length - 1][x];
+    }
+
+    /**
+     * 一和零
+     * DP问题的关键是把变量纳入dp数组，有时候需要一定的转化
+     * 为什么这里题目要强调是二进制的字符串，说明不是0就是1这一点对于解题是有帮助的
+     * 最大子集的大小
+     * 最后还是没做出来，好难受
+     * 这就是一个典型的01背包！ 只不过物品的重量有了两个维度而已...
+     */
+    public int findMaxForm(String[] strs, int m, int n) {
+        // dp[i][j]表示i个0和j个1时的最大子集
+        int[][] dp = new int[m + 1][n + 1];
+        int oneNum, zeroNum;
+        for (String str : strs) {
+            oneNum = 0;
+            zeroNum = 0;
+            for (char ch : str.toCharArray()) {
+                if (ch == '0') {
+                    zeroNum++;
+                } else {
+                    oneNum++;
+                }
+            }
+            // 倒序遍历，一维数组避免重复计算
+            for (int i = m; i >= zeroNum; i--) {
+                for (int j = n; j >= oneNum; j--) {
+                    dp[i][j] = Math.max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    /**
+     * 完全背包问题示例
+     * 携带研究材料
+     * n 材料种类
+     * v 背包容量
+     */
+    public int maximizeResearchValue(int n, int v, int[][] materials) {
+        int[] weight = {1, 3, 4};
+        int[] value = {15, 20, 30};
+        int bagWeight = 4;
+        int[] dp = new int[bagWeight + 1];
+        // 遍历物品
+        for (int i = 0; i < weight.length; i++){ 
+            // 遍历背包容量
+            for (int j = weight[i]; j <= bagWeight; j++){ 
+                dp[j] = Math.max(dp[j], dp[j - weight[i]] + value[i]);
+            }
+        }
+        return dp[bagWeight];
+    }
+
+    /**
+     * 零钱兑换II
+     * 完全背包问题，需要注意的是初始化
+     * 5555，这是时隔了这么久我第一道自己做出来的Medium难度的DP
+     */
+    public int change(int amount, int[] coins) {
+
+        // 考虑前i枚硬币时金额总值为j的组合数
+        int[][] dp = new int[coins.length][amount + 1];
+        
+        int i = 0, j = 0;
+
+        for(i = 0; i < coins.length; i++) {
+            dp[i][0] = 1;
+        }
+
+        for(j = 1; j < amount + 1; j++) {
+            dp[0][j] = j % coins[0] == 0 ? 1 : 0;
+        }
+
+        // 放入或不放入
+        for(i = 1; i < coins.length; i++) {
+            for(j = 0; j < amount + 1; j++) {
+                dp[i][j] = j - coins[i] >= 0 ? dp[i - 1][j] + dp[i][j - coins[i]] : dp[i - 1][j];
+            }
+        }
+
+        return dp[coins.length - 1][amount];
+    }
+
+    /**
+     * 组合总和 Ⅳ
+     * 这里是求排列
+     * 码的，这里属于是被代码随想录的解释带偏了
+     * 随想录想强行想弄一个统一的理论来解释dp的排列组合解法，结果就是只有它自己觉得好理解了联系起来了合理了
+     * 傻逼
+     * 还是要结合力扣官方题解和评论区和随想录三方一起看，偏听则暗
+     */
+    public int combinationSum4(int[] nums, int target) {
+        // 和为i的排列数
+        int[] dp = new int[target + 1];
+        int i = 0;
+        
+        // 对应以nums[i]结尾的排列
+        // dp[i] += dp[i - nums[i]];
+        
+        dp[0] = 1;
+
+        for(i = 1; i < target + 1; i++) {
+            // 计算dp[i]以各个数结尾的排列数，加上去
+            for(int j = 0; j < nums.length; j++) {
+                if(i >= nums[j]) {
+                    dp[i] += dp[i - nums[j]];
+                }   
+            }
+        }
+
+        return dp[target];
+    }
+
+    private void printArray(int[] array) {
+        for(int e : array) {
+            System.out.print(e + " ");
+        }
+        System.out.println();
+    }
+
+    /**
+     * 爬楼梯（进阶版）
+     * 一次过
+     */
+    public static int climbStairsUpgrade(int m, int n) {
+        // 爬上j阶楼梯的方法数
+        int[] dp = new int[n + 1];
+
+        int i = 0;
+        int j = 0;
+
+        dp[0] = 1;
+
+        for(i = 1; i < n + 1; i++) {
+            for(j = 0; j <= m; j++) {
+                if(i >= j) {
+                    dp[i] += dp[i - j];
+                }
+            }
+        }
+
+        return dp[n];
+    }
+
+    public static void main2(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        System.out.println(climbStairsUpgrade(m, n));
+    }
+
+    /**
+     * 零钱兑换
+     * 卡在初始化赋值
+     */
+    public int coinChange(int[] coins, int amount) {
+        int len = coins.length;
+
+        // 和为j的最小硬币数
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, amount + 1);
+        int i = 0, j = 0;
+
+        dp[0] = 0;
+
+        for(j = 1; j < amount + 1; j++) {
+            for(i = 0; i < len; i++) {
+                if (j >= coins[i]) {
+                    dp[j] = Math.min(dp[j], dp[j - coins[i]] + 1);
+                }
+            }
+        }
+        
+        return dp[amount] == amount + 1 ? -1 : dp[amount];
+    }
+
+    /**
+     * 完全平方数
+     */
+    public int numSquares(int n) {
+        
     }
 }
