@@ -1,7 +1,11 @@
 package dynamic_program;
 
+import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -15,7 +19,7 @@ import stack_and_queue.stack_and_queue;
  * 4. 确定遍历顺序
  * 5. 举例推导dp数组
  */
- public class dynamic_program {
+public class dynamic_program {
 
     /**
      * 斐波那契数
@@ -31,7 +35,7 @@ import stack_and_queue.stack_and_queue;
 
         fn[0] = 0;
         fn[1] = 1;
-        for(int i = 2; i <= n; i++) {
+        for (int i = 2; i <= n; i++) {
             fn[i] = fn[i - 1] + fn[i - 2];
         }
         res = fn[n];
@@ -52,7 +56,7 @@ import stack_and_queue.stack_and_queue;
         step[2] = 2;
 
         // step[n] = step[n - 1] + step[n - 2]
-        for(int i = 3; i < n + 1; i++) {
+        for (int i = 3; i < n + 1; i++) {
             step[i] = step[i - 1] + step[i - 2];
         }
 
@@ -75,7 +79,7 @@ import stack_and_queue.stack_and_queue;
         step[0] = 0;
         step[1] = 0;
 
-        for(int i = 2; i < step.length; i++) {
+        for (int i = 2; i < step.length; i++) {
             step[i] = Math.min(step[i - 1] + cost[i - 1], step[i - 2] + cost[i - 2]);
         }
 
@@ -92,16 +96,16 @@ import stack_and_queue.stack_and_queue;
 
         // dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
 
-        for(int i = 0; i < m; i++) {
+        for (int i = 0; i < m; i++) {
             dp[i][0] = 1;
         }
 
-        for(int j = 0; j < n; j++) {
+        for (int j = 0; j < n; j++) {
             dp[0][j] = 1;
         }
 
-        for(int i = 1; i < m; i++) {
-            for(int j = 1; j < n; j++) {
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
                 dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
             }
         }
@@ -123,23 +127,23 @@ import stack_and_queue.stack_and_queue;
         // dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
 
         boolean hasBlock = false;
-        for(int i = 0; i < m; i++) {
-            if(obstacleGrid[i][0] == 1) {
+        for (int i = 0; i < m; i++) {
+            if (obstacleGrid[i][0] == 1) {
                 hasBlock = true;
             }
             dp[i][0] = hasBlock ? 0 : 1;
         }
 
         hasBlock = false;
-        for(int j = 0; j < n; j++) {
-            if(obstacleGrid[0][j] == 1) {
+        for (int j = 0; j < n; j++) {
+            if (obstacleGrid[0][j] == 1) {
                 hasBlock = true;
             }
             dp[0][j] = hasBlock ? 0 : 1;
         }
 
-        for(int i = 1; i < m; i++) {
-            for(int j = 1; j < n; j++) {
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
                 dp[i][j] = obstacleGrid[i][j] == 1 ? 0 : dp[i - 1][j] + dp[i][j - 1];
             }
         }
@@ -157,18 +161,17 @@ import stack_and_queue.stack_and_queue;
 
         if (n == 3) {
             return 2;
-        }
-        else if (n == 2) {
+        } else if (n == 2) {
             return 1;
         }
 
         // 拆与不拆的最大值
         // dp[i] = Math.max(dp[i - j] * j, (i - j) * j)
         dp[2] = 1;
-        
-        for(int i = 3; i < n + 1; i++) {
+
+        for (int i = 3; i < n + 1; i++) {
             // i = 4 ,j = 2
-            for(int j = 0; j < i; j++) {
+            for (int j = 0; j < i; j++) {
                 dp[i] = Math.max(dp[i], Math.max(dp[i - j] * j, (i - j) * j));
             }
         }
@@ -182,15 +185,15 @@ import stack_and_queue.stack_and_queue;
      * 没做出来，关键是没有想出来递推公式
      */
     public int numTreesWithDP(int n) {
-        //初始化 dp 数组
+        // 初始化 dp 数组
         int[] dp = new int[n + 1];
-        //初始化0个节点和1个节点的情况
+        // 初始化0个节点和1个节点的情况
         dp[0] = 1;
         dp[1] = 1;
         for (int i = 2; i <= n; i++) {
             for (int j = 1; j <= i; j++) {
-                //对于第i个节点，需要考虑1作为根节点直到i作为根节点的情况，所以需要累加
-                //一共i个节点，对于根节点j时,左子树的节点个数为j-1，右子树的节点个数为i-j
+                // 对于第i个节点，需要考虑1作为根节点直到i作为根节点的情况，所以需要累加
+                // 一共i个节点，对于根节点j时,左子树的节点个数为j-1，右子树的节点个数为i-j
                 dp[i] += dp[j - 1] * dp[i - j];
             }
         }
@@ -206,30 +209,30 @@ import stack_and_queue.stack_and_queue;
      * 就是对于一个数组，每个元素都有可能被当成头节点
      */
     public int numTrees(int n) {
-        //如果只有0，或者1个节点，则可能的子树情况为1种
-        if (n == 0 || n == 1){
+        // 如果只有0，或者1个节点，则可能的子树情况为1种
+        if (n == 0 || n == 1) {
             return 1;
         }
 
-        if (map.containsKey(n)){
+        if (map.containsKey(n)) {
             return map.get(n);
         }
 
         int count = 0;
         for (int i = 1; i <= n; i++) {
-            //当用i这个节点当做根节点时
+            // 当用i这个节点当做根节点时
 
-            //左边有多少种子树
-            int leftNum = numTrees(i-1);
+            // 左边有多少种子树
+            int leftNum = numTrees(i - 1);
 
-            //右边有多少种子树
-            int rightNum = numTrees(n-i);
+            // 右边有多少种子树
+            int rightNum = numTrees(n - i);
 
-            //乘起来就是当前节点的子树个数
-            count+=leftNum*rightNum;
+            // 乘起来就是当前节点的子树个数
+            count += leftNum * rightNum;
         }
 
-        map.put(n,count);
+        map.put(n, count);
 
         return count;
     }
@@ -242,23 +245,23 @@ import stack_and_queue.stack_and_queue;
         // 只考虑i + 1个物品，容量为j时的能装的最大价值
         int[][] dp = new int[cost.length][space + 1];
 
-        for(int i = 0; i < cost.length; i++) {
+        for (int i = 0; i < cost.length; i++) {
             dp[i][0] = 0;
         }
 
-        for(int j = 0; j <= space; j++) {
+        for (int j = 0; j <= space; j++) {
             dp[0][j] = j >= cost[0] ? value[0] : 0;
         }
 
         // 放或者不放
         // dp[i][j] = Math.max(dp[i - 1][j - cost[i]] + value[i], dp[i - 1][j])
-        for(int i = 1; i < cost.length; i++) {
-            for(int j = 0; j < space + 1; j++) {
+        for (int i = 1; i < cost.length; i++) {
+            for (int j = 0; j < space + 1; j++) {
                 dp[i][j] = j - cost[i] >= 0 ? Math.max(dp[i - 1][j - cost[i]] + value[i], dp[i - 1][j]) : dp[i - 1][j];
             }
         }
 
-        return dp[cost.length - 1][space];        
+        return dp[cost.length - 1][space];
     }
 
     public static void main1(String[] args) {
@@ -269,17 +272,16 @@ import stack_and_queue.stack_and_queue;
         String[] valueStr = sc.nextLine().trim().split("\\s+"); // 去掉首尾空格并按一个或多个空格分割
         String[] costStr = sc.nextLine().trim().split("\\s+");
 
-        
         int[] cost = Arrays.stream(costStr)
-                           .filter(s -> !s.isEmpty())
-                           .mapToInt(Integer::parseInt)
-                           .toArray();
+                .filter(s -> !s.isEmpty())
+                .mapToInt(Integer::parseInt)
+                .toArray();
 
-                           // 将字符串数组转换为整数数组，过滤空值
+        // 将字符串数组转换为整数数组，过滤空值
         int[] value = Arrays.stream(valueStr)
-                            .filter(s -> !s.isEmpty()) // 过滤空字符串
-                            .mapToInt(Integer::parseInt)
-                            .toArray();
+                .filter(s -> !s.isEmpty()) // 过滤空字符串
+                .mapToInt(Integer::parseInt)
+                .toArray();
         System.out.println(zeroOnePackageProblemBase(num, space, value, cost));
     }
 
@@ -306,7 +308,7 @@ import stack_and_queue.stack_and_queue;
             }
         }
 
-        return dp[space];  // 返回容量为 space 时能获得的最大价值
+        return dp[space]; // 返回容量为 space 时能获得的最大价值
     }
 
     /**
@@ -330,21 +332,21 @@ import stack_and_queue.stack_and_queue;
         int target = totalSum / 2;
 
         int len = nums.length;
-        
+
         // 只考虑前i个数能否和为j+1
         boolean[][] dp = new boolean[len][target + 1];
-        
-        for(int i = 0; i < len; i++) {
+
+        for (int i = 0; i < len; i++) {
             dp[i][0] = false;
         }
 
-        for(int j = 1; j < target + 1; j++) {
+        for (int j = 1; j < target + 1; j++) {
             dp[0][j] = nums[0] == j;
         }
-        
+
         // dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i]]
-        for(int i = 1; i < len; i++) {
-            for(int j = 1; j < target + 1; j++) {
+        for (int i = 1; i < len; i++) {
+            for (int j = 1; j < target + 1; j++) {
                 dp[i][j] = (j - nums[i] >= 0) ? dp[i - 1][j] || dp[i - 1][j - nums[i]] : dp[i - 1][j];
             }
         }
@@ -374,19 +376,19 @@ import stack_and_queue.stack_and_queue;
         int target = totalSum / 2;
 
         int len = nums.length;
-        
+
         // 只考虑前i个数能否和为j+1
         boolean[] dp = new boolean[target + 1];
-        
+
         // 这里初始化就是考虑原来二维数组的时候i=0的情况
-        for(int j = 0; j < target + 1; j++) {
+        for (int j = 0; j < target + 1; j++) {
             dp[j] = j == nums[0];
         }
-        
+
         // 这里i必须从1开始，不然会覆盖初始化的结果
         // dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i]]
-        for(int i = 1; i < len; i++) {
-            for(int j = target; j >= 1; j--) {
+        for (int i = 1; i < len; i++) {
+            for (int j = target; j >= 1; j--) {
                 dp[j] = (j - nums[i] >= 0) ? dp[j] || dp[j - nums[i]] : dp[j];
             }
         }
@@ -405,12 +407,12 @@ import stack_and_queue.stack_and_queue;
         }
 
         int target = sum / 2;
-        
-        //初始化，dp[i][j]为可以放0-i物品，背包容量为j的情况下背包中的最大价值
+
+        // 初始化，dp[i][j]为可以放0-i物品，背包容量为j的情况下背包中的最大价值
         int[][] dp = new int[stones.length][target + 1];
 
-        //dp[i][0]默认初始化为0
-        //dp[0][j]取决于stones[0]
+        // dp[i][0]默认初始化为0
+        // dp[0][j]取决于stones[0]
         for (int j = stones[0]; j <= target; j++) {
             dp[0][j] = stones[0];
         }
@@ -440,13 +442,13 @@ import stack_and_queue.stack_and_queue;
      */
     public int findTargetSumWays(int[] nums, int target) {
         int sum = 0;
-        for(int num : nums) {
+        for (int num : nums) {
             sum += num;
         }
 
         int x = (target + sum);
 
-        if (x < 0 || x % 2 == 1){
+        if (x < 0 || x % 2 == 1) {
             return 0;
         }
 
@@ -460,20 +462,21 @@ import stack_and_queue.stack_and_queue;
 
         int numZero = 0;
         for (int i = 0; i < nums.length; i++) {
-            if (nums[i] == 0) numZero++;
+            if (nums[i] == 0)
+                numZero++;
             dp[i][0] = (int) Math.pow(2.0, numZero);
         }
 
-        for(int j = 1; j < x + 1; j++) {
+        for (int j = 1; j < x + 1; j++) {
             dp[0][j] = j == nums[0] ? 1 : 0;
         }
 
-        for(int i = 1; i < nums.length; i++) {
-            for(int j = 1; j < x + 1;j++){
+        for (int i = 1; i < nums.length; i++) {
+            for (int j = 1; j < x + 1; j++) {
                 dp[i][j] = j >= nums[i] ? dp[i - 1][j] + dp[i - 1][j - nums[i]] : dp[i - 1][j];
             }
         }
-        
+
         return dp[nums.length - 1][x];
     }
 
@@ -516,14 +519,14 @@ import stack_and_queue.stack_and_queue;
      * v 背包容量
      */
     public int maximizeResearchValue(int n, int v, int[][] materials) {
-        int[] weight = {1, 3, 4};
-        int[] value = {15, 20, 30};
+        int[] weight = { 1, 3, 4 };
+        int[] value = { 15, 20, 30 };
         int bagWeight = 4;
         int[] dp = new int[bagWeight + 1];
         // 遍历物品
-        for (int i = 0; i < weight.length; i++){ 
+        for (int i = 0; i < weight.length; i++) {
             // 遍历背包容量
-            for (int j = weight[i]; j <= bagWeight; j++){ 
+            for (int j = weight[i]; j <= bagWeight; j++) {
                 dp[j] = Math.max(dp[j], dp[j - weight[i]] + value[i]);
             }
         }
@@ -539,20 +542,20 @@ import stack_and_queue.stack_and_queue;
 
         // 考虑前i枚硬币时金额总值为j的组合数
         int[][] dp = new int[coins.length][amount + 1];
-        
+
         int i = 0, j = 0;
 
-        for(i = 0; i < coins.length; i++) {
+        for (i = 0; i < coins.length; i++) {
             dp[i][0] = 1;
         }
 
-        for(j = 1; j < amount + 1; j++) {
+        for (j = 1; j < amount + 1; j++) {
             dp[0][j] = j % coins[0] == 0 ? 1 : 0;
         }
 
         // 放入或不放入
-        for(i = 1; i < coins.length; i++) {
-            for(j = 0; j < amount + 1; j++) {
+        for (i = 1; i < coins.length; i++) {
+            for (j = 0; j < amount + 1; j++) {
                 dp[i][j] = j - coins[i] >= 0 ? dp[i - 1][j] + dp[i][j - coins[i]] : dp[i - 1][j];
             }
         }
@@ -572,18 +575,18 @@ import stack_and_queue.stack_and_queue;
         // 和为i的排列数
         int[] dp = new int[target + 1];
         int i = 0;
-        
+
         // 对应以nums[i]结尾的排列
         // dp[i] += dp[i - nums[i]];
-        
+
         dp[0] = 1;
 
-        for(i = 1; i < target + 1; i++) {
+        for (i = 1; i < target + 1; i++) {
             // 计算dp[i]以各个数结尾的排列数，加上去
-            for(int j = 0; j < nums.length; j++) {
-                if(i >= nums[j]) {
+            for (int j = 0; j < nums.length; j++) {
+                if (i >= nums[j]) {
                     dp[i] += dp[i - nums[j]];
-                }   
+                }
             }
         }
 
@@ -591,7 +594,7 @@ import stack_and_queue.stack_and_queue;
     }
 
     private void printArray(int[] array) {
-        for(int e : array) {
+        for (int e : array) {
             System.out.print(e + " ");
         }
         System.out.println();
@@ -610,9 +613,9 @@ import stack_and_queue.stack_and_queue;
 
         dp[0] = 1;
 
-        for(i = 1; i < n + 1; i++) {
-            for(j = 0; j <= m; j++) {
-                if(i >= j) {
+        for (i = 1; i < n + 1; i++) {
+            for (j = 0; j <= m; j++) {
+                if (i >= j) {
                     dp[i] += dp[i - j];
                 }
             }
@@ -642,21 +645,366 @@ import stack_and_queue.stack_and_queue;
 
         dp[0] = 0;
 
-        for(j = 1; j < amount + 1; j++) {
-            for(i = 0; i < len; i++) {
+        for (j = 1; j < amount + 1; j++) {
+            for (i = 0; i < len; i++) {
                 if (j >= coins[i]) {
                     dp[j] = Math.min(dp[j], dp[j - coins[i]] + 1);
                 }
             }
         }
-        
+
         return dp[amount] == amount + 1 ? -1 : dp[amount];
     }
 
     /**
      * 完全平方数
+     * mua的，我做出来了
+     * 转化为完全背包问题
+     * 只是我完全背包问题还不够熟练
      */
     public int numSquares(int n) {
-        
+        // 找到比n小的最大的完全平方数
+        List<Integer> squareNum = new ArrayList<>();
+
+        int num = 1;
+        while (num * num <= n) {
+            squareNum.add(num);
+            num++;
+        }
+
+        // 出来 num * num > n
+        int size = squareNum.size();
+
+        // 考虑前i个数的和为j最小完全平方数个数
+        int[][] dp = new int[size][n + 1];
+
+        int i = 0, j = 0;
+
+        for (i = 0; i < size; i++) {
+            dp[i][0] = 0;
+        }
+
+        for (j = 1; j <= n; j++) {
+            dp[0][j] = j;
+        }
+
+        for (i = 1; i < size; i++) {
+            for (j = 1; j <= n; j++) {
+                dp[i][j] = dp[i - 1][j];
+                int t = squareNum.get(i);
+                t *= t;
+                if (j - t >= 0) {
+                    dp[i][j] = Math.min(dp[i][j], dp[i][j - t] + 1);
+                }
+            }
+        }
+
+        return dp[size - 1][n];
+    }
+
+    /**
+     * 完全平方数
+     * 一位背包版本
+     */
+    public int numSquaresWithOneDimension(int n) {
+        int[] dp = new int[n + 1];
+        Arrays.fill(dp, n);
+        dp[0] = 0;
+        for (int i = 1; i * i <= n; i++) {
+            for (int j = i * i; j <= n; j++) {
+                dp[j] = Math.min(dp[j], dp[j - i * i] + 1);
+            }
+        }
+        return dp[n];
+    }
+
+    /**
+     * 单词拆分
+     * 没做出来
+     * 这题的dp解法很巧妙，不好想
+     * 首先就是dp数组的含义：长度为i的子串可否被字典中的词组成
+     * 然后就是递推，当前下标j和长度i之间的词若在字典中，则dp[j]为true
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        boolean[] dp = new boolean[s.length() + 1];
+        dp[0] = true;
+        for (int i = 1; i <= s.length(); i++) {
+            for (String word : wordDict) {
+                int len = word.length();
+                if (i >= len && dp[i - len] && word.equals(s.substring(i - len, i))) {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+        return dp[s.length()];
+    }
+
+    /**
+     * 打家劫舍
+     * 一次过了，击败100%
+     */
+    public int rob(int[] nums) {
+        // 2 7 9 3 1
+        // 1
+        // 1
+        // 一开始一定会在1或者2号中偷一个
+        int len = nums.length;
+
+        if (len == 1) {
+            return nums[0];
+        } else if (len == 2) {
+            return Math.max(nums[0], nums[1]);
+        }
+
+        // 只考虑前i个房屋的时的偷窃最大值
+        int[] dp = new int[len];
+        int i = 0;
+
+        dp[0] = nums[0];
+        dp[1] = Math.max(nums[0], nums[1]);
+
+        for (i = 2; i < len; i++) {
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+        }
+
+        return dp[len - 1];
+    }
+
+    /**
+     * 打家劫舍II
+     * 在上一题的基础上首尾连接了
+     * 没做出来，但是随想录的题解很巧妙：
+     * 环状排列
+     * 意味着第一个房子和最后一个房子中，只能选择一个偷窃，因此可以把此环状排列房间问题约化为两个单排排列房间子问题
+     * 就是考虑两个情况
+     * 1. 不考虑最后一个元素按照上题思路求解
+     * 2. 不考虑第一个元素，按照上题思路求解
+     * 然后取上两者中较大者
+     * 按照随想录题解的解法实现了，击败100%
+     */
+    public int rob2(int[] nums) {
+        int len = nums.length;
+        if (len == 1) {
+            return nums[0];
+        } else if (len == 2) {
+            return Math.max(nums[0], nums[1]);
+        }
+
+        // 2 3 2
+        // 2 7 9 3 1
+        // 1 2 7 9 3
+        int t1 = robber(nums, 0, nums.length - 2);
+        int t2 = robber(nums, 1, nums.length - 1);
+        System.out.println("t1 = " + t1);
+        System.out.println("t2 = " + t2);
+        return Math.max(t1, t2);
+    }
+
+    /**
+     * 抢劫器(bushi)
+     */
+    private int robber(int[] nums, int begin, int end) {
+        // 2 7 9 3 1
+        // 1
+        // 1
+        // 一开始一定会在1或者2号中偷一个
+        int len = end - begin + 1;
+
+        if (len == 1) {
+            return nums[begin];
+        } else if (len == 2) {
+            return Math.max(nums[begin], nums[begin + 1]);
+        }
+
+        // 只考虑前i个房屋的时的偷窃最大值
+        int[] dp = new int[len];
+        int i = 0;
+
+        dp[0] = nums[begin];
+        dp[1] = Math.max(nums[begin], nums[begin + 1]);
+
+        for (i = 2; i < len; i++) {
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[begin + i]);
+        }
+
+        return dp[len - 1];
+    }
+
+    /**
+     * 某节点被选中时的最大权值和
+     * 当一个节点o被选中时，
+     * f(o) = g(l) + g(r) + o.val
+     */
+    Map<TreeNode, Integer> f = new HashMap<TreeNode, Integer>();
+
+    /**
+     * 某节点未被选中时的最大权值和
+     * 当一个节点o未被选中时，
+     * g(o) = max(f(l), g(l)) + max(f(r), g(r))
+     */
+    Map<TreeNode, Integer> g = new HashMap<TreeNode, Integer>();
+
+    /**
+     * 打家劫舍 III
+     * 还是没有想出来，感觉是我跳过了二叉树的问题
+     * 树形DP
+     * 这题首先是递推公式没那么好想，其次是还要对树的遍历够熟练
+     */
+    public int rob3(TreeNode root) {
+        dfs(root);
+        return Math.max(f.getOrDefault(root, 0), g.getOrDefault(root, 0));
+    }
+
+    public void dfs(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+
+        // 从这里可以看出来是后序遍历
+        dfs(node.left);
+        dfs(node.right);
+        f.put(node, node.val + g.getOrDefault(node.left, 0) + g.getOrDefault(node.right, 0));
+        g.put(node, Math.max(f.getOrDefault(node.left, 0), g.getOrDefault(node.left, 0))
+                + Math.max(f.getOrDefault(node.right, 0), g.getOrDefault(node.right, 0)));
+    }
+
+    public class TreeNode {
+        int val; // 节点值
+        TreeNode left; // 左子节点
+        TreeNode right; // 右子节点
+
+        // 默认构造函数
+        TreeNode() {
+        }
+
+        // 带一个参数的构造函数，用于设置节点值
+        TreeNode(int val) {
+            this.val = val;
+        }
+
+        // 带三个参数的构造函数，用于设置节点值及左右子节点
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     */
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+
+        // 到第i天持有1与不持有0股票的最大利润
+        int[][] dp = new int[len][2];
+
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+
+        // 二维DP，还有一点就是不能在买入前卖出
+        for (int i = 1; i < len; i++) {
+            // 本题限制了交易次数是1，所以是和-prices[i]比较，如果不限制交易次数，这里比较的应该为dp[i - 1][0] - prices[i]
+            dp[i][1] = Math.max(-prices[i], dp[i - 1][1]);
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+        }
+
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机II
+     * 其实上一题我把这一题的答案做出来了...
+     */
+    public int maxProfit2(int[] prices) {
+        int len = prices.length;
+
+        // 到第i天持有1与不持有0股票的最大利润
+        int[][] dp = new int[len][2];
+
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+
+        // 二维DP，还有一点就是不能在买入前卖出
+        for (int i = 1; i < len; i++) {
+            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+        }
+
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 股票系列的hard题...
+     * 与上题的区别就是，限制了交易的次数
+     * 上次已经知道了限一次的和不限次的，那么现在限两次的要怎么办
+     * 这边没想出来，但是看了灵茶山艾府的视频，应该是要加一个维读来标识交易次数
+     * 我的建议是DP先刷到这里，去刷回溯 + 二叉树吧
+     */
+    public int maxProfit3(int[] prices) {
+        if (prices == null || prices.length < 2)
+            return 0;
+
+        int len = prices.length;
+        int k = 2; // 最多可以完成的交易次数
+
+        // dp[i][j][l] 表示到第i天为止，是否持有股票(j=0表示不持有, j=1表示持有)，并且已经完成了l次交易的最大利润
+        int[][][] dp = new int[len][2][k + 1];
+
+        // 初始化第0天的状态
+        for (int j = 0; j <= k; j++) { // 对于所有可能的交易次数
+            dp[0][0][j] = 0; // 第0天不持有股票的最大利润为0
+            dp[0][1][j] = -prices[0]; // 第0天持有股票的最大利润为-prices[0]
+        }
+
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j <= k; j++) { // 遍历交易次数
+                if (j > 0) { // 如果交易次数大于0
+                    dp[i][1][j] = Math.max(dp[i - 1][0][j - 1] - prices[i], dp[i - 1][1][j]); // 今天买入/继续持有
+                    dp[i][0][j] = Math.max(dp[i - 1][1][j] + prices[i], dp[i - 1][0][j]); // 今天卖出/继续不持有
+                } else { // 如果交易次数为0，则只能保持不持有状态
+                    dp[i][0][j] = dp[i - 1][0][j];
+                    dp[i][1][j] = Math.max(-prices[i], dp[i - 1][1][j]);
+                }
+            }
+        }
+
+        // 返回最后一天不持有股票的所有可能交易次数下的最大值
+        int maxProfit = 0;
+        for (int j = 0; j <= k; j++) {
+            maxProfit = Math.max(maxProfit, dp[len - 1][0][j]);
+        }
+        return maxProfit;
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 评论区还有一个逆天解法
+     */
+    public int maxProfit3WithAwesomeSolution(int[] prices) {
+        // 初始化buy和sell数组，分别为第j次交易持有/不持有股票的最大利润
+        int[] buy = new int[3];
+        int[] sell = new int[3];
+
+        Arrays.fill(buy, Integer.MIN_VALUE); // 将buy数组的值初始化为Integer.MIN_VALUE
+        sell[0] = 0; // 第0次交易后不持有股票的利润为0
+
+        for (int price : prices) {
+            for (int j = 1; j < 3; j++) {
+                // 更新第j次买入后的最大利润
+                if (j == 1) {
+                    buy[j] = Math.max(buy[j], -price); // 第一次买入时，直接减去价格
+                } else {
+                    buy[j] = Math.max(buy[j], sell[j - 1] - price); // 后续买入基于上一次卖出的最大利润
+                }
+                // 更新第j次卖出后的最大利润
+                sell[j] = Math.max(sell[j], buy[j] + price);
+            }
+        }
+
+        // 返回最多进行两次交易后的最大利润
+        return sell[2];
     }
 }
