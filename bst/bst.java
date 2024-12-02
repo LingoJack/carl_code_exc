@@ -140,7 +140,9 @@ public class bst {
     }
 
     /**
-     * 中序遍历：记录一个左子节点是否有被放入过栈，然后对于栈中的每一个节点，先将其最左一系的节点中为入过栈的都入栈
+     * 中序遍历：
+     * 记录一个左子节点是否有被放入过栈，
+     * 然后对于栈中的每一个节点，先将其最左一系的节点中为入过栈的都入栈
      * 然后记录值，然后弹出节点，若弹出的节点有右子节点，则右子节点入栈
      */
     public List<Integer> inorderTraversal1(TreeNode root) {
@@ -190,8 +192,7 @@ public class bst {
             if (cur != null) {
                 stack.push(cur);
                 cur = cur.left;
-            }
-            else {
+            } else {
                 cur = stack.pop();
                 result.add(cur.val);
                 cur = cur.right;
@@ -200,4 +201,136 @@ public class bst {
         return result;
     }
 
+    /**
+     * 统一风格的迭代三序号遍历，
+     * 这里以先序遍历为例
+     */
+    public List<Integer> preorderTraversalStandard(TreeNode root) {
+        List<Integer> res = new ArrayList<>(); // 存储遍历结果的列表
+        ArrayDeque<TreeNode> stack = new ArrayDeque<>(); // 使用栈来模拟递归
+
+        // 如果根节点不为空，初始化栈，将根节点压入栈中
+        if (root != null) {
+            stack.push(root);
+        }
+
+        while (!stack.isEmpty()) { // 当栈不为空时继续遍历
+            TreeNode node = stack.peek(); // 获取栈顶节点
+
+            if (node != null) {
+                // 如果栈顶节点不为空，弹出栈顶节点
+                stack.pop();
+
+                // 先压入右子节点，再压入左子节点，这样左子节点会先被访问（因为栈是后进先出）
+                if (node.right != null) {
+                    stack.push(node.right); // 将右子节点压入栈中
+                }
+                if (node.left != null) {
+                    stack.push(node.left); // 将左子节点压入栈中
+                }
+
+                // 将当前节点再次压入栈中（为了在访问其左右子节点后再访问该节点）
+                stack.push(node);
+                // 压入一个 `null` 作为标记，表示该节点的左右子节点已经访问完，可以处理该节点了
+                stack.push(null);
+            } else {
+                // 如果栈顶是 `null`，弹出 `null` 标记
+                stack.pop();
+
+                // 获取栈顶节点
+                node = stack.peek();
+                stack.pop();
+
+                // 将节点值添加到结果列表中
+                res.add(node.val);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 统一风格的迭代三序号遍历，
+     * 这里以中序遍历为例
+     */
+    public List<Integer> inorderTraversalStandard(TreeNode root) {
+        List<Integer> res = new ArrayList<>(); // 存储遍历结果的列表
+        ArrayDeque<TreeNode> stack = new ArrayDeque<>(); // 使用栈来模拟递归
+
+        // 如果根节点不为空，初始化栈，将根节点压入栈中
+        if (root != null) {
+            stack.push(root);
+        }
+
+        while (!stack.isEmpty()) { // 当栈不为空时继续遍历
+            TreeNode node = stack.peek(); // 获取栈顶节点
+
+            if (node != null) {
+                // 如果栈顶节点不为空，弹出栈顶节点
+                stack.pop();
+
+                // 先压入右子节点，再压入左子节点，这样左子节点会先被访问（因为栈是后进先出）
+                if (node.right != null) {
+                    stack.push(node.right); // 将右子节点压入栈中
+                }
+
+                stack.push(node);
+                // 压入一个 `null` 作为标记
+                stack.push(null);
+
+                if (node.left != null) {
+                    stack.push(node.left); // 将左子节点压入栈中
+                }
+            } else {
+                // 如果栈顶是 `null`，弹出 `null` 标记
+                stack.pop();
+
+                // 获取栈顶节点
+                node = stack.peek();
+                stack.pop();
+
+                // 将节点值添加到结果列表中
+                res.add(node.val);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 二叉树的层序遍历
+     * 妙啊，在写这题之前我虽然会写BFS
+     * 但是没有思考过怎么分层
+     */
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            List<Integer> list = new ArrayList<>(); // 当前层的节点值
+
+            // 这里对分层的处理很巧妙
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    list.add(node.val); // 将节点值添加到当前层的 list 中
+                    if (node.left != null)
+                        queue.offer(node.left); // 将左子节点加入队列
+                    if (node.right != null)
+                        queue.offer(node.right); // 将右子节点加入队列
+                }
+            }
+
+            // 如果当前层的 list 非空，将其添加到结果中
+            if (!list.isEmpty()) {
+                res.add(list);
+            }
+        }
+
+        return res;
+    }
 }
