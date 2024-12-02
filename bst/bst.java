@@ -190,7 +190,7 @@ public class bst {
             if (cur != null) {
                 stack.push(cur);
                 cur = cur.left;
-            } 
+            }
             else {
                 cur = stack.pop();
                 result.add(cur.val);
