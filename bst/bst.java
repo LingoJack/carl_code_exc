@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.w3c.dom.Node;
+
 public class bst {
     public class TreeNode {
         int val;
@@ -313,7 +315,7 @@ public class bst {
             int size = queue.size(); // 获取当前层的节点数
             List<Integer> list = new ArrayList<>(); // 当前层的节点值
 
-            // 这里对分层的处理很巧妙
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
             for (int i = 0; i < size; i++) {
                 TreeNode node = queue.poll(); // 从队列中取出节点
                 if (node != null) {
@@ -329,6 +331,204 @@ public class bst {
             if (!list.isEmpty()) {
                 res.add(list);
             }
+        }
+
+        return res;
+    }
+
+    /**
+     * 二叉树的层次遍历II
+     * 和上一题的唯一区别是这里要自低向上的层序
+     * 所以可以用栈来暂存每个list
+     * 后面再从栈中单独pop出来加到res里
+     */
+    public List<List<Integer>> levelOrderBottom(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        ArrayDeque<List<Integer>> stack = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            List<Integer> list = new ArrayList<>(); // 当前层的节点值
+
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    list.add(node.val); // 将节点值添加到当前层的 list 中
+                    if (node.left != null)
+                        queue.offer(node.left); // 将左子节点加入队列
+                    if (node.right != null)
+                        queue.offer(node.right); // 将右子节点加入队列
+                }
+            }
+
+            // 如果当前层的 list 非空，将其添加到结果中
+            if (!list.isEmpty()) {
+                stack.push(list);
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            res.add(stack.pop());
+        }
+
+        return res;
+    }
+
+    /**
+     * 二叉树的右视图
+     * 最高层最右边的，相当于在层序遍历的基础上挑选出每一层最后一个节点的值
+     */
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            List<Integer> list = new ArrayList<>(); // 当前层的节点值
+
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    list.add(node.val); // 将节点值添加到当前层的 list 中
+                    if (node.left != null)
+                        queue.offer(node.left); // 将左子节点加入队列
+                    if (node.right != null)
+                        queue.offer(node.right); // 将右子节点加入队列
+                    if (i == size - 1) {
+                        res.add(node.val);
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 二叉树的层平均值
+     * 层序遍历的基础上统计每一层的均值
+     */
+    public List<Double> averageOfLevels(TreeNode root) {
+        List<Double> res = new ArrayList<>();
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            List<Integer> list = new ArrayList<>(); // 当前层的节点值
+            double sum = 0;
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    list.add(node.val); // 将节点值添加到当前层的 list 中
+                    if (node.left != null)
+                        queue.offer(node.left); // 将左子节点加入队列
+                    if (node.right != null)
+                        queue.offer(node.right); // 将右子节点加入队列
+                    sum += node.val;
+                }
+            }
+            res.add(sum / size);
+        }
+
+        return res;
+    }
+
+    class Node {
+        public int val;
+        public List<Node> children;
+    
+        public Node() {}
+    
+        public Node(int _val) {
+            val = _val;
+        }
+    
+        public Node(int _val, List<Node> _children) {
+            val = _val;
+            children = _children;
+        }
+    };
+
+    /**
+     * N 叉树的层序遍历
+     */
+    public List<List<Integer>> levelOrder(Node root) {
+        List<List<Integer>> res = new ArrayList<>();
+        ArrayDeque<Node> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            List<Integer> list = new ArrayList<>(); // 当前层的节点值
+
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
+            for (int i = 0; i < size; i++) {
+                Node node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    queue.addAll(node.children);
+                    list.add(node.val);
+                }
+            }
+
+            // 如果当前层的 list 非空，将其添加到结果中
+            if (!list.isEmpty()) {
+                res.add(list);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 在每个树行中找最大值
+     */
+    public List<Integer> largestValues(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        if (root != null) {
+            queue.offer(root); // 将根节点加入队列
+        } else {
+            return res; // 如果根节点为空，返回空结果
+        }
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(); // 获取当前层的节点数
+            int max = Integer.MIN_VALUE;
+            // 这里对分层的处理（即，确定每一层的元素个数）很巧妙
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll(); // 从队列中取出节点
+                if (node != null) {
+                    if (node.left != null)
+                        queue.offer(node.left); // 将左子节点加入队列
+                    if (node.right != null)
+                        queue.offer(node.right); // 将右子节点加入队列
+                    max = Math.max(max, node.val);
+                }
+            }
+            res.add(max);
         }
 
         return res;
