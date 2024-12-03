@@ -5,6 +5,15 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/array" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/linklist" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/backtracking" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/bst" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/doublepointer" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dynamic_program" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/greedy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/hashtable" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/monotonic_stack" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/stack_and_queue" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/string" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
