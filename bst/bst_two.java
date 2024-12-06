@@ -2,6 +2,7 @@ package bst;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -843,5 +844,55 @@ public class bst_two {
 
         // 右子树
         traversal(root.right); // 递归遍历右子树
+    }
+
+    private int modeCount = 0;  // 当前连续相等的数的数量
+    private int threshold = 0;  // 成为众数的阈值
+    private Integer lastVal = null;  // 记录上一个数，因为BST中序遍历相等的数总是连一起
+    private List<Integer> modeList = new ArrayList<>(); // 存储结果，最后转为数组
+
+    /**
+     * 二叉搜索树中的众数
+     * 微调过了，击败49.94%
+     */
+    public int[] findMode(TreeNode root) {
+        // 依旧是中序遍历，这样相同的数都会在一块
+        traversalToFindMode(root);
+        return modeList.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private void traversalToFindMode(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        traversalToFindMode(node.left);
+        if (lastVal == null || lastVal.equals(node.val)) {
+            modeCount++;
+            if (modeCount == threshold) {
+                threshold = modeCount;
+                modeList.add(node.val);
+            }
+            else if (modeCount > threshold) {
+                threshold = modeCount;
+                modeList.clear();
+                modeList.add(node.val);
+            }
+        }
+        else {
+            modeCount = 1;
+            if (modeCount == threshold) {
+                threshold = modeCount;
+                modeList.add(node.val);
+            }
+        }
+        lastVal = node.val;
+        traversalToFindMode(node.right);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        
     }
 }
