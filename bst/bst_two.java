@@ -9,6 +9,13 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 
+/**
+ * 需要清楚，二叉树的几种不同的遍历方式
+ * DFS、BFS、
+ * 前序、中序、后序、
+ * 层序
+ * 的写法
+ */
 public class bst_two {
     class Node {
         public int val;
@@ -583,6 +590,7 @@ public class bst_two {
      * 从中序与后序遍历序列构造二叉树
      * 可以假设树中没有重复的元素
      * 完全没做出来，不愧是medium难度的递归
+     * 这个递归很巧妙，也不好想
      */
     public TreeNode buildTree(int[] inorder, int[] postorder) {
         this.postorder = postorder;
@@ -596,9 +604,10 @@ public class bst_two {
 
     /**
      * 递归函数
+     * 用以返回当前子树的根节点
      * 
      * @param inStart 中序数组的开始下标
-     * @param inEnd 中序数组的结束下标
+     * @param inEnd   中序数组的结束下标
      * @return
      */
     private TreeNode buildTreeRecursive(int inStart, int inEnd) {
@@ -617,4 +626,222 @@ public class bst_two {
         return root;
     }
 
+    /**
+     * 最大二叉树
+     * 虽然是一次过了，但是击败10%
+     * 呃，击败10%好像是因为我用了map
+     * 我不用map了，直接返回下标，再提交，击败97.9%
+     * 哈哈哈哈哈
+     */
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        if (nums == null) {
+            return null;
+        }
+        return construct(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode construct(int[] nums, int start, int end) {
+        int index = findMax(nums, start, end);
+        if (index == -1) {
+            return null;
+        }
+        TreeNode root = new TreeNode(nums[index]);
+        root.left = construct(nums, start, index - 1);
+        root.right = construct(nums, index + 1, end);
+        return root;
+    }
+
+    private int findMax(int[] nums, int start, int end) {
+        int index = -1;
+        int max = Integer.MIN_VALUE;
+        for (int i = start; i <= end; i++) {
+            if (nums[i] > max) {
+                index = i;
+                max = nums[i];
+            }
+        }
+        return index;
+    }
+
+    /**
+     * 合并二叉树
+     * 过了，击败100%
+     */
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
+        return merge(root1, root2);
+    }
+
+    private TreeNode merge(TreeNode node1, TreeNode node2) {
+        TreeNode node = new TreeNode();
+        if (node1 == null && node2 != null) {
+            node = node2;
+        } else if (node2 == null && node1 != null) {
+            node = node1;
+        } else if (node1 != null && node2 != null) {
+            node.val = node1.val + node2.val;
+            node.left = merge(node1.left, node2.left);
+            node.right = merge(node1.right, node2.right);
+        } else {
+            node = null;
+        }
+        return node;
+    }
+
+    /**
+     * 二叉搜索树中的搜索
+     * 秒了，击败100%
+     */
+    public TreeNode searchBST(TreeNode root, int val) {
+        if (root == null) {
+            return null;
+        }
+        if (root.val == val) {
+            return root;
+        }
+        TreeNode res = searchBST(root.left, val);
+        res = res == null ? searchBST(root.right, val) : res;
+        return res;
+    }
+
+    /**
+     * 二叉搜索树中的搜索
+     * 利用二叉搜索树的性质
+     * 递归写法
+     */
+    public TreeNode searchBSTWithCompareRecursion(TreeNode root, int val) {
+        if (root == null) {
+            return null;
+        }
+        if (root.val == val) {
+            return root;
+        } else if (root.val > val) {
+            return searchBST(root.left, val);
+        } else {
+            return searchBST(root.right, val);
+        }
+    }
+
+    /**
+     * 二叉搜索树中的搜索
+     * 利用二叉搜索树的性质
+     * 迭代写法
+     */
+    public TreeNode searchBSTWithCompare(TreeNode root, int val) {
+        TreeNode node = root;
+        while (node != null) {
+            if (node.val == val) {
+                return node;
+            } else if (node.val > val) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        return node;
+    }
+
+    /**
+     * 验证二叉搜索树
+     * 呃，是不是可以记录左子树的最大值，右子树的最小值
+     * 终于通过了，击败100%，这是纯自己做出来的二叉树的Medium
+     * 关键是想到，以一个节点为根的二叉树是合法的，当且仅当根节点的值大于左子树的最大值，小于右子树的最小值
+     */
+    public boolean isValidBST(TreeNode root) {
+        return isValid(root);
+    }
+
+    private boolean isValid(TreeNode node) {
+        if (node == null) {
+            return true;
+        }
+        TreeNode cur = node.left;
+        Integer lMax = null;
+        while (cur != null) {
+            lMax = cur.val;
+            cur = cur.right;
+        }
+
+        cur = node.right;
+        Integer rMin = null;
+        while (cur != null) {
+            rMin = cur.val;
+            cur = cur.left;
+        }
+
+        if (rMin != null && node.val >= rMin) {
+            return false;
+        }
+        if (lMax != null && node.val <= lMax) {
+            return false;
+        }
+        return isValid(node.left) && isValid(node.right);
+    }
+
+    /**
+     * 二叉搜索树的最小绝对差
+     * 上题做出来了，这题就不难了，因为可以递归，每个节点算一下它与其右子树最小值和左子树最大值的差值，取其中小者
+     * 秒了，但是1ms只击败了41.29%
+     */
+    public int getMinimumDifference(TreeNode root) {
+        return minDiff(root);
+    }
+
+    private int minDiff(TreeNode node) {
+        if (node == null) {
+            return Integer.MAX_VALUE;
+        }
+        TreeNode cur = node.left;
+        Integer lMax = null;
+        while (cur != null) {
+            lMax = cur.val;
+            cur = cur.right;
+        }
+
+        cur = node.right;
+        Integer rMin = null;
+        while (cur != null) {
+            rMin = cur.val;
+            cur = cur.left;
+        }
+
+        int diff = Math.min(lMax == null ? Integer.MAX_VALUE : node.val - lMax,
+                rMin == null ? Integer.MAX_VALUE : rMin - node.val);
+        int subMin = Math.min(minDiff(node.left), minDiff(node.right));
+
+        return Math.min(diff, subMin);
+    }
+
+    TreeNode pre;
+    int res = Integer.MAX_VALUE;
+
+    /**
+     * 二叉搜索树的最小绝对差
+     * 因为这是一个BST，所以中序遍历顺序就得到一个升序数列
+     * 然后用pre来记录中序遍历的上一个节点，比较两者的值，取最小者
+     */
+    public int getMinimumDifferenceWithPrePointerAndInorderTraversal(TreeNode root) {
+        if (root == null) { // 如果树为空，直接返回0
+            return 0;
+        }
+        traversal(root); // 开始进行中序遍历
+        return res; // 返回计算得到的最小差值
+    }
+
+    private void traversal(TreeNode root) {
+        if (root == null) { // 递归终止条件：节点为空
+            return;
+        }
+        // 左子树
+        traversal(root.left); // 递归遍历左子树
+
+        // 当前节点（中序遍历的中间位置）
+        if (pre != null) { // 如果存在前一个节点（中序遍历中至少第二次访问节点）
+            // 计算当前节点值与前一个节点值的差，并更新最小差值
+            res = Math.min(res, root.val - pre.val);
+        }
+        pre = root; // 更新前一个节点为当前节点
+
+        // 右子树
+        traversal(root.right); // 递归遍历右子树
+    }
 }
