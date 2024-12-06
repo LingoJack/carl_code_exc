@@ -495,6 +495,7 @@ public class bst_two {
 
     /**
      * 找树左下角的值，递归解法
+     * 这个递归写的也蛮巧妙的
      */
     public int findBottomLeftValueWithRecursion(TreeNode root) {
         value = root.val;
