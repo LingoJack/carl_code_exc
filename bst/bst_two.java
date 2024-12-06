@@ -2,8 +2,10 @@ package bst;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -355,8 +357,6 @@ public class bst_two {
         }
     }
 
-
-
     /**
      * 二叉树的所有路径
      * 是不是可以直接DFS
@@ -414,12 +414,12 @@ public class bst_two {
             if (node.left == null && node.right == null) {
                 result.add(path);
             }
-            //右子节点不为空
+            // 右子节点不为空
             if (node.right != null) {
                 stack.push(node.right);
                 stack.push(path + "->" + node.right.val);
             }
-            //左子节点不为空
+            // 左子节点不为空
             if (node.left != null) {
                 stack.push(node.left);
                 stack.push(path + "->" + node.left.val);
@@ -515,4 +515,106 @@ public class bst_two {
         if (root.right != null)
             findLeftValue(root.right, deep + 1);
     }
+
+    private int targetSum;
+
+    /**
+     * 路径总和
+     * 成功自己做出来了，击败100%
+     */
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        this.targetSum = targetSum;
+        return searchPathSum(root, 0);
+    }
+
+    private boolean searchPathSum(TreeNode node, int sum) {
+        if (node == null) {
+            return false;
+        }
+        sum += node.val;
+        if (node.left == null && node.right == null) {
+            return sum == this.targetSum;
+        }
+        return searchPathSum(node.left, sum) || searchPathSum(node.right, sum);
+    }
+
+    private List<List<Integer>> pathLists = new ArrayList<>();
+
+    /**
+     * 路径总和 II
+     * 这个涉及回溯，感觉又不是那么好做
+     * 什么时候回溯，如何回溯，你真的懂了吗？
+     */
+    public List<List<Integer>> pathSum2(TreeNode root, int targetSum) {
+        this.targetSum = targetSum;
+        searchPathSum2(root, 0, new ArrayList<>());
+        return this.pathLists;
+    }
+
+    private void searchPathSum2(TreeNode node, int sum, List<Integer> list) {
+        if (node == null) {
+            return;
+        }
+        sum += node.val;
+        list.add(node.val);
+        if (node.left == null && node.right == null) {
+            if (sum == targetSum) {
+                pathLists.add(new ArrayList<>(list));
+            }
+            return;
+        }
+
+        if (node.left != null) {
+            searchPathSum2(node.left, sum, list);
+            list.remove(list.size() - 1);
+        }
+
+        if (node.right != null) {
+            searchPathSum2(node.right, sum, list);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    private Map<Integer, Integer> inOrderIndexMap;
+    private int[] postorder;
+    private int postIndex;
+
+    /**
+     * 从中序与后序遍历序列构造二叉树
+     * 可以假设树中没有重复的元素
+     * 完全没做出来，不愧是medium难度的递归
+     */
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+        this.postorder = postorder;
+        this.postIndex = postorder.length - 1;
+        this.inOrderIndexMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            inOrderIndexMap.put(inorder[i], i);
+        }
+        return buildTreeRecursive(0, inorder.length - 1);
+    }
+
+    /**
+     * 递归函数
+     * 
+     * @param inStart 中序数组的开始下标
+     * @param inEnd 中序数组的结束下标
+     * @return
+     */
+    private TreeNode buildTreeRecursive(int inStart, int inEnd) {
+        // 如果中序范围无效，返回 null
+        if (inStart > inEnd) {
+            return null;
+        }
+        // 当前子树的根节点值
+        int rootValue = postorder[postIndex--];
+        TreeNode root = new TreeNode(rootValue);
+        // 根节点在中序遍历中的位置
+        int rootIndex = inOrderIndexMap.get(rootValue);
+        // 先递归构造右子树，再构造左子树
+        root.right = buildTreeRecursive(rootIndex + 1, inEnd);
+        root.left = buildTreeRecursive(inStart, rootIndex - 1);
+        return root;
+    }
+
 }
