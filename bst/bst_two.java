@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import apple.laf.JRSUIUtils.Tree;
-
 public class bst_two {
     class Node {
         public int val;
@@ -291,4 +289,19 @@ public class bst_two {
         }
         return compare(lt.right, rt.left) && compare(lt.left, rt.right);
     }
+
+    /**
+     * 最大深度
+     */
+    public int maxDepth1(TreeNode root) {
+        return getDept(root);
+    }
+
+    private int getDept(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return 1 + Math.max(getDept(node.left), getDept(node.right));
+    }
+
 }
