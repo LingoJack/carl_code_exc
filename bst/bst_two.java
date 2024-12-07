@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 
+import apple.laf.JRSUIUtils.Tree;
+
 /**
  * 需要清楚，二叉树的几种不同的遍历方式
  * DFS、BFS、
@@ -356,6 +358,7 @@ public class bst_two {
         if (root == null) {
             return 0;
         }
+        // 后序遍历
         int leftHeight = height(root.left);
         int rightHeight = height(root.right);
         if (leftHeight == -1 || rightHeight == -1 || Math.abs(leftHeight - rightHeight) > 1) {
@@ -846,9 +849,9 @@ public class bst_two {
         traversal(root.right); // 递归遍历右子树
     }
 
-    private int modeCount = 0;  // 当前连续相等的数的数量
-    private int threshold = 0;  // 成为众数的阈值
-    private Integer lastVal = null;  // 记录上一个数，因为BST中序遍历相等的数总是连一起
+    private int modeCount = 0; // 当前连续相等的数的数量
+    private int threshold = 0; // 成为众数的阈值
+    private Integer lastVal = null; // 记录上一个数，因为BST中序遍历相等的数总是连一起
     private List<Integer> modeList = new ArrayList<>(); // 存储结果，最后转为数组
 
     /**
@@ -871,14 +874,12 @@ public class bst_two {
             if (modeCount == threshold) {
                 threshold = modeCount;
                 modeList.add(node.val);
-            }
-            else if (modeCount > threshold) {
+            } else if (modeCount > threshold) {
                 threshold = modeCount;
                 modeList.clear();
                 modeList.add(node.val);
             }
-        }
-        else {
+        } else {
             modeCount = 1;
             if (modeCount == threshold) {
                 threshold = modeCount;
@@ -889,10 +890,278 @@ public class bst_two {
         traversalToFindMode(node.right);
     }
 
+    private int targetCount = 2;
+    private TreeNode p;
+    private TreeNode q;
+    private boolean updated = false;
+
     /**
      * 二叉树的最近公共祖先
+     * 层序遍历+对遍历的每个节点再进行先序遍历校验
+     * 如果一开始直接采用后序遍历的话，应该也可以，而且会更快
+     * 一次过，但击败5.22%
      */
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-        
+        if (root == null || p == null || q == null) {
+            return null;
+        }
+        this.p = p;
+        this.q = q;
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        TreeNode res = null;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            this.updated = false;
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                this.targetCount = 2;
+                if (traversalToFindTarget(node)) {
+                    res = node;
+                    this.updated = true;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            if (!updated) {
+                break;
+            }
+        }
+        return res;
+    }
+
+    private boolean traversalToFindTarget(TreeNode node) {
+        if (node == null) {
+            return false;
+        }
+        if (node.val == p.val || node.val == q.val) {
+            targetCount--;
+            if (targetCount == 0) {
+                return true;
+            }
+        }
+        return traversalToFindTarget(node.left) || traversalToFindTarget(node.right);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     * 递归解法
+     * 这个递归也蛮巧妙的
+     */
+    public TreeNode lowestCommonAncestorWithRecursion(TreeNode root, TreeNode p, TreeNode q) {
+        if (p == null || q == null) {
+            return null;
+        }
+        this.p = p;
+        this.q = q;
+        return findLowestCommanAncestorNode(root);
+    }
+
+    private TreeNode findLowestCommanAncestorNode(TreeNode node) {
+        if (node == null || node == this.q || node == this.p) {
+            return node;
+        }
+        // 后序遍历
+        TreeNode left = findLowestCommanAncestorNode(node.left);
+        TreeNode right = findLowestCommanAncestorNode(node.right);
+
+        // 处理中间节点，如果中间节点的左右节点都含有目标节点，那么它就是最近公共祖先
+        if (left != null && right != null) {
+            return node;
+        }
+
+        // 否则返回包含目标节点的一侧的节点
+        return left == null ? right : left;
+    }
+
+    /**
+     * 二叉搜索树的最近公共祖先
+     * 用上一题的代码可以击败100%过
+     * 当然用我现在的新实现也可以击败100%过
+     * 就是依次去找每个目标节点，用list记录走过的路径
+     * 然后得到两个list，从末尾开始，最先遇到的两个list中都有的节点就是最近公共祖先
+     * 还有一个思路就是第一个遇到满足假设p.val < q.val
+     * p.val < node.val < q.val的就是最近公共祖先
+     */
+    public TreeNode lowestCommonAncestorBST(TreeNode root, TreeNode p, TreeNode q) {
+        // 如果采用后序遍历的话是否可以更快找到
+        if (root == null || root == q || root == p) {
+            return root;
+        }
+        List<TreeNode> list4P = findNode(root, p);
+        List<TreeNode> list4Q = findNode(root, q);
+        while (!list4P.isEmpty()) {
+            TreeNode node = list4P.getLast();
+            if (list4Q.contains(node)) {
+                return node;
+            } else {
+                list4P.removeLast();
+            }
+        }
+        return null;
+    }
+
+    private List<TreeNode> findNode(TreeNode root, TreeNode target) {
+        ArrayList<TreeNode> list = new ArrayList<>();
+        TreeNode node = root;
+        while (node != null) {
+            list.add(node);
+            if (node == target) {
+                break;
+            } else if (node.val > target.val) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 二叉搜索树中的插入操作
+     * 一次过，击败100%
+     */
+    public TreeNode insertIntoBST(TreeNode root, int val) {
+        if (root == null) {
+            return new TreeNode(val);
+        }
+        TreeNode node = root;
+        TreeNode pre = root;
+        while (node != null) {
+            pre = node;
+            if (val > node.val) {
+                node = node.right;
+            } else if (val < node.val) {
+                node = node.left;
+            }
+        }
+        node = new TreeNode(val);
+        if (val > pre.val) {
+            pre.right = node;
+        } else {
+            pre.left = node;
+        }
+        return root;
+    }
+
+    /**
+     * 删除二叉搜索树中的节点
+     * 迭代做法，mad，写得我烦死了
+     * 最后还差一点，不想再改了，遂叫GPT改
+     * 我真是个five
+     */
+    public TreeNode deleteNode(TreeNode root, int key) {
+        // 找到要删除的节点
+        TreeNode node = root;
+        TreeNode pre = null;
+        while (node != null) {
+            if (key == node.val) {
+                break;
+            } else if (key > node.val) {
+                pre = node;
+                node = node.right;
+            } else {
+                pre = node;
+                node = node.left;
+            }
+        }
+        if (node == null) {
+            return root;
+        }
+
+        // 要删除的节点没有左右子树
+        if (node.left == null && node.right == null) {
+            if (pre == null) {
+                return null;
+            }
+            if (pre.val > node.val) {
+                pre.left = null;
+            } else {
+                pre.right = null;
+            }
+        } else {
+            TreeNode substitute = (node.right != null) ? getMinRightSon(node) : getMaxLeftSon(node);
+            node.val = substitute.val; // 用替代节点值覆盖当前节点
+            if (node.right != null) {
+                node.right = deleteNode(node.right, substitute.val); // 删除替代节点
+            } else {
+                node.left = deleteNode(node.left, substitute.val); // 删除替代节点
+            }
+        }
+        return root;
+    }
+
+    private TreeNode getMinRightSon(TreeNode root) {
+        TreeNode node = root.right;
+        while (node != null && node.left != null) {
+            node = node.left;
+        }
+        return node;
+    }
+
+    private TreeNode getMaxLeftSon(TreeNode root) {
+        TreeNode node = root.left;
+        while (node != null && node.right != null) {
+            node = node.right;
+        }
+        return node;
+    }
+
+    /**
+     * 删除二叉搜索树中的节点
+     * 巧妙地用了递归
+     */
+    public TreeNode deleteNodeWithRecursion(TreeNode root, int key) {
+        if (root == null) {
+            return null;
+        }
+
+        if (key < root.val) {
+            // 递归在左子树中删除节点
+            root.left = deleteNode(root.left, key);
+        } else if (key > root.val) {
+            // 递归在右子树中删除节点
+            root.right = deleteNode(root.right, key);
+        } else {
+            // 找到目标节点
+            if (root.left == null && root.right == null) {
+                // 目标节点是叶子节点，直接删除
+                return null;
+            } else if (root.right == null) {
+                // 目标节点只有左子树，返回左子树作为新的子树
+                return root.left;
+            } else if (root.left == null) {
+                // 目标节点只有右子树，返回右子树作为新的子树
+                return root.right;
+            } else {
+                // 目标节点有左右子树，用右子树的最小节点替代
+                TreeNode minNode = getMin(root.right);
+                root.val = minNode.val; // 替换当前节点值
+                // 删除右子树中的最小节点
+                root.right = deleteNode(root.right, minNode.val);
+            }
+        }
+        return root;
+    }
+
+    /**
+     * 获取以 root 为根的树中最小节点
+     */
+    private TreeNode getMin(TreeNode root) {
+        while (root.left != null) {
+            root = root.left;
+        }
+        return root;
+    }
+
+    /**
+     * 修剪二叉搜索树
+     */
+    public TreeNode trimBST(TreeNode root, int low, int high) {
+
     }
 }
