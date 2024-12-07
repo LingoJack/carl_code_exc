@@ -1160,8 +1160,73 @@ public class bst_two {
 
     /**
      * 修剪二叉搜索树
+     * 自己迷迷糊糊猜的差不多了，最后在GPT的修改下才过了
+     * 我自己写的就是少了注释的下的两块代码
      */
     public TreeNode trimBST(TreeNode root, int low, int high) {
+        if (root == null) {
+            return null;
+        }
+        // 如果当前节点值小于低值范围，修剪左子树，返回修剪后的右子树
+        if (root.val < low) {
+            return trimBST(root.right, low, high);
+        }
 
+        // 如果当前节点值大于高值范围，修剪右子树，返回修剪后的左子树
+        if (root.val > high) {
+            return trimBST(root.left, low, high);
+        }
+        root.left = trimBST(root.left, low, high);
+        root.right = trimBST(root.right, low, high);
+        return root;
+    }
+
+    /**
+     * 将有序数组转换为二叉搜索树
+     * 经过多次试错与修改也是写出来了
+     * 击败100%
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+        // 思路就是每次都选择中间的节点作为子树的根
+        if (nums == null) {
+            return null;
+        }
+        TreeNode root = new TreeNode();
+        return chooseRoot(nums, 0, nums.length - 1, root);
+    }
+
+    private TreeNode chooseRoot(int[] nums, int begin, int end, TreeNode node) {
+        if (begin > end) {
+            return null;
+        }
+        int index = (begin + end) / 2;
+        node = new TreeNode(nums[index]);
+        node.left = chooseRoot(nums, begin, index - 1, node.left);
+        node.right = chooseRoot(nums, index + 1, end, node.right);
+        return node;
+    }
+
+    private int sum = 0;
+
+    /**
+     * 把二叉搜索树转换为累加树
+     * 呃，这题我要是逆向中序遍历它不炸了吗？
+     * 呃，它果然炸了
+     * 一次过击败100%
+     * 这是被解决得最轻松的一道Medium，难绷
+     */
+    public TreeNode convertBST(TreeNode root) {
+        traversalToSum(root);
+        return root;
+    }
+
+    private void traversalToSum(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        traversalToSum(node.right);
+        sum += node.val;
+        node.val = sum;
+        traversalToSum(node.left);
     }
 }
