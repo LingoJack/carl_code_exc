@@ -43,12 +43,27 @@ public class backtracking {
     
     /**
      * 组合总和III
+     * 经过剪枝，击败100%
      */
     public List<List<Integer>> combinationSum3(int k, int n) {
-        
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> list = new ArrayList<>(k);
+        int sum = 0;
+        backtracking4CombinationSum(res, list, sum, 1, k, n);
+        return res;
     }
 
-    private void backtracking4CombinationSum(List<List<Integer>> res, List<Integer> list, ) {
-        
+    private void backtracking4CombinationSum(List<List<Integer>> res, List<Integer> list, int sum, int start, int k, int n) {
+        if (list.size() == k) {
+            if(sum == n) res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = start; i <= Math.min(9, n - sum); i++) {
+            list.add(i);
+            sum += i;
+            backtracking4CombinationSum(res, list, sum, i + 1, k, n);
+            list.removeLast();
+            sum -= i;
+        }
     }
 }
