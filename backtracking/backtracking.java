@@ -250,4 +250,11 @@ public class backtracking {
         }
         return true;
     }
+
+    /**
+     * 复原IP地址
+     */
+    public List<String> restoreIpAddresses(String s) {
+        
+    }
 }
