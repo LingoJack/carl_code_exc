@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import string.string;
+
 /**
  * 把回溯拆分成树形，会容易理解很多
  */
@@ -23,11 +25,11 @@ public class backtracking {
      * 而且进行剪枝
      */
     public List<List<Integer>> combine(int n, int k) {
-        backtracking4Combine(n, k, 1);
+        backtrack4Combine(n, k, 1);
         return result4Combina;
     }
 
-    private void backtracking4Combine(int n, int k, int startIndex) {
+    private void backtrack4Combine(int n, int k, int startIndex) {
         // 终止条件
         if (path4Combina.size() == k) {
             // 存放结果
@@ -41,7 +43,7 @@ public class backtracking {
             // 处理节点
             path4Combina.add(i);
             // 递归
-            backtracking4Combine(n, k, i + 1);
+            backtrack4Combine(n, k, i + 1);
             // 回溯，撤销处理结果
             path4Combina.removeLast();
         }
@@ -55,11 +57,11 @@ public class backtracking {
         List<List<Integer>> res = new ArrayList<>();
         List<Integer> list = new ArrayList<>(k);
         int sum = 0;
-        backtracking4CombinationSum3(res, list, sum, 1, k, n);
+        backtrack4CombinationSum3(res, list, sum, 1, k, n);
         return res;
     }
 
-    private void backtracking4CombinationSum3(List<List<Integer>> res, List<Integer> list, int sum, int start, int k,
+    private void backtrack4CombinationSum3(List<List<Integer>> res, List<Integer> list, int sum, int start, int k,
             int n) {
         if (list.size() == k) {
             if (sum == n)
@@ -69,7 +71,7 @@ public class backtracking {
         for (int i = start; i <= Math.min(9, n - sum); i++) {
             list.add(i);
             sum += i;
-            backtracking4CombinationSum3(res, list, sum, i + 1, k, n);
+            backtrack4CombinationSum3(res, list, sum, i + 1, k, n);
             list.remove(list.size() - 1);
             sum -= i;
         }
@@ -99,11 +101,11 @@ public class backtracking {
 
         List<String> res = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        backtracking4LetterCombination(res, sb, 0, str, phoneArray);
+        backtrack4LetterCombination(res, sb, 0, str, phoneArray);
         return res;
     }
 
-    private void backtracking4LetterCombination(List<String> res, StringBuilder sb, int start, char[] str,
+    private void backtrack4LetterCombination(List<String> res, StringBuilder sb, int start, char[] str,
             String[] phoneArray) {
         if (sb.length() == str.length) {
             res.add(sb.toString());
@@ -118,7 +120,7 @@ public class backtracking {
             char[] chars = charStr.toCharArray();
             for (char ch : chars) {
                 sb.append(ch);
-                backtracking4LetterCombination(res, sb, i + 1, str, phoneArray);
+                backtrack4LetterCombination(res, sb, i + 1, str, phoneArray);
                 sb.deleteCharAt(sb.length() - 1);
             }
         }
@@ -136,17 +138,16 @@ public class backtracking {
         List<List<Integer>> res = new ArrayList<>();
         List<Integer> list = new ArrayList<>();
         int sum = 0;
-        backtracking4CombinationSum(res, list, sum, target, candidates, 0);
+        backtrack4CombinationSum(res, list, sum, target, candidates, 0);
         return res;
     }
 
-    private void backtracking4CombinationSum(List<List<Integer>> res, List<Integer> list, int sum, int target,
+    private void backtrack4CombinationSum(List<List<Integer>> res, List<Integer> list, int sum, int target,
             int[] candidates, int start) {
         if (sum == target) {
             res.add(new ArrayList<>(list));
             return;
-        }
-        else if (sum > target) {
+        } else if (sum > target) {
             return;
         }
         for (int i = start; i < candidates.length; i++) {
@@ -156,7 +157,7 @@ public class backtracking {
             }
             sum += candidates[i];
             list.add(candidates[i]);
-            backtracking4CombinationSum(res, list, sum, target, candidates, i);
+            backtrack4CombinationSum(res, list, sum, target, candidates, i);
             sum -= candidates[i];
             list.remove(list.size() - 1);
         }
@@ -177,11 +178,12 @@ public class backtracking {
         boolean[] hasIn = new boolean[candidates.length];
         int sum = 0;
         Arrays.sort(candidates);
-        backtracking4CombinationSum2(res, list, sum, target, candidates, 0, hasIn);
+        backtrack4CombinationSum2(res, list, sum, target, candidates, 0, hasIn);
         return res;
     }
 
-    private void backtracking4CombinationSum2(List<List<Integer>> res, List<Integer> list, int sum, int target, int[] candidates, int start, boolean[] hasIn) {
+    private void backtrack4CombinationSum2(List<List<Integer>> res, List<Integer> list, int sum, int target,
+            int[] candidates, int start, boolean[] hasIn) {
         if (sum == target) {
             res.add(new ArrayList<>(list));
             return;
@@ -197,7 +199,7 @@ public class backtracking {
             hasIn[i] = true;
             sum += candidates[i];
             list.add(candidates[i]);
-            backtracking4CombinationSum2(res, list, sum, target, candidates, i + 1, hasIn);
+            backtrack4CombinationSum2(res, list, sum, target, candidates, i + 1, hasIn);
             sum -= candidates[i];
             hasIn[i] = false;
             list.remove(list.size() - 1);
@@ -206,8 +208,46 @@ public class backtracking {
 
     /**
      * 分割回文串
+     * 知道要回溯，但是没做出来
+     * 我可能只会套模板，但是没有真正能够将回溯自由发挥
+     * 脑子里其实想清楚了树形图，但是没有实现出来，也可能是代码实现的能力有待提高
      */
     public List<List<String>> partition(String s) {
-        
+        List<List<String>> res = new ArrayList<>();
+        if (s == null || s.length() == 0) {
+            return res;
+        }
+        backtrack4Partition(res, new ArrayList<>(), s, 0);
+        return res;
+    }
+
+    private void backtrack4Partition(List<List<String>> res, List<String> path, String s, int start) {
+        if (start == s.length()) { // 如果起始位置等于字符串长度，说明找到了一种分割方式
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        // 从起始位置开始尝试分割
+        for (int end = start; end < s.length(); end++) {
+            // 如果从 start 到 end 是回文，则进行下一步递归 
+            // 这里顺便进行了剪枝
+            if (isPalindrome(s, start, end)) {
+                path.add(s.substring(start, end + 1)); // 加入当前回文子串
+                backtrack4Partition(res, path, s, end + 1); // 递归处理剩余部分
+                path.remove(path.size() - 1); // 回溯，移除当前子串
+            }
+        }
+    }
+
+    private boolean isPalindrome(String s, int start, int end) {
+        // 双指针判断回文串了
+        while (start < end) {
+            if (s.charAt(start) != s.charAt(end)) {
+                return false;
+            }
+            start++;
+            end--;
+        }
+        return true;
     }
 }
