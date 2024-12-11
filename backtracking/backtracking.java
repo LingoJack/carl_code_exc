@@ -253,8 +253,54 @@ public class backtracking {
 
     /**
      * 复原IP地址
+     * 还是要注意终止条件应该怎么写
+     * 另外有了上一题切割回文串的经验，这里已经对如何写切割的回溯处理逻辑有了方法论
      */
     public List<String> restoreIpAddresses(String s) {
-        
+        List<String> res = new ArrayList<>();
+        backtrack4RestoreIp(res, new StringBuilder(), s, 0, 0);
+        return res;
+    }
+
+    private void backtrack4RestoreIp(List<String> res, StringBuilder sb, String s, int start, int num) {
+        if (num == 4) {
+            if (start == s.length()) {
+                res.add(sb.substring(0, sb.length() - 1));
+            }
+            return;
+        }
+        for(int end = start; end < start + 3 && end < s.length(); end++) {
+            String segment = s.substring(start, end + 1);
+            if (isValidIpSection(segment)) {
+                int len = sb.length();
+                sb.append(segment).append(".");
+                backtrack4RestoreIp(res, sb, s, end + 1, num + 1);
+                sb.delete(len, sb.length());
+            }   
+        }
+    }
+
+    private boolean isValidIpSection(String s, int start, int end) {
+        if (end - start >= 3) {
+            return false;
+        }
+        String segment = s.substring(start, end + 1);
+        if (segment.startsWith("0") && segment.length() > 1) { // 检查前导 0
+            return false;
+        }
+        int val = Integer.parseInt(segment);
+        return val >= 0 && val <= 255;
+    }
+
+    private boolean isValidIpSection(String segment) {
+        int len = segment.length();
+        if (len > 3) {
+            return false;
+        }
+        if (segment.startsWith("0") && len > 1) { // 检查前导 0
+            return false;
+        }
+        int val = Integer.parseInt(segment);
+        return val >= 0 && val <= 255;
     }
 }
