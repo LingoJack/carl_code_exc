@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import string.string;
 
@@ -229,7 +230,7 @@ public class backtracking {
 
         // 从起始位置开始尝试分割
         for (int end = start; end < s.length(); end++) {
-            // 如果从 start 到 end 是回文，则进行下一步递归 
+            // 如果从 start 到 end 是回文，则进行下一步递归
             // 这里顺便进行了剪枝
             if (isPalindrome(s, start, end)) {
                 path.add(s.substring(start, end + 1)); // 加入当前回文子串
@@ -269,14 +270,14 @@ public class backtracking {
             }
             return;
         }
-        for(int end = start; end < start + 3 && end < s.length(); end++) {
+        for (int end = start; end < start + 3 && end < s.length(); end++) {
             String segment = s.substring(start, end + 1);
             if (isValidIpSection(segment)) {
                 int len = sb.length();
                 sb.append(segment).append(".");
                 backtrack4RestoreIp(res, sb, s, end + 1, num + 1);
                 sb.delete(len, sb.length());
-            }   
+            }
         }
     }
 
@@ -303,4 +304,96 @@ public class backtracking {
         int val = Integer.parseInt(segment);
         return val >= 0 && val <= 255;
     }
+
+    /**
+     * 子集
+     * 第二次提交过了，击败100%
+     */
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        backtracking4Subsets(res, new ArrayList<>(), nums, 0);
+        return res;
+    }
+
+    private void backtracking4Subsets(List<List<Integer>> res, List<Integer> list, int[] nums, int index) {
+        if (index == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < 2; i++) {
+            if (i == 0) {
+                list.add(nums[index]);
+                backtracking4Subsets(res, list, nums, index + 1);
+                list.remove(list.size() - 1);
+            } else {
+                backtracking4Subsets(res, list, nums, index + 1);
+            }
+        }
+    }
+
+    /**
+     * 子集II
+     * 难处依旧是去重
+     * 过了，但是只击败了4.18%
+     * 果然按照上一题的思路不好改，得按随想录的上一题思路，那么就好改了
+     * 上一个如果和当前的一样，且上一个没有被选入，那么当前的也不应该被选入
+     */
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        Arrays.sort(nums); // 排序以便去重
+        backtracking4SubsetsWithDup(res, new ArrayList<>(), nums, 0);
+        return res;
+    }
+
+    private void backtracking4SubsetsWithDup(List<List<Integer>> res, List<Integer> tempList, int[] nums, int start) {
+        res.add(new ArrayList<>(tempList)); // 每次都加入当前子集
+
+        for (int i = start; i < nums.length; i++) {
+            // 如果当前数与前一个数相同，且前一个数没有被选择，则跳过
+            if (i > start && nums[i] == nums[i - 1])
+                continue;
+
+            tempList.add(nums[i]); // 选择当前数
+            backtracking4SubsetsWithDup(res, tempList, nums, i + 1); // 递归
+            tempList.remove(tempList.size() - 1); // 撤销选择
+        }
+    }
+
+    /**
+     * 递增子序列
+     * 本题的难点在不能排序而且要去重，所以选用布尔数组used
+     * 需要注意的是，uesd在每一层递归应该有一个新的初始化
+     */
+    public List<List<Integer>> findSubsequences(int[] nums) {
+        if (nums == null || nums.length < 2) {
+            return new ArrayList<>();
+        }
+        List<List<Integer>> res = new ArrayList<>();
+        backtrack4FindSubsequences(res, new ArrayList<>(), nums, 0);
+        return res;
+    }
+
+    private void backtrack4FindSubsequences(List<List<Integer>> res, List<Integer> list, int[] nums, int start) {
+        if (list.size() >= 2) {
+            res.add(new ArrayList<>(list));
+        }
+        boolean[] used = new boolean[201];
+        for (int i = start; i < nums.length; i++) {
+            if (!list.isEmpty() && list.getLast() > nums[i] || used[100 + nums[i]]) {
+                continue;
+            }
+            used[100 + nums[i]] = true;
+            list.add(nums[i]);
+            backtrack4FindSubsequences(res, list, nums, i + 1);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    /**
+     * 全排列
+     */
+    public List<List<Integer>> permute(int[] nums) {
+
+    }
+
 }
