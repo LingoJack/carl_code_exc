@@ -550,7 +550,7 @@ public class backtracking {
     }
 
     /**
-     * N皇后
+     * N皇后 hard
      * n个queen，n * n的棋盘
      * N皇后！！！这道hard题，我一次过！！！虽然只击败40.6%
      */
@@ -585,9 +585,9 @@ public class backtracking {
     private boolean isValid(char[][] cheer, int row, int column, boolean useRecursion) {
         // 经过实测，这里使用迭代进行校验比使用递归校验更有效率
         if (useRecursion) {
-            return isValidPlcaementOnColumn(cheer, row, column) && isValidPlcaementOnLeftIncline(cheer, row, column) && isValidPlcaementOnRightIncline(cheer, row, column);
-        }
-        else {
+            return isValidPlcaementOnColumn(cheer, row, column) && isValidPlcaementOnLeftIncline(cheer, row, column)
+                    && isValidPlcaementOnRightIncline(cheer, row, column);
+        } else {
             // 检查列
             for (int i = 0; i < row; ++i) { // 相当于剪枝
                 if (cheer[i][column] == 'Q') {
@@ -609,7 +609,7 @@ public class backtracking {
             return true;
         }
     }
-        
+
     private boolean isValidPlcaementOnColumn(char[][] cheer, int row, int column) {
         if (row < 0 || column < 0 || row >= cheer[0].length || column >= cheer[0].length) {
             return true;
@@ -633,8 +633,151 @@ public class backtracking {
 
     /**
      * 解数独
+     * hard
+     * 没做出来
      */
     public void solveSudoku(char[][] board) {
-        
+        if (board == null || board.length == 0) {
+            return;
+        }
+        backtrack4SudoKu(board, 0, 0);
     }
+
+    private boolean backtrack4SudoKu(char[][] board, int row, int col) {
+        if (row == 9) {
+            return true; // 到达第9行，说明已经填满整个棋盘
+        }
+
+        // 如果当前列到了末尾，切换到下一行
+        if (col == 9) {
+            return backtrack4SudoKu(board, row + 1, 0);
+        }
+
+        // 如果当前格子已经有数字，跳过
+        if (board[row][col] != '.') {
+            return backtrack4SudoKu(board, row, col + 1);
+        }
+
+        // 尝试填充每一个可能的数字
+        for (char ch : getPossibleNums(row, col, board)) {
+            board[row][col] = ch; // 做选择
+            if (backtrack4SudoKu(board, row, col + 1)) { // 递归下一步
+                return true;
+            }
+            board[row][col] = '.'; // 撤销选择
+        }
+
+        return false; // 如果没有一个数字能成功填充，返回 false
+    }
+
+    private List<Character> getPossibleNums(int row, int col, char[][] board) {
+        boolean[] numsUsed = new boolean[10]; // 1-9 的使用状态
+
+        // 检查当前行
+        for (int i = 0; i < 9; i++) {
+            if (board[row][i] != '.') {
+                numsUsed[board[row][i] - '0'] = true;
+            }
+        }
+
+        // 检查当前列
+        for (int i = 0; i < 9; i++) {
+            if (board[i][col] != '.') {
+                numsUsed[board[i][col] - '0'] = true;
+            }
+        }
+
+        // 检查当前 3x3 小方块
+        int boxStartRow = (row / 3) * 3;
+        int boxStartCol = (col / 3) * 3;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                char ch = board[boxStartRow + i][boxStartCol + j];
+                if (ch != '.') {
+                    numsUsed[ch - '0'] = true;
+                }
+            }
+        }
+
+        // 收集未被使用的数字
+        List<Character> list = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            if (!numsUsed[i]) {
+                list.add((char) ('0' + i));
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * 解数独
+     * 这是随想录的解法，虽然耗时比较多，但是比较好理解
+     * 暂时先不去理解位运算的优化策略了
+     * 本题的核心是写一个函数来判断某位置放入某个数字后该数独是否合法
+     * 其余就是正常回溯
+     */
+    public void solveSudokuSuixianglu(char[][] board) {
+        solveSudokuHelper(board);
+    }
+
+    private boolean solveSudokuHelper(char[][] board){
+        //「一个for循环遍历棋盘的行，一个for循环遍历棋盘的列，
+        // 一行一列确定下来之后，递归遍历这个位置放9个数字的可能性！」
+        for (int i = 0; i < 9; i++){ // 遍历行
+            for (int j = 0; j < 9; j++){ // 遍历列
+                if (board[i][j] != '.'){ // 跳过原始数字
+                    continue;
+                }
+                for (char k = '1'; k <= '9'; k++){ // (i, j) 这个位置放k是否合适
+                    if (isValidSudoku(i, j, k, board)){
+                        board[i][j] = k;
+                        if (solveSudokuHelper(board)){ // 如果找到合适一组立刻返回
+                            return true;
+                        }
+                        board[i][j] = '.';
+                    }
+                }
+                // 9个数都试完了，都不行，那么就返回false
+                return false;
+                // 因为如果一行一列确定下来了，这里尝试了9个数都不行，说明这个棋盘找不到解决数独问题的解！
+                // 那么会直接返回， 「这也就是为什么没有终止条件也不会永远填不满棋盘而无限递归下去！」
+            }
+        }
+        // 遍历完没有返回false，说明找到了合适棋盘位置了
+        return true;
+    }
+
+    /**
+     * 判断棋盘是否合法有如下三个维度:
+     *     同行是否重复
+     *     同列是否重复
+     *     9宫格里是否重复
+     */
+    private boolean isValidSudoku(int row, int col, char val, char[][] board){
+        // 同行是否重复
+        for (int i = 0; i < 9; i++){
+            if (board[row][i] == val){
+                return false;
+            }
+        }
+        // 同列是否重复
+        for (int j = 0; j < 9; j++){
+            if (board[j][col] == val){
+                return false;
+            }
+        }
+        // 9宫格里是否重复
+        int startRow = (row / 3) * 3;
+        int startCol = (col / 3) * 3;
+        for (int i = startRow; i < startRow + 3; i++){
+            for (int j = startCol; j < startCol + 3; j++){
+                if (board[i][j] == val){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
