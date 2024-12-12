@@ -1,0 +1,16 @@
+{
+    "editor.smoothScrolling": true,
+    "window.dialogStyle": "custom",
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.acceptSuggestionOnEnter": "smart",
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    "editor.cursorBlinking": "expand",
+    "editor.cursorSmoothCaretAnimation": "off",
+    "workbench.list.smoothScrolling": true,
+    "editor.guides.bracketPairs": true,
+    "editor.bracketPairColorization.enabled": true,
+    "git.ignoreLimitWarning": true,
+    "editor.minimap.scale": 1,
+    "editor.minimap.enabled": true,
+    "java.format.settings.url": "eclipse-formatter.xml"
+}
