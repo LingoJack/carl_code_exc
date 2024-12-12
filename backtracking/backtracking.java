@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import string.string;
@@ -391,9 +392,249 @@ public class backtracking {
 
     /**
      * 全排列
+     * 一次过，击败96.37%
      */
     public List<List<Integer>> permute(int[] nums) {
-
+        List<List<Integer>> res = new ArrayList<>();
+        backtrack4Permute(res, new ArrayList<>(), nums, new boolean[21]);
+        return res;
     }
 
+    private void backtrack4Permute(List<List<Integer>> res, List<Integer> list, int[] nums, boolean[] used) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[10 + nums[i]]) {
+                continue;
+            }
+            used[10 + nums[i]] = true;
+            list.add(nums[i]);
+            backtrack4Permute(res, list, nums, used);
+            list.remove(list.size() - 1);
+            used[10 + nums[i]] = false;
+        }
+    }
+
+    /**
+     * 全排列 II
+     * 稍微修改了一下，两次过
+     * 击败99.97%
+     */
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        Arrays.sort(nums);
+        backtrack4PermuteUnique(res, new ArrayList<>(), nums, new boolean[nums.length]);
+        return res;
+    }
+
+    private void backtrack4PermuteUnique(List<List<Integer>> res, List<Integer> list, int[] nums, boolean[] used) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i] || i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(nums[i]);
+            backtrack4PermuteUnique(res, list, nums, used);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    /**
+     * 重新安排行程
+     * 包括这道，接下来连着三题都是hard
+     * 没做出来，首先是传统的DFS会超时
+     * 然后是对如何处理字典序的问题没有处理好，我最开始没想排序
+     * 这个题解用到了优先队列（堆），很巧妙
+     * 还有就是DFS到从后往前构建路径的逻辑顺序要想清楚
+     * quote：
+     * 递归函数什么时候需要返回值？什么时候不需要返回值？这里总结如下三点：
+     * 1.如果需要搜索整棵二叉树且不用处理递归返回值，递归函数就不要返回值。（这种情况就是本文下半部分介绍的113.路径总和ii）
+     * 2.如果需要搜索整棵二叉树且需要处理递归返回值，递归函数就需要返回值。 （这种情况我们在236. 二叉树的最近公共祖先 (opens new
+     * window)中介绍）
+     * 3.如果要搜索其中一条符合条件的路径，那么递归一定需要返回值，因为遇到符合条件的路径了就要及时返回。（本题的情况）
+     */
+    public List<String> findItineraryAwesomeSolution(List<List<String>> tickets) {
+        // 构建邻接表并排序
+        Map<String, PriorityQueue<String>> graph = new HashMap<>();
+        for (List<String> ticket : tickets) {
+            graph.computeIfAbsent(ticket.get(0), k -> new PriorityQueue<>()).offer(ticket.get(1));
+        }
+
+        List<String> res = new LinkedList<>();
+        dfs("JFK", graph, res);
+        return res;
+    }
+
+    private void dfs(String airport, Map<String, PriorityQueue<String>> graph, List<String> res) {
+        PriorityQueue<String> destinations = graph.get(airport);
+        while (destinations != null && !destinations.isEmpty()) {
+            String next = destinations.poll();
+            dfs(next, graph, res);
+        }
+        // 从后往前构建路径
+        res.add(0, airport);
+    }
+
+    /**
+     * 重新安排行程
+     * 推荐学习这个随想录的解法，经过我的修改之后击败100%
+     */
+    public List<String> findItinerary(List<List<String>> tickets) {
+        List<String> result = new ArrayList<>();
+        Map<String, List<String>> ticketMap = new HashMap<>();
+        // 遍历tickets，存入ticketMap中
+        for (List<String> ticket : tickets) {
+            addNew(ticket.get(0), ticket.get(1), ticketMap);
+        }
+        backtrack4FindItinerary(result, tickets, ticketMap, "JFK");
+        return result;
+    }
+
+    private boolean backtrack4FindItinerary(List<String> result, List<List<String>> tickets,
+            Map<String, List<String>> ticketMap, String currentLocation) {
+        result.add(currentLocation);
+        // 机票全部用完，找到最小字符路径
+        if (result.size() == tickets.size() + 1) {
+            return true;
+        }
+        // 当前位置的终点列表
+        List<String> targetLocations = ticketMap.get(currentLocation);
+        // 没有从当前位置出发的机票了，说明这条路走不通
+        if (targetLocations != null && !targetLocations.isEmpty()) {
+            // 终点列表中遍历到的终点
+            String targetLocation;
+            // 遍历从当前位置出发的机票
+            for (int i = 0; i < targetLocations.size(); i++) {
+                // 去重，否则在最后一个测试用例中遇到循环时会无限递归
+                if (i > 0 && targetLocations.get(i).equals(targetLocations.get(i - 1)))
+                    continue;
+                targetLocation = targetLocations.get(i);
+                // 删除终点列表中当前的终点
+                targetLocations.remove(i);
+                // 递归
+                if (backtrack4FindItinerary(result, tickets, ticketMap, targetLocation)) {
+                    return true;
+                }
+                // 路线走不通，将机票重新加回去
+                targetLocations.add(i, targetLocation);
+                result.removeLast();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 在map中按照字典顺序添加新元素
+     */
+    private void addNew(String start, String destination, Map<String, List<String>> ticketMap) {
+        List<String> destinationListSortedByDict = ticketMap.getOrDefault(start, new ArrayList<>());
+        if (!destinationListSortedByDict.isEmpty()) {
+            for (int i = 0; i < destinationListSortedByDict.size(); i++) {
+                if (destination.compareTo(destinationListSortedByDict.get(i)) < 0) {
+                    destinationListSortedByDict.add(i, destination);
+                    return;
+                }
+            }
+            destinationListSortedByDict.add(destinationListSortedByDict.size(), destination);
+        } else {
+            destinationListSortedByDict.add(destination);
+            ticketMap.put(start, destinationListSortedByDict);
+        }
+    }
+
+    /**
+     * N皇后
+     * n个queen，n * n的棋盘
+     * N皇后！！！这道hard题，我一次过！！！虽然只击败40.6%
+     */
+    public List<List<String>> solveNQueens(int n) {
+        List<List<String>> res = new ArrayList<>();
+        char[][] cheer = new char[n][n];
+        for (char[] chars : cheer) {
+            Arrays.fill(chars, '.');
+        }
+        backtrack4NQueens(res, cheer, n, 0);
+        return res;
+    }
+
+    private void backtrack4NQueens(List<List<String>> res, char[][] cheer, int n, int row) {
+        if (row == n) {
+            List<String> list = new ArrayList<>();
+            for (char[] chars : cheer) {
+                list.add(new String(chars));
+            }
+            res.add(list);
+            return;
+        }
+        for (int i = 0; i < cheer[row].length; i++) {
+            if (isValid(cheer, row, i, false)) {
+                cheer[row][i] = 'Q';
+                backtrack4NQueens(res, cheer, n, row + 1);
+                cheer[row][i] = '.';
+            }
+        }
+    }
+
+    private boolean isValid(char[][] cheer, int row, int column, boolean useRecursion) {
+        // 经过实测，这里使用迭代进行校验比使用递归校验更有效率
+        if (useRecursion) {
+            return isValidPlcaementOnColumn(cheer, row, column) && isValidPlcaementOnLeftIncline(cheer, row, column) && isValidPlcaementOnRightIncline(cheer, row, column);
+        }
+        else {
+            // 检查列
+            for (int i = 0; i < row; ++i) { // 相当于剪枝
+                if (cheer[i][column] == 'Q') {
+                    return false;
+                }
+            }
+            // 检查45度对角线
+            for (int i = row - 1, j = column - 1; i >= 0 && j >= 0; i--, j--) {
+                if (cheer[i][j] == 'Q') {
+                    return false;
+                }
+            }
+            // 检查135度对角线
+            for (int i = row - 1, j = column + 1; i >= 0 && j <= cheer[0].length - 1; i--, j++) {
+                if (cheer[i][j] == 'Q') {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    private boolean isValidPlcaementOnColumn(char[][] cheer, int row, int column) {
+        if (row < 0 || column < 0 || row >= cheer[0].length || column >= cheer[0].length) {
+            return true;
+        }
+        return cheer[row][column] != 'Q' && isValidPlcaementOnColumn(cheer, row - 1, column);
+    }
+
+    private boolean isValidPlcaementOnLeftIncline(char[][] cheer, int row, int column) {
+        if (row < 0 || column < 0 || row >= cheer[0].length || column >= cheer[0].length) {
+            return true;
+        }
+        return cheer[row][column] != 'Q' && isValidPlcaementOnLeftIncline(cheer, row - 1, column - 1);
+    }
+
+    private boolean isValidPlcaementOnRightIncline(char[][] cheer, int row, int column) {
+        if (row < 0 || column < 0 || row >= cheer[0].length || column >= cheer[0].length) {
+            return true;
+        }
+        return cheer[row][column] != 'Q' && isValidPlcaementOnRightIncline(cheer, row - 1, column + 1);
+    }
+
+    /**
+     * 解数独
+     */
+    public void solveSudoku(char[][] board) {
+        
+    }
 }
