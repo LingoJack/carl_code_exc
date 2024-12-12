@@ -229,7 +229,7 @@ public class backtracking {
 
         // 从起始位置开始尝试分割
         for (int end = start; end < s.length(); end++) {
-            // 如果从 start 到 end 是回文，则进行下一步递归 
+            // 如果从 start 到 end 是回文，则进行下一步递归
             // 这里顺便进行了剪枝
             if (isPalindrome(s, start, end)) {
                 path.add(s.substring(start, end + 1)); // 加入当前回文子串
@@ -269,14 +269,14 @@ public class backtracking {
             }
             return;
         }
-        for(int end = start; end < start + 3 && end < s.length(); end++) {
+        for (int end = start; end < start + 3 && end < s.length(); end++) {
             String segment = s.substring(start, end + 1);
             if (isValidIpSection(segment)) {
                 int len = sb.length();
                 sb.append(segment).append(".");
                 backtrack4RestoreIp(res, sb, s, end + 1, num + 1);
                 sb.delete(len, sb.length());
-            }   
+            }
         }
     }
 
