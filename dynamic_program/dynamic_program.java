@@ -981,6 +981,7 @@ public class dynamic_program {
 
     /**
      * 买卖股票的最佳时机III
+     * hard
      * 评论区还有一个逆天解法
      */
     public int maxProfit3WithAwesomeSolution(int[] prices) {
@@ -1006,5 +1007,21 @@ public class dynamic_program {
 
         // 返回最多进行两次交易后的最大利润
         return sell[2];
+    }
+
+    /**
+     * 买卖股票的最佳时机IV
+     * hard
+     */
+    public int maxProfit4(int k, int[] prices) {
+        
+    }
+
+    /**
+     * 买卖股票的最佳时机 IV
+     * hard
+     */
+    public int maxProfit(int k, int[] prices) {
+        
     }
 }
