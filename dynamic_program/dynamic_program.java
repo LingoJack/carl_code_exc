@@ -1011,17 +1011,95 @@ public class dynamic_program {
 
     /**
      * 买卖股票的最佳时机IV
-     * hard
+     * 限制了k次交易次数
      */
-    public int maxProfit4(int k, int[] prices) {
-        
+    public int maxProfit(int k, int[] prices) {
+        if (prices == null || prices.length < 2)
+            return 0;
+
+        int len = prices.length;
+
+        // dp[i][j][l] 表示到第i天为止，是否持有股票(j=0表示不持有, j=1表示持有)，并且已经完成了l次交易的最大利润
+        int[][][] dp = new int[len][2][k + 1];
+
+        // 初始化第0天的状态
+        for (int j = 0; j <= k; j++) {
+            // 第0天不持有股票的最大利润为0
+            dp[0][0][j] = 0;
+            // 第0天持有股票的最大利润为-prices[0]
+            dp[0][1][j] = -prices[0]; 
+        }
+
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j <= k; j++) {
+                if (j > 0) {
+                    // 今天买入/继续持有
+                    dp[i][1][j] = Math.max(dp[i - 1][0][j - 1] - prices[i], dp[i - 1][1][j]);
+                    // 今天卖出/继续不持有 
+                    dp[i][0][j] = Math.max(dp[i - 1][1][j] + prices[i], dp[i - 1][0][j]);
+                } else {
+                    // 如果交易次数为0，则只能保持不持有状态
+                    dp[i][0][j] = dp[i - 1][0][j];
+                    dp[i][1][j] = Math.max(-prices[i], dp[i - 1][1][j]);
+                }
+            }
+        }
+        // 返回最后一天不持有股票的所有可能交易次数下的最大值
+        int maxProfit = 0;
+        for (int j = 0; j <= k; j++) {
+            maxProfit = Math.max(maxProfit, dp[len - 1][0][j]);
+        }
+        return maxProfit;
     }
 
     /**
-     * 买卖股票的最佳时机 IV
-     * hard
+     * 最佳买卖股票时机含冷冻期
+     * 相当II加了一天冷冻期
+     * 稍微修改一下，过了，主要是意识到冷冻期的递归公式
+     * 还有在i == 1 时候的公式判断，即要么是第1天买了股票，要么是第二天买了股票
      */
-    public int maxProfit(int k, int[] prices) {
+    public int maxProfitWithFreezingPeriod(int[] prices) {
+        int len = prices.length;
+
+        // 到第i天持有1与不持有0股票的最大利润
+        int[][] dp = new int[len][2];
+
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+
+        for (int i = 1; i < len; i++) {
+            dp[i][1] = i >= 2 ? Math.max(dp[i - 2][0] - prices[i], dp[i - 1][1]) : Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+        }
+
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机含手续费
+     * 呃，也是微调一下递归公式就通过了
+     */
+    public int maxProfitWithFees(int[] prices, int fee) {
+        int len = prices.length;
+
+        // 到第i天持有1与不持有0股票的最大利润
+        int[][] dp = new int[len][2];
+
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+
+        for (int i = 1; i < len; i++) {
+            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i] - fee, dp[i - 1][0]);
+        }
+
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 最长递增子序列
+     */
+    public int lengthOfLIS(int[] nums) {
         
     }
 }
