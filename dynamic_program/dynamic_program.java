@@ -1098,8 +1098,50 @@ public class dynamic_program {
 
     /**
      * 最长递增子序列
+     * 过了，但是时间复杂度并不好
      */
     public int lengthOfLIS(int[] nums) {
-        
+        // 以nums[i]结尾的最大递增子序列长度
+        int[] dp = new int[nums.length];
+        dp[0] = 1;
+        int max = dp[0];
+        for(int i = 1; i < nums.length; i++) {
+            for(int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = Math.max(dp[j] + 1, dp[i]);
+                }
+            }
+            max = Math.max(max, dp[i]);
+        }
+        return max;
     }
+
+    /**
+     * 最长连续递增序列
+     */
+    public int findLengthOfLCIS(int[] nums) {
+        // 以nums[i]结尾的最大递增子序列长度
+        int[] dp = new int[nums.length];
+        dp[0] = 1;
+        Arrays.fill(dp, 1);
+        int max = 1;
+        for(int i = 1; i < nums.length; i++) {
+            if (nums[i] > nums[i - 1]) {
+                dp[i] = dp[i - 1] + 1;
+            }
+            max = Math.max(max, dp[i]);
+        }
+        return max;
+    }
+
+    /**
+     * 最长重复子数组
+     */
+    public int findLength(int[] nums1, int[] nums2) {
+        int len1 = nums1.length;
+        int len2 = nums2.length;
+    }
+
+
+
 }
