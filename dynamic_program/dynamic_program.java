@@ -1027,7 +1027,7 @@ public class dynamic_program {
             // 第0天不持有股票的最大利润为0
             dp[0][0][j] = 0;
             // 第0天持有股票的最大利润为-prices[0]
-            dp[0][1][j] = -prices[0]; 
+            dp[0][1][j] = -prices[0];
         }
 
         for (int i = 1; i < len; i++) {
@@ -1035,7 +1035,7 @@ public class dynamic_program {
                 if (j > 0) {
                     // 今天买入/继续持有
                     dp[i][1][j] = Math.max(dp[i - 1][0][j - 1] - prices[i], dp[i - 1][1][j]);
-                    // 今天卖出/继续不持有 
+                    // 今天卖出/继续不持有
                     dp[i][0][j] = Math.max(dp[i - 1][1][j] + prices[i], dp[i - 1][0][j]);
                 } else {
                     // 如果交易次数为0，则只能保持不持有状态
@@ -1068,7 +1068,8 @@ public class dynamic_program {
         dp[0][0] = 0;
 
         for (int i = 1; i < len; i++) {
-            dp[i][1] = i >= 2 ? Math.max(dp[i - 2][0] - prices[i], dp[i - 1][1]) : Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+            dp[i][1] = i >= 2 ? Math.max(dp[i - 2][0] - prices[i], dp[i - 1][1])
+                    : Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
             dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
         }
 
@@ -1105,8 +1106,8 @@ public class dynamic_program {
         int[] dp = new int[nums.length];
         dp[0] = 1;
         int max = dp[0];
-        for(int i = 1; i < nums.length; i++) {
-            for(int j = 0; j < i; j++) {
+        for (int i = 1; i < nums.length; i++) {
+            for (int j = 0; j < i; j++) {
                 if (nums[i] > nums[j]) {
                     dp[i] = Math.max(dp[j] + 1, dp[i]);
                 }
@@ -1125,7 +1126,7 @@ public class dynamic_program {
         dp[0] = 1;
         Arrays.fill(dp, 1);
         int max = 1;
-        for(int i = 1; i < nums.length; i++) {
+        for (int i = 1; i < nums.length; i++) {
             if (nums[i] > nums[i - 1]) {
                 dp[i] = dp[i - 1] + 1;
             }
@@ -1136,12 +1137,77 @@ public class dynamic_program {
 
     /**
      * 最长重复子数组
+     * 没有一点思路，但是看了答案之后...
+     * 恍然大悟！！！
+     * 对于这样的公共部分，一般要二维数组
+     * 我的二维DP能力真是太弱了
      */
     public int findLength(int[] nums1, int[] nums2) {
-        int len1 = nums1.length;
-        int len2 = nums2.length;
+        // 呃，首先是不是得找到公共子序列
+        // 1 2 3 2 1
+        // 3 2 1 4 7
+        // 没有一点思路
+        int result = 0;
+        int[][] dp = new int[nums1.length + 1][nums2.length + 1];
+
+        for (int i = 1; i < nums1.length + 1; i++) {
+            for (int j = 1; j < nums2.length + 1; j++) {
+                if (nums1[i - 1] == nums2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                    result = Math.max(result, dp[i][j]);
+                }
+            }
+        }
+
+        return result;
     }
 
+    /**
+     * 最长公共子序列
+     * 没做出来，难点是想出dp数组的定义
+     * 其实这题到现在也没有很明白
+     * 有了dp数组的定义以后，然后就是根据i和j字符的相等与否来判断到底最长公共子序列应该为哪一个
+     * （在不相等时仍然做赋值处理，是本题与上一题最大的变化点），
+     * 或者是+1
+     */
+    public int longestCommonSubsequence(String text1, String text2) {
+        // dp标识前缀的最长公共子序列长度
+        int[][] dp = new int[text1.length() + 1][text2.length() + 1]; // 先对dp数组做初始化操作
+        for (int i = 1; i <= text1.length(); i++) {
+            char c1 = text1.charAt(i - 1);
+            for (int j = 1; j <= text2.length(); j++) {
+                char c2 = text2.charAt(j - 1);
+                if (c1 == c2) { // 开始列出状态转移方程
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[text1.length()][text2.length()];
+    }
 
+    /**
+     * 不相交的线
+     * 看样子也是二维数组的题目
+     * 关键是确定DP数组的定义，然后根据如何香蕉的判断列出递推公式开始动归
+     * wc 其实本质就是最长公共子序列
+     */
+    public int maxUncrossedLines(int[] nums1, int[] nums2) {
+        // dp标识前缀的最长公共子序列长度
+        int[][] dp = new int[nums1.length + 1][nums2.length + 1]; // 先对dp数组做初始化操作
+        for (int i = 1; i <= nums1.length; i++) {
+            int n1 = nums1[i - 1];
+            for (int j = 1; j <= nums2.length; j++) {
+                int n2 = nums2[j - 1];
+                if (n1 == n2) { // 开始列出状态转移方程
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[nums1.length][nums2.length];
+    }
 
 }
