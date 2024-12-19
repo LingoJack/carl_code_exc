@@ -1,3 +1,4 @@
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,6 @@ public class linklist {
      * 不过采用的是新建链表的方式，空间复杂度方面是不如双指针法优秀的
      */
     public ListNode reverseList(ListNode head) {
-        
         // 创建一个新的链表
         ListNode cur = head;
         ListNode reverseHead = null;
@@ -293,6 +293,46 @@ public class linklist {
             }
         }
         return null;
+    }
+
+    /**
+     * K个一组反转链表
+     */
+    public ListNode reverseKGroup(ListNode head, int k) {
+        // 创建一个新的链表来存储反转后的节点
+        ListNode newHead = null;
+        ListNode countNode = head;
+        ArrayDeque<ListNode> stack = new ArrayDeque<>();
+        int count = 0;
+        ListNode prev = null;
+        ListNode cur = null;
+        while (countNode != null) {
+            if (count < k) {
+                count++;
+                stack.push(countNode);
+                countNode = countNode.next;
+            }
+            else if (count == k) {
+                cur = stack.pop();
+                // 说明到达了该交换到地方
+                while (!stack.isEmpty()) {
+                    if (count == 8) {
+                        if (prev == null) {
+                            newHead = cur;
+                        }
+                        prev = cur;
+                        count--;
+                        continue;
+                    }
+                    if (prev == null) {
+                        break;
+                    }
+                    prev.next = cur;
+                    prev = cur;
+                }
+            }
+        }
+        return newHead == null ? head : newHead;
     }
 }
 
