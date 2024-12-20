@@ -295,44 +295,7 @@ public class linklist {
         return null;
     }
 
-    /**
-     * K个一组反转链表
-     */
-    public ListNode reverseKGroup(ListNode head, int k) {
-        // 创建一个新的链表来存储反转后的节点
-        ListNode newHead = null;
-        ListNode countNode = head;
-        ArrayDeque<ListNode> stack = new ArrayDeque<>();
-        int count = 0;
-        ListNode prev = null;
-        ListNode cur = null;
-        while (countNode != null) {
-            if (count < k) {
-                count++;
-                stack.push(countNode);
-                countNode = countNode.next;
-            }
-            else if (count == k) {
-                cur = stack.pop();
-                // 说明到达了该交换到地方
-                while (!stack.isEmpty()) {
-                    if (count == 8) {
-                        if (prev == null) {
-                            newHead = cur;
-                        }
-                        prev = cur;
-                        count--;
-                        continue;
-                    }
-                    if (prev == null) {
-                        break;
-                    }
-                    prev.next = cur;
-                    prev = cur;
-                }
-            }
-        }
-        return newHead == null ? head : newHead;
-    }
+    
+
 }
 

@@ -12,5 +12,9 @@
     "git.ignoreLimitWarning": true,
     "editor.minimap.scale": 1,
     "editor.minimap.enabled": true,
-    "java.format.settings.url": "eclipse-formatter.xml"
+    "java.format.settings.url": "eclipse-formatter.xml",
+    "editor.linkedEditing": true,
+    "editor.mouseWheelZoom": false,
+    "editor.renderLineHighlightOnlyWhenFocus": false,
+    "editor.fontSize": 16,
 }
