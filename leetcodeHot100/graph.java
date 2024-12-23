@@ -4,6 +4,10 @@ public class graph {
 
     /**
      * 岛屿数量
+     * 并查集的关键就是操作并和查
+     * 并，就是小树并入大树
+     * 查，就是看祖先是否是同一个。
+     * 祖先节点存储树的大小（秩），用parent数组记录父子关系
      */
     public int numIslands(char[][] grid) {
         if (grid == null || grid.length == 0) {

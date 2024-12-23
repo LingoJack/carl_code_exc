@@ -11,6 +11,7 @@ import java.util.Scanner;
 
 import doublepointer.doublepointer;
 import stack_and_queue.stack_and_queue;
+import string.string;
 
 /**
  * 1. 确定dp数组（dp table）以及下标的含义
@@ -1165,7 +1166,6 @@ public class dynamic_program {
     /**
      * 最长公共子序列
      * 没做出来，难点是想出dp数组的定义
-     * 其实这题到现在也没有很明白
      * 有了dp数组的定义以后，然后就是根据i和j字符的相等与否来判断到底最长公共子序列应该为哪一个
      * （在不相等时仍然做赋值处理，是本题与上一题最大的变化点），
      * 或者是+1
@@ -1190,7 +1190,7 @@ public class dynamic_program {
     /**
      * 不相交的线
      * 看样子也是二维数组的题目
-     * 关键是确定DP数组的定义，然后根据如何香蕉的判断列出递推公式开始动归
+     * 关键是确定DP数组的定义，然后根据如何相交的判断列出递推公式开始动归
      * wc 其实本质就是最长公共子序列
      */
     public int maxUncrossedLines(int[] nums1, int[] nums2) {
@@ -1208,6 +1208,109 @@ public class dynamic_program {
             }
         }
         return dp[nums1.length][nums2.length];
+    }
+
+    /**
+     * 最大子序和
+     * 9min oc
+     * 核心是dp数组的定义，以i结尾的子数组的最大子序和
+     * 其实需要的只是前一个变量，这样的话就可以节省空间复杂度，省去分配空间的时间复杂度了
+     */
+    public int maxSubArray(int[] nums) {
+        int len = nums.length;
+        // 考虑0到i元素且以i元素结尾的最大子序和
+        int[] dp = new int[len];
+        dp[0] = nums[0];
+        int max = dp[0];
+        for(int i = 1; i < len; i++) {
+            if (dp[i - 1] <= 0) {
+                dp[i] = nums[i];
+            }
+            else {
+                dp[i] = dp[i - 1] + nums[i];
+            }
+            max = Math.max(max, dp[i]);
+        }
+        return max;
+    }
+
+    /**
+     * 判断子序列
+     * 这个回溯超时了
+     */
+    public boolean isSubsequenceTimeout(String s, String t) {
+        if (s.equals("")) {
+            return true;
+        }
+        return isSubsequence(t, s, new StringBuilder(), 0);
+    }
+
+    private boolean isSubsequence(String s, String t, StringBuilder sb, int index) {
+        if (index == s.length()) {
+            return false;
+        }
+        for(int i = 0; i < 2; i++) {
+            if (i == 0) {
+                if (isSubsequence(s, t, sb, index + 1)) {
+                    return true;
+                }
+            }
+            else {
+                sb.append(s.charAt(index));
+                if (sb.toString().equals(t) || isSubsequence(s, t, sb, index + 1)) {
+                    return true;
+                }
+                sb.setLength(sb.length() - 1);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断子序列
+     * 6min oc
+     * 思路是逐个扫t，遇到一个s的字符就点亮，同时游标+1
+     * 本题是编辑距离的入门题，所以了解DP解法十分有必要
+     */
+    public boolean isSubsequence(String s, String t) {
+        if (s.equals("")) {
+            return true;
+        }
+        else if (t.equals("")) {
+            return false;
+        }
+        int index = 0;
+        int len = t.length();
+        for(int i = 0; i < len; i++) {
+            if (t.charAt(i) == s.charAt(index)) {
+                index++;
+                if (index == s.length()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断子序列
+     * DP解法
+     */
+    public boolean isSubsequenceWithDP(String s, String t) {
+        int sLen = s.length();
+        int tLen = t.length();
+        // 以下标i-1为结尾的字符串s，和以下标j-1为结尾的字符串t，相同子序列的长度为dp[i][j]
+        int[][] dp = new int[sLen + 1][tLen + 1];
+        for (int i = 1; i <= sLen; i++) {
+            for (int j = 1; j <= tLen; j++) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = dp[i][j - 1];
+                }
+            }
+        }
+        return dp[sLen][tLen] == sLen;
     }
 
 }
