@@ -1222,11 +1222,10 @@ public class dynamic_program {
         int[] dp = new int[len];
         dp[0] = nums[0];
         int max = dp[0];
-        for(int i = 1; i < len; i++) {
+        for (int i = 1; i < len; i++) {
             if (dp[i - 1] <= 0) {
                 dp[i] = nums[i];
-            }
-            else {
+            } else {
                 dp[i] = dp[i - 1] + nums[i];
             }
             max = Math.max(max, dp[i]);
@@ -1249,13 +1248,12 @@ public class dynamic_program {
         if (index == s.length()) {
             return false;
         }
-        for(int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
             if (i == 0) {
                 if (isSubsequence(s, t, sb, index + 1)) {
                     return true;
                 }
-            }
-            else {
+            } else {
                 sb.append(s.charAt(index));
                 if (sb.toString().equals(t) || isSubsequence(s, t, sb, index + 1)) {
                     return true;
@@ -1275,13 +1273,12 @@ public class dynamic_program {
     public boolean isSubsequence(String s, String t) {
         if (s.equals("")) {
             return true;
-        }
-        else if (t.equals("")) {
+        } else if (t.equals("")) {
             return false;
         }
         int index = 0;
         int len = t.length();
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             if (t.charAt(i) == s.charAt(index)) {
                 index++;
                 if (index == s.length()) {
@@ -1313,4 +1310,98 @@ public class dynamic_program {
         return dp[sLen][tLen] == sLen;
     }
 
+    /**
+     * 不同的子序列
+     * 思路是对的，但是没用DP，我这里用的递归的思路，也没有成功实现
+     * 就是，统计t中每个字符在s中出现的索引，组成一个列表
+     * 然后从t的第一个字符开始，递归遍历后面的字符的索引大于当前的位置的数量加起来
+     * 说的有点抽象
+     * 呃，结果超时了
+     * 如果记忆化递归呢？
+     */
+    public int numDistinct(String s, String t) {
+        // 记录每个字符在s中的索引位置
+        Map<Character, List<Integer>> charIndexsMap = new HashMap<>();
+        Map<Character, Boolean> needCharMap = new HashMap<>();
+        char[] tChars = t.toCharArray();
+
+        // 标记t中需要的字符
+        for (char ch : tChars) {
+            needCharMap.put(ch, true);
+        }
+
+        // 将s中需要的字符的索引位置加入map
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (needCharMap.get(ch) == null || needCharMap.get(ch)) {
+                List<Integer> list = charIndexsMap.getOrDefault(ch, new ArrayList<>());
+                list.add(i);
+                charIndexsMap.put(ch, list);
+            }
+        }
+
+        // 从t的第一个字符开始，递归处理
+        char firstCh = tChars[0];
+        List<Integer> firstCharIndexes = charIndexsMap.get(firstCh);
+        int result = 0;
+        if (firstCharIndexes != null) {
+            // 对第一个字符的每个位置进行递归处理
+            for (Integer firstCharIndex : firstCharIndexes) {
+                result += calcRec(charIndexsMap, t, 1, firstCharIndex);
+            }
+        }
+
+        return result;
+    }
+
+    // 递归计算，index是t中当前字符的位置，pivot是s中当前匹配字符的位置
+    private int calcRec(Map<Character, List<Integer>> charIndexsMap, String t, int index, int pivot) {
+        // 如果t的所有字符都已经匹配完成
+        if (index == t.length()) {
+            return 1;
+        }
+
+        // 获取当前字符在t中的所有匹配位置
+        char ch = t.charAt(index);
+        List<Integer> indexs = charIndexsMap.get(ch);
+        int count = 0;
+
+        // 在s中找比pivot大（即在pivot位置之后）的字符位置
+        for (Integer idx : indexs) {
+            if (idx > pivot) {
+                // 递归调用，寻找t中下一个字符的匹配
+                count += calcRec(charIndexsMap, t, index + 1, idx);
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * 不同的子序列
+     * 本题DP的难点在于：
+     * DP数组的定义：以i-1为结尾的s子序列中出现以j-1为结尾的t的个数为dp[i][j]
+     * 初始化要想清楚
+     */
+    public int numDistinctWithDp(String s, String t) {
+        // 以i-1为结尾的s子序列中出现以j-1为结尾的t的个数为dp[i][j]
+        int[][] dp = new int[s.length() + 1][t.length() + 1];
+
+        // 初始化
+        for (int i = 0; i < s.length() + 1; i++) {
+            dp[i][0] = 1;
+        }
+
+        for (int i = 1; i < s.length() + 1; i++) {
+            for (int j = 1; j < t.length() + 1; j++) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j];
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        return dp[s.length()][t.length()];
+    }
 }
