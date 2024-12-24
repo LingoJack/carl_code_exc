@@ -111,7 +111,7 @@ public class graph {
         for (int row = 0; row < rowNum; row++) {
             for (int col = 0; col < columnNum; col++) {
                 if (grid[row][col] == 2) {
-                    queue.offer(new int[]{row, col});
+                    queue.offer(new int[] { row, col });
                 } else if (grid[row][col] == 1) {
                     freshCount++;
                 }
@@ -122,7 +122,7 @@ public class graph {
             return 0;
         }
         // 四个方向：上、下、左、右
-        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int[][] directions = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
         int minutes = 0;
         // 广度优先搜索
         while (!queue.isEmpty() && freshCount > 0) {
@@ -137,10 +137,11 @@ public class graph {
                     int newRow = row + dir[0];
                     int newCol = col + dir[1];
                     // 判断新位置是否合法且是新鲜橘子
-                    if (newRow >= 0 && newRow < rowNum && newCol >= 0 && newCol < columnNum && grid[newRow][newCol] == 1) {
+                    if (newRow >= 0 && newRow < rowNum && newCol >= 0 && newCol < columnNum
+                            && grid[newRow][newCol] == 1) {
                         grid[newRow][newCol] = 2;
                         freshCount--;
-                        queue.offer(new int[]{newRow, newCol});
+                        queue.offer(new int[] { newRow, newCol });
                     }
                 }
             }
@@ -159,8 +160,8 @@ public class graph {
         int count = 0;
         int[] inDegree = new int[numCourses];
         Map<Integer, List<Integer>> map = new HashMap<>();
-        boolean[] used = new boolean[numCourses]; 
-        for(int[] rel : prerequisites) {
+        boolean[] used = new boolean[numCourses];
+        for (int[] rel : prerequisites) {
             inDegree[rel[1]]++;
             List<Integer> list = map.getOrDefault(rel[0], new ArrayList<>());
             list.add(rel[1]);
@@ -171,7 +172,7 @@ public class graph {
         while (count != numCourses && course != -1) {
             List<Integer> list = map.get(course);
             if (list != null) {
-                for(int to : list) {
+                for (int to : list) {
                     inDegree[to]--;
                 }
             }
@@ -184,11 +185,88 @@ public class graph {
     }
 
     private int findOneWithZeroInDegree(int[] inDegree, boolean[] used) {
-        for(int i = 0; i < inDegree.length; i++) {
+        for (int i = 0; i < inDegree.length; i++) {
             if (inDegree[i] == 0 && !used[i]) {
                 return i;
             }
         }
         return -1;
+    }
+
+    /**
+     * 前缀树
+     * 30min ac
+     */
+    class Trie {
+
+        private Map<Character, Node> map;
+
+        private Map<String, Boolean> contain;
+
+        public Trie() {
+            this.map = new HashMap<>();
+            this.contain = new HashMap<>();
+        }
+
+        public void insert(String word) {
+            if (word.isEmpty()) {
+                return;
+            }
+            char[] str = word.toCharArray();
+            Node head = map.get(str[0]);
+            if (head == null) {
+                head = new Node(str[0]);
+                map.put(str[0], head);
+            }
+            Node node = head;
+            for (int i = 1; i < str.length; i++) {
+                char ch = str[i];
+                Node nextNode = node.nextMap.get(ch);
+                if (nextNode == null) {
+                    nextNode = new Node(ch);
+                    node.nextMap.put(ch, nextNode);
+                }
+                node = nextNode;
+            }
+            contain.put(word, true);
+        }
+
+        public boolean search(String word) {
+            if (word.equals("")) {
+                return true;
+            }
+            return contain.getOrDefault(word, false);
+        }
+
+        public boolean startsWith(String prefix) {
+            if (prefix.equals("")) {
+                return true;
+            }
+            char[] str = prefix.toCharArray();
+            Node head = map.get(str[0]);
+            if (head == null) {
+                return false;
+            }
+            Node node = head;
+            for (int i = 1; i < str.length; i++) {
+                char ch = str[i];
+                Node nextNode = node.nextMap.get(ch);
+                if (nextNode == null) {
+                    return false;
+                }
+                node = nextNode;
+            }
+            return true;
+        }
+
+        public class Node {
+            char ch;
+            Map<Character, Node> nextMap;
+
+            public Node(char ch) {
+                this.ch = ch;
+                nextMap = new HashMap<>();
+            }
+        }
     }
 }
