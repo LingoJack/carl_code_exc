@@ -1465,8 +1465,55 @@ public class dynamic_program {
 
     /**
      * 回文子串
+     * 没撕出来，只想到了二维数组这一步以及利用回文串的性质
+     * 随想录的这个解法很巧妙地利用了回文串的性质
      */
     public int countSubstrings(String s) {
+        char[] str = s.toCharArray();
+        int len = str.length;
+        boolean[][] dp = new boolean[len][len];
+        int count = 0;
+        for (int i = len - 1; i >= 0; i--) {
+            for (int j = i; j < len; j++) {
+                if (str[i] == str[j]) {
+                    if (j - i <= 1) {
+                        count++;
+                        dp[i][j] = true;
+                    } else if (dp[i + 1][j - 1]) {
+                        count++;
+                        dp[i][j] = true;
+                    }
+                }
+            }
+        }
+        return count;
+    }
 
+    /**
+     * 最长回文子序列
+     * 没撕出来
+     */
+    public int longestPalindromeSubseq(String s) {
+        int len = s.length();
+        // dp[i][j] 表示 s[i...j] 之间的最长回文子序列长度
+        int[][] dp = new int[len][len];
+
+        // 初始化 dp[i][i] 为 1，因为单个字符一定是回文
+        for (int i = 0; i < len; i++) {
+            dp[i][i] = 1;
+        }
+
+        // 从后往前遍历，每次考虑 i 到 j 之间的回文子序列
+        for (int i = len - 2; i >= 0; i--) {
+            for (int j = i + 1; j < len; j++) {
+                if (s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = dp[i + 1][j - 1] + 2;
+                } else {
+                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        return dp[0][len - 1];
     }
 }
