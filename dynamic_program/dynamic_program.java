@@ -1167,7 +1167,7 @@ public class dynamic_program {
      * 最长公共子序列
      * 没做出来，难点是想出dp数组的定义
      * 有了dp数组的定义以后，然后就是根据i和j字符的相等与否来判断到底最长公共子序列应该为哪一个
-     * （在不相等时仍然做赋值处理，是本题与上一题最大的变化点），
+     * （在不相等时做dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1])赋值处理，是本题与上一题最大的变化点），
      * 或者是+1
      */
     public int longestCommonSubsequence(String text1, String text2) {
@@ -1266,7 +1266,7 @@ public class dynamic_program {
 
     /**
      * 判断子序列
-     * 6min oc
+     * 6min ac
      * 思路是逐个扫t，遇到一个s的字符就点亮，同时游标+1
      * 本题是编辑距离的入门题，所以了解DP解法十分有必要
      */
@@ -1382,6 +1382,7 @@ public class dynamic_program {
      * 本题DP的难点在于：
      * DP数组的定义：以i-1为结尾的s子序列中出现以j-1为结尾的t的个数为dp[i][j]
      * 初始化要想清楚
+     * 状态转移方程也要想清楚，区分点就是s[i - 1]是否要纳入匹配，即选择与不选择
      */
     public int numDistinctWithDp(String s, String t) {
         // 以i-1为结尾的s子序列中出现以j-1为结尾的t的个数为dp[i][j]
@@ -1403,5 +1404,69 @@ public class dynamic_program {
         }
 
         return dp[s.length()][t.length()];
+    }
+
+    /**
+     * 两个字符串的删除操作
+     * 这题和直接求最大公共子序列好像是一个套路
+     */
+    public int minDistance(String word1, String word2) {
+        int len1 = word1.length();
+        int len2 = word2.length();
+
+        // 以 i - 1元素结尾和j - 1元素结尾的最大子序列长度
+        int[][] dp = new int[len1 + 1][len2 + 1];
+
+        for (int i = 1; i < len1 + 1; i++) {
+            for (int j = 1; j < len2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+
+        return len1 + len2 - 2 * dp[len1][len2];
+    }
+
+    /**
+     * 编辑距离
+     * 30min ac
+     * 核心是dp数组的定义以及增删改的递归公式推导
+     */
+    public int minEditDistance(String word1, String word2) {
+        int len1 = word1.length();
+        int len2 = word2.length();
+        // 以下标i-1为结尾的字符串word1，和以下标j-1为结尾的字符串word2，最近编辑距离为dp[i][j]
+        int[][] dp = new int[len1 + 1][len2 + 1];
+        for (int i = 0; i < len2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for (int i = 1; i < len1 + 1; i++) {
+            dp[i][0] = i;
+        }
+
+        for (int i = 1; i < len1 + 1; i++) {
+            for (int j = 1; j < len2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i - 1][j - 1] + 1, dp[i][j - 1] + 1);
+                }
+            }
+        }
+        return dp[len1][len2];
+    }
+
+    private int min(int a, int b, int c) {
+        return a >= b ? Math.min(b, c) : Math.min(a, c);
+    }
+
+    /**
+     * 回文子串
+     */
+    public int countSubstrings(String s) {
+
     }
 }
