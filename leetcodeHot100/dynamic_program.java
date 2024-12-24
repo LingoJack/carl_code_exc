@@ -5,7 +5,7 @@ public class dynamic_program {
     /**
      * 最小路径和
      * 9min30s ac
-     * 其实写完代码花了4min30s，剩下的时间在查初始化的Bug
+     * 其实写完代码花了4min30s，剩下的时间在查初始化的Bug...
      */
     public int minPathSum(int[][] grid) {
         if (grid == null) {
