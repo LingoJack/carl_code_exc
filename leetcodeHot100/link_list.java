@@ -4,6 +4,7 @@ import java.security.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -164,5 +165,70 @@ public class link_list {
             removeNode(node);
             addAtHead(node);
         }
+    }
+
+    /**
+     * 合并 K 个升序链表
+     * 15min 初始化的时候有问题，差一点ac
+     * 但是效率低
+     */
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) {
+            return null;
+        }
+        // 直接使用输入的lists数组，无需额外创建nodeList数组
+        ListNode dummyHead = new ListNode(0);
+        ListNode node = dummyHead;
+        while (true) {
+            ListNode minNode = null;
+            int idx = -1;
+            boolean updated = false;
+            for(int i = 0; i < lists.length; i++) {
+                if (lists[i] != null && (minNode == null || lists[i].val < minNode.val)) {
+                    minNode = lists[i];
+                    idx = i;
+                    updated = true;
+                }
+            }
+            if (!updated) {
+                break;
+            }
+            // 更新当前链表头到下一个节点
+            lists[idx] = lists[idx].next;
+            node.next = minNode;
+            node = node.next;
+        }
+        return dummyHead.next;
+    }
+
+    /**
+     * 合并 K 个升序链表
+     * 思路和上面是一样的，区别就是这里使用优先队列来获取min
+     * 而之前的解法是遍历一次来获取min
+     */
+    public ListNode mergeKListsWithPriorityQueue(ListNode[] lists) {
+        if (lists == null || lists.length == 0) {
+            return null;
+        }
+        // 直接使用输入的lists数组，无需额外创建nodeList数组
+        ListNode dummyHead = new ListNode(0);
+        ListNode node = dummyHead;
+        
+        // 优先队列，这里可以简单记忆比较器：(a, b) -> a - b 这边a，b前后出现的顺序都是一样的，所以是升序，反之就是降序了 
+        PriorityQueue<ListNode> priorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
+        for(int i = 0; i < lists.length; i++) {
+            if(lists[i] != null) priorityQueue.offer(lists[i]);
+        }
+
+        while (true) {
+            ListNode minNode = priorityQueue.poll();
+            if (minNode == null) {
+                break;
+            }
+            node.next = minNode;
+            node = node.next;
+            if(minNode.next != null) priorityQueue.offer(minNode.next);
+        }
+        return dummyHead.next;
     }
 }
