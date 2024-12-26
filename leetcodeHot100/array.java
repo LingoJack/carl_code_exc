@@ -1,6 +1,10 @@
 package leetcodeHot100;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class array {
 
@@ -20,11 +24,9 @@ public class array {
             int index = partition(nums, start, end, pivot);
             if (index == k) {
                 return nums[index];
-            }
-            else if (index > k) {
+            } else if (index > k) {
                 end = index - 1;
-            }
-            else if (index < k) {
+            } else if (index < k) {
                 start = index + 1;
             }
         }
@@ -51,5 +53,67 @@ public class array {
         int tmp = nums[idx1];
         nums[idx1] = nums[idx2];
         nums[idx2] = tmp;
+    }
+
+    /**
+     * 最长连续序列
+     * 15min做出来一个实现，但是超时了
+     */
+    public int longestConsecutiveWithTimeout(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        Map<Integer, Boolean> map = new HashMap<>();
+        int max = 1;
+        for (int num : nums) {
+            map.put(num, true);
+            int t = num - 1;
+            int count = 1;
+            while (map.getOrDefault(t, false)) {
+                count++;
+                t--;
+            }
+            t = num + 1;
+            while (map.getOrDefault(t, false)) {
+                t++;
+                count++;
+            }
+            max = Math.max(max, count);
+        }
+        return max;
+    }
+
+    /**
+     * 最长连续序列
+     * 核心：
+     * 去重
+     * 只从序列的第一个数开始查找
+     */
+    public int longestConsecutive(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+
+        Set<Integer> numSet = new HashSet<>();
+        for (int num : nums) {
+            numSet.add(num);
+        }
+
+        int res = 0;
+        for (int num : numSet) {
+            // 只从序列的起点开始查找
+            if (!numSet.contains(num - 1)) {
+                int currentNum = num;
+                int currentStreak = 1;
+
+                while (numSet.contains(currentNum + 1)) {
+                    currentNum += 1;
+                    currentStreak += 1;
+                }
+
+                res = Math.max(res, currentStreak);
+            }
+        }
+        return res;
     }
 }
