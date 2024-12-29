@@ -116,4 +116,58 @@ public class array {
         }
         return res;
     }
+
+    /**
+     * 贪吃的小Q
+     * 二分查找的变种
+     */
+    public int minQ(int day, int chocalateNum) {
+        int dayOneEatNum = 1;
+        // 使用二分查找优化搜索范围
+        int left = 1, right = chocalateNum;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (canFinishInDays(mid, chocalateNum, day)) {
+                dayOneEatNum = mid;
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return dayOneEatNum;
+    }
+
+    private boolean canFinishInDays(int dayOneEatNum, int chocalateNum, int day) {
+        int remainingChocolates = chocalateNum;
+        int eatNum = dayOneEatNum;
+        for (int i = 0; i < day && remainingChocolates >= 0; i++) {
+            remainingChocolates -= eatNum;
+            eatNum = (int) Math.ceil((double) eatNum / 2);
+        }
+        return remainingChocolates >= 0;
+    }
+
+    /**
+     * 缺失的第一个正数
+     * 原地哈希的思想
+     * 本题的核心是注意到：
+     * 答案一定在[1, nums.length + 1]的区间内
+     */
+    public int firstMissingPositive(int[] nums) {
+        int len = nums.length;
+        byte[] exist = new byte[len + 1]; 
+        for(int num : nums) {
+            if (num >= 0 && num <= len) {
+                exist[num] = 1;
+            }
+        }
+
+        for(int i = 1; i <= nums.length; i++) {
+            if (exist[i] == 0) {
+                return i;
+            }
+        }
+
+        return len + 1;
+    }
 }

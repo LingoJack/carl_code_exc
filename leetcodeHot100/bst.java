@@ -3,8 +3,11 @@ package leetcodeHot100;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 
 public class bst {
 
@@ -107,10 +110,10 @@ public class bst {
      */
     public int diameterOfBinaryTree(TreeNode root) {
         calcDiameter(root);
-        return max_diameter;
+        return maxDiameter;
     }
 
-    private int max_diameter = Integer.MIN_VALUE;
+    private int maxDiameter = Integer.MIN_VALUE;
 
     private int calcDiameter(TreeNode node) {
         if (node == null) {
@@ -118,7 +121,94 @@ public class bst {
         }
         int lt = calcDiameter(node.left);
         int rt = calcDiameter(node.right);
-        max_diameter = Math.max(max_diameter, lt + rt + 1);
+        maxDiameter = Math.max(maxDiameter, lt + rt + 1);
         return Math.max(lt, rt) + 1;
+    }
+
+    /**
+     * 从前序与中序遍历序列构造二叉树
+     * 没做出来，和题目“从后序和中序遍历序列构造二叉树”一样
+     */
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+       findInorderIndexMap = new HashMap<>();
+        for(int i = 0; i < inorder.length; i++) {
+            findInorderIndexMap.put(inorder[i], i);
+        }
+        this.preorder = preorder;
+        return buildTreeHelper(0, preorder.length - 1);
+    }
+
+    private int preorderIndex = 0;
+    private int[] preorder;
+    private Map<Integer, Integer> findInorderIndexMap;
+
+    private TreeNode buildTreeHelper(int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preorderIndex++]);
+        int rootInorderIndex = findInorderIndexMap.get(root.val);
+        root.left = buildTreeHelper(start, rootInorderIndex - 1);
+        root.right = buildTreeHelper(rootInorderIndex + 1, end);
+        return root;
+    }
+
+    /**
+     * 删除链表的倒数第N个结点
+     * 7min ac
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode slow = head;
+        ListNode fast = head;
+        int count = 0;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode last = slow;
+        while (count != n) {
+            count--;
+            last = slow;
+            slow = slow.next;
+        }
+
+        ListNode res = head;
+
+        if (slow != head) {
+            last.next = slow.next;
+            slow.next = null;
+        }
+        else {
+            res = slow.next;
+            slow.next = null;
+        }
+        
+        return res;
+    }
+
+    /**
+     * 排序链表
+     * 4min30s ac，但是击败5.30%
+     */
+    public ListNode sortList(ListNode head) {
+        ListNode node = head;
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Integer::compareTo);
+        while (node != null) {
+            priorityQueue.offer(node.val);
+            node = node.next;
+        }
+    
+        ListNode dummyHead = null;
+        while (!priorityQueue.isEmpty()) {
+            Integer val = priorityQueue.poll();
+            ListNode temp = new ListNode(val);
+            if (dummyHead == null) {
+                dummyHead = new ListNode();
+                node = dummyHead;
+            }
+            node.next = temp;
+            node = temp;
+        }
+        return dummyHead == null ? null : dummyHead.next;
     }
 }
