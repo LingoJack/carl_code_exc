@@ -171,6 +171,7 @@ public class link_list {
      * 合并 K 个升序链表
      * 15min 初始化的时候有问题，差一点ac
      * 但是效率低
+     * 思路就是归并排序
      */
     public ListNode mergeKLists(ListNode[] lists) {
         if (lists == null || lists.length == 0) {
@@ -230,5 +231,28 @@ public class link_list {
             if(minNode.next != null) priorityQueue.offer(minNode.next);
         }
         return dummyHead.next;
+    }
+
+    /**
+     * 环形链表
+     * 思路是快慢指针
+     */
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && slow != null) {
+            if (fast.next != null) {
+                fast = fast.next.next;
+            }
+            else {
+                return false;
+            }
+           
+            slow = slow.next;
+            if (fast == slow) {
+                return true;
+            }
+        }
+        return false;
     }
 }
