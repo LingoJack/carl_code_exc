@@ -1,13 +1,18 @@
 package leetcodeHot100;
 
 import java.security.Timestamp;
+import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import monotonic_stack.monotonic_stack;
 
@@ -85,6 +90,7 @@ public class link_list {
             private Integer val;
             private Node prev;
             private Node next;
+            private long timestamp;
 
             public Node() {
 
@@ -93,14 +99,15 @@ public class link_list {
             public Node(Integer key, Integer val) {
                 this.key = key;
                 this.val = val;
+                this.timestamp = System.currentTimeMillis();
             }
         }
 
-        private Map<Integer, Node> cache = new HashMap<>();
-        private int capacity;
-        private int size;
-        private Node head;
-        private Node tail;
+        protected Map<Integer, Node> cache = new HashMap<>();
+        protected int capacity;
+        protected int size;
+        protected Node head;
+        protected Node tail;
 
         public LRUCache(int capacity) {
             this.capacity = capacity;
@@ -133,14 +140,14 @@ public class link_list {
             ensureCapacityValid();
         }
 
-        private void ensureCapacityValid() {
+        protected void ensureCapacityValid() {
             while (size > capacity) {
                 System.out.println(size + " " + capacity);
                 removeFromTail();
             }
         }
 
-        private void addAtHead(Node node) {
+        protected void addAtHead(Node node) {
             Node oldHead = head.next;
             node.next = oldHead;
             node.prev = head;
@@ -151,21 +158,63 @@ public class link_list {
             ensureCapacityValid();
         }
 
-        private void removeFromTail() {
+        protected void removeFromTail() {
             Node oldTail = tail.prev;
             removeNode(oldTail);
         }
 
-        private void removeNode(Node node) {
+        protected void removeNode(Node node) {
             node.prev.next = node.next;
             node.next.prev = node.prev;
             size--;
             cache.remove(node.key);
         }
 
-        private void moveToHead(Node node) {
+        protected void moveToHead(Node node) {
             removeNode(node);
             addAtHead(node);
+        }
+    }
+
+    /**
+     * 定时删除的LRU Cache
+     */
+    public class LRUCacheWithTimelyClean extends LRUCache {
+        private int period; // 定时清理的周期（单位：秒）
+        private ExecutorService scheduler; // 定时任务调度器
+
+        public LRUCacheWithTimelyClean(int capacity, int period) {
+            super(capacity);
+            this.period = period;
+            this.scheduler = new ScheduledThreadPoolExecutor(1);
+            startScheduledCleanup(); // 启动定时清理任务
+        }
+
+        // 启动定时清理任务
+        private void startScheduledCleanup() {
+            ((ScheduledThreadPoolExecutor) scheduler).scheduleAtFixedRate(() -> cleanTimely(), period, period,
+                    TimeUnit.SECONDS);
+        }
+
+        // 定时清理方法，定期执行
+        private void cleanTimely() {
+            synchronized (cache) {
+                long currentTime = System.currentTimeMillis();
+                Iterator<Map.Entry<Integer, Node>> iterator = cache.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry<Integer, Node> entry = iterator.next();
+                    if (currentTime - entry.getValue().timestamp > period) { // 过期时间
+                        removeNode(entry.getValue());
+                    }
+                }
+            }
+        }
+
+        // 停止定时任务
+        public void stopCleanup() {
+            if (scheduler != null && !scheduler.isShutdown()) {
+                scheduler.shutdown();
+            }
         }
     }
 
@@ -186,7 +235,7 @@ public class link_list {
             ListNode minNode = null;
             int idx = -1;
             boolean updated = false;
-            for(int i = 0; i < lists.length; i++) {
+            for (int i = 0; i < lists.length; i++) {
                 if (lists[i] != null && (minNode == null || lists[i].val < minNode.val)) {
                     minNode = lists[i];
                     idx = i;
@@ -216,11 +265,12 @@ public class link_list {
         // 直接使用输入的lists数组，无需额外创建nodeList数组
         ListNode dummyHead = new ListNode(0);
         ListNode node = dummyHead;
-        
-        // 优先队列，这里可以简单记忆比较器：(a, b) -> a - b 这边a，b前后出现的顺序都是一样的，所以是升序，反之就是降序了 
+
+        // 优先队列，这里可以简单记忆比较器：(a, b) -> a - b 这边a，b前后出现的顺序都是一样的，所以是升序，反之就是降序了
         PriorityQueue<ListNode> priorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
-        for(int i = 0; i < lists.length; i++) {
-            if(lists[i] != null) priorityQueue.offer(lists[i]);
+        for (int i = 0; i < lists.length; i++) {
+            if (lists[i] != null)
+                priorityQueue.offer(lists[i]);
         }
 
         while (true) {
@@ -230,7 +280,8 @@ public class link_list {
             }
             node.next = minNode;
             node = node.next;
-            if(minNode.next != null) priorityQueue.offer(minNode.next);
+            if (minNode.next != null)
+                priorityQueue.offer(minNode.next);
         }
         return dummyHead.next;
     }
@@ -245,11 +296,10 @@ public class link_list {
         while (fast != null && slow != null) {
             if (fast.next != null) {
                 fast = fast.next.next;
-            }
-            else {
+            } else {
                 return false;
             }
-           
+
             slow = slow.next;
             if (fast == slow) {
                 return true;
@@ -292,8 +342,7 @@ public class link_list {
                 if (fast == slow) {
                     return slow;
                 }
-            }
-            else {
+            } else {
                 return null;
             }
             slow = slow.next;
@@ -322,14 +371,15 @@ public class link_list {
             node = new ListNode(partSum);
             if (last == null) {
                 head = node;
-            }
-            else {
+            } else {
                 last.next = node;
             }
             last = node;
             node = node.next;
-            if (n1 != null) n1 = n1.next;
-            if (n2 != null) n2 = n2.next;
+            if (n1 != null)
+                n1 = n1.next;
+            if (n2 != null)
+                n2 = n2.next;
         }
         return head;
     }

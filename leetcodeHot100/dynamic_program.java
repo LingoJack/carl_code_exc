@@ -98,11 +98,14 @@ public class dynamic_program {
     /**
      * 最长有效括号
      * DP解法
+     * 核心是想清楚dp的定义，什么是以第i个字符结尾的有效括号的最大长度
+     * 例如：（））就是 0， （（）就说2
+     * 然后去想递推公式
      */
     public int longestValidParenthesesWithDP(String s) {
         int max = 0;
         int len = s.length();
-        // 以i元素结尾的有效括号的长度
+        // dp[i] 表示以第i个字符结尾的有效括号的最大长度
         int[] dp = new int[len];
         for (int i = 1; i < len; i++) {
             char token = s.charAt(i);
@@ -111,17 +114,14 @@ public class dynamic_program {
             }
             else {
                 if (s.charAt(i - 1) == '(') {
-                    dp[i] = dp[i - 1] + 2;
+                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2;
                 }
                 else {
                     // (())
                     // 0123
                     int index2Match = i - dp[i - 1] - 1;
-                    if (s.charAt(index2Match) == '(') {
-                        dp[i] = dp[i - 1] + 2 + dp[index2Match - 1];
-                    }
-                    else {
-                        dp[i] = dp[i - 1];
+                    if (index2Match >= 0 && s.charAt(index2Match) == '(') {
+                        dp[i] = dp[i - 1] + 2 + (index2Match >= 1 ? dp[index2Match - 1] : 0);
                     }
                 }
             }
