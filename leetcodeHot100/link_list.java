@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
+import monotonic_stack.monotonic_stack;
+
 public class link_list {
 
     /**
@@ -254,5 +256,81 @@ public class link_list {
             }
         }
         return false;
+    }
+
+    /**
+     * 环形链表II
+     * 4min ac，但是时间复杂度非常糟糕
+     */
+    public ListNode detectCycle(ListNode head) {
+        Map<ListNode, Boolean> visited = new HashMap<>();
+        ListNode node = head;
+        while (node != null) {
+            Boolean hasVisited = visited.getOrDefault(node, false);
+            if (hasVisited) {
+                return node;
+            }
+            visited.put(node, true);
+            node = node.next;
+        }
+        return null;
+    }
+
+    /**
+     * 环形链表II
+     * 这个快慢指针的解法很巧妙，
+     * 要检测环，就是快慢指针相遇之后，说明快指针比慢指针多走了一个环的距离
+     * 那么此时让头节点和快指针一步步前进，它们遇到的地方就是环的入口
+     * 要证明这一点，可以画图理解一下
+     */
+    public ListNode detectCycleWithSlowFastPointer(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (slow != null && fast != null) {
+            if (fast.next != null) {
+                fast = fast.next.next;
+                if (fast == slow) {
+                    return slow;
+                }
+            }
+            else {
+                return null;
+            }
+            slow = slow.next;
+        }
+        return null;
+    }
+
+    /**
+     * 两数相加
+     * 一次过，击败100%
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        int carryout = 0;
+        ListNode n1 = l1;
+        ListNode n2 = l2;
+        ListNode node = null;
+        ListNode last = null;
+        ListNode head = null;
+        while (n1 != null || n2 != null || carryout == 1) {
+            int partSum = (n1 == null ? 0 : n1.val) + (n2 == null ? 0 : n2.val) + carryout;
+            carryout = 0;
+            if (partSum > 9) {
+                partSum %= 10;
+                carryout = 1;
+            }
+            node = new ListNode(partSum);
+            if (last == null) {
+                head = node;
+            }
+            else {
+                last.next = node;
+            }
+            last = node;
+            node = node.next;
+            if (n1 != null) n1 = n1.next;
+            if (n2 != null) n2 = n2.next;
+        }
+        return head;
     }
 }

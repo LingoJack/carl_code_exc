@@ -38,7 +38,8 @@ public class graph {
     /**
      * 岛屿数量
      * DFS，BFS、并查集的入门题目
-     * 核心就是使用known数组标记一个位置是否已经被访问过
+     * 核心就是使用known数组标记一个位置是否已经被访问过，
+     * 并且在找到第一个未被访问的1时，DFS进行扩散
      * 这里为深搜解法
      */
     public int numIslandsWithDFS(char[][] grid) {

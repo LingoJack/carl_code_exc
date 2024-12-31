@@ -211,4 +211,23 @@ public class bst {
         }
         return dummyHead == null ? null : dummyHead.next;
     }
+
+    /**
+     * B+树的叶子节点和非叶子节点
+     */
+    public class BPlusTreeNode {
+        boolean isLeaf;
+        int[] vals;
+        BPlusTreeNode[] ptrs;
+        int count;
+    }
+
+    public class BPlusTreeIndexNode extends BPlusTreeNode{
+        
+    }
+
+    public class BPlusTreeLeafNode extends BPlusTreeNode {
+        BPlusTreeLeafNode prev;
+        BPlusTreeLeafNode next;
+    }
 }
