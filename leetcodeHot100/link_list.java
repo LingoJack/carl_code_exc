@@ -14,6 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.RowFilter.Entry;
+
 import monotonic_stack.monotonic_stack;
 
 public class link_list {
@@ -382,5 +384,91 @@ public class link_list {
                 n2 = n2.next;
         }
         return head;
+    }
+
+    private class Node {
+        int val;
+        Node next;
+        Node random;
+
+        public Node(int val) {
+            this.val = val;
+            this.next = null;
+            this.random = null;
+        }
+    }
+
+    /**
+     * 随机链表的复制
+     */
+    public Node copyRandomList(Node head) {
+        Map<Node, Node> map = new HashMap<>();
+        Node node = head;
+        while (node != null) {
+            map.put(node, new Node(node.val));
+            node = node.next;
+        }
+
+        node = head;
+        while (node != null) {
+            Node newNode = map.get(node);
+            if (node.next != null) {
+                newNode.next = map.get(node.next);
+            }
+            if (node.random != null) {
+                newNode.random = map.get(node.random);
+            }
+            node = node.next;
+        }
+
+        return head == null ? null : map.get(head);
+    }
+
+    /**
+     * K个一组反转链表
+     * 二刷
+     * 45min
+     * 并且在GPT的纠错下做出来了...
+     * 纠错的主要内容是最后一组没有得到正确的反转，正确做法是先拿fast去count
+     * fast
+     */
+    public ListNode reverseKGroupTwoEx(ListNode head, int k) {
+        ListNode dummyHead = new ListNode();
+        ListNode prevGroupEnd = dummyHead;
+        dummyHead.next = head;
+        ListNode slow = head;
+        ListNode fast = head;
+        // 1 2 3 4 5
+        // 0 1 2 3 4 5 , k=2
+        // 0 s f n
+        // p s f
+        // p s n f
+
+        while (slow != null) {
+            fast = slow;
+            int count = 0;
+            while (count < k && fast != null) {
+                count++;
+                fast = fast.next;
+            }
+            if (count < k) {
+                prevGroupEnd.next = slow;
+                break;
+            }
+            ListNode last = null;
+            ListNode next = null;
+            ListNode groupStart = slow;
+            // 开始反转
+            while (slow != fast) {
+                next = slow.next;
+                slow.next = last;
+                last = slow;
+                slow = next;
+            }
+            prevGroupEnd.next = last;
+            groupStart.next = fast;
+            prevGroupEnd = groupStart;
+        }
+        return dummyHead.next;
     }
 }

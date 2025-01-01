@@ -124,4 +124,34 @@ public class binary_search {
         // 循环结束时，lt == rt，指向最小值
         return nums[lt];
     }
+
+    /**
+     * 贪吃的小Q
+     * 二分查找的变种
+     */
+    public int minQ(int day, int chocalateNum) {
+        int dayOneEatNum = 1;
+        // 使用二分查找优化搜索范围
+        int left = 1, right = chocalateNum;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (canFinishInDays(mid, chocalateNum, day)) {
+                dayOneEatNum = mid;
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return dayOneEatNum;
+    }
+
+    private boolean canFinishInDays(int dayOneEatNum, int chocalateNum, int day) {
+        int remainingChocolates = chocalateNum;
+        int eatNum = dayOneEatNum;
+        for (int i = 0; i < day && remainingChocolates >= 0; i++) {
+            remainingChocolates -= eatNum;
+            eatNum = (int) Math.ceil((double) eatNum / 2);
+        }
+        return remainingChocolates >= 0;
+    }
 }

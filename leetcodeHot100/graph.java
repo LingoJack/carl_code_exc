@@ -262,7 +262,6 @@ public class graph {
         public class Node {
             char ch;
             Map<Character, Node> nextMap;
-
             public Node(char ch) {
                 this.ch = ch;
                 nextMap = new HashMap<>();

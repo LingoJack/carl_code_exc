@@ -118,36 +118,6 @@ public class array {
     }
 
     /**
-     * 贪吃的小Q
-     * 二分查找的变种
-     */
-    public int minQ(int day, int chocalateNum) {
-        int dayOneEatNum = 1;
-        // 使用二分查找优化搜索范围
-        int left = 1, right = chocalateNum;
-        while (left <= right) {
-            int mid = left + (right - left) / 2;
-            if (canFinishInDays(mid, chocalateNum, day)) {
-                dayOneEatNum = mid;
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-        return dayOneEatNum;
-    }
-
-    private boolean canFinishInDays(int dayOneEatNum, int chocalateNum, int day) {
-        int remainingChocolates = chocalateNum;
-        int eatNum = dayOneEatNum;
-        for (int i = 0; i < day && remainingChocolates >= 0; i++) {
-            remainingChocolates -= eatNum;
-            eatNum = (int) Math.ceil((double) eatNum / 2);
-        }
-        return remainingChocolates >= 0;
-    }
-
-    /**
      * 缺失的第一个正数
      * 原地哈希的思想
      * 本题的核心是注意到：
@@ -155,14 +125,14 @@ public class array {
      */
     public int firstMissingPositive(int[] nums) {
         int len = nums.length;
-        byte[] exist = new byte[len + 1]; 
-        for(int num : nums) {
+        byte[] exist = new byte[len + 1];
+        for (int num : nums) {
             if (num >= 0 && num <= len) {
                 exist[num] = 1;
             }
         }
 
-        for(int i = 1; i <= nums.length; i++) {
+        for (int i = 1; i <= nums.length; i++) {
             if (exist[i] == 0) {
                 return i;
             }
@@ -170,4 +140,33 @@ public class array {
 
         return len + 1;
     }
+
+    /**
+     * 和为K的子数组
+     * 思路完全错了，这题必须要用前缀和 + HashMap
+     * 前缀和的解法很妙，如果是我自己想，恐怕想不到...
+     * 通过计算前缀和，我们可以将问题转化为求解两个前缀和之差等于k的情况
+     * 那么对于任意的两个下标i和j（i < j），如果prefixSum[j] - prefixSum[i] = k，
+     * 即从第i个位置到第j个位置的元素之和等于k，那么说明从第i+1个位置到第j个位置的连续子数组的和为k。
+     * 通过遍历数组，计算每个位置的前缀和，并使用一个哈希表来存储每个前缀和出现的次数。
+     * 在遍历的过程中，我们检查是否存在prefixSum[j] - k的前缀和，
+     * 如果存在，说明从某个位置到当前位置的连续子数组的和为k，我们将对应的次数累加到结果中。
+     */
+    public int subarraySum(int[] nums, int k) {
+        int count = 0;
+        int sum = 0;
+        // 使用哈希表记录前缀和及其出现次数
+        Map<Integer, Integer> prefixSumMap = new HashMap<>();
+        // 初始化前缀和为 0 的情况
+        prefixSumMap.put(0, 1);
+        for (int num : nums) {
+            sum += num;
+            if (prefixSumMap.containsKey(sum - k)) {
+                count += prefixSumMap.get(sum - k);
+            }
+            prefixSumMap.put(sum, prefixSumMap.getOrDefault(sum, 0) + 1);
+        }
+        return count;
+    }
+
 }

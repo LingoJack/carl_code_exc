@@ -30,4 +30,25 @@ public class double_pointer {
         int h = Math.min(height[lt], height[rt]);
         return w * h;
     }
+
+    /**
+     * 移动零
+     */
+    public void moveZeroes(int[] nums) {
+        int fast = 0;
+        int slow = 0;
+        while(fast < nums.length) {
+            if (nums[fast] != 0) {
+                if(fast != slow) swap(nums, fast, slow);
+                slow++;
+            }
+            fast++;
+        }   
+    }
+
+    private void swap(int[] nums, int a, int b) {
+        int temp = nums[a];
+        nums[a] = nums[b];
+        nums[b] = temp;
+    }
 }
