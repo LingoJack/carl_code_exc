@@ -338,12 +338,10 @@ public class hashtable {
         if (len < 3) {
             return new ArrayList<>();
         }
-
         List<List<Integer>> res = new ArrayList<>();
         for (int cur = 0; cur < len - 2; cur++) {
             // 跳过重复的元素
             if (cur > 0 && nums[cur] == nums[cur - 1]) continue;
-
             int left = cur + 1, right = len - 1;
             while (left < right) {
                 int sum = nums[cur] + nums[left] + nums[right];

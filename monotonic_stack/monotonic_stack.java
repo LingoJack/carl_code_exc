@@ -243,6 +243,7 @@ public class monotonic_stack {
      */
     public int trap(int[] height) {
         int res = 0;
+        // 递增栈
         Deque<Integer> monotonicStack = new ArrayDeque<>();
         
         // 对于每一根柱子

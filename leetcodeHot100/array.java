@@ -1,8 +1,12 @@
 package leetcodeHot100;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -169,4 +173,42 @@ public class array {
         return count;
     }
 
+    /**
+     * 三数之和
+     * 20min ac，但是时间复杂度十分差，仅击败5%
+     * 正解的核心的去重逻辑其实是排序，然后左右指针，跳过重复的
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);
+        Set<List<Integer>> res = new HashSet<>();
+        for(int i = 0; i < nums.length - 2; i++) {
+            List<List<Integer>> list = findTwoNumSum(nums, i + 1, -nums[i]);
+            if (list.isEmpty()) {
+                continue;
+            }
+            int index = i;
+            list.forEach(l -> l.add(nums[index]));
+            if (!res.contains(list)) {
+                res.addAll(list);
+            }
+        }
+        return new ArrayList<>(res);
+    }
+
+    private List<List<Integer>> findTwoNumSum(int[] nums, int start, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> list = null;
+        for(int i = start; i < nums.length; i++) {
+            Integer index = map.get(target - nums[i]);
+            if (index != null) {
+                list = new ArrayList<>();
+                list.add(nums[i]);
+                list.add(nums[index]);
+                res.add(list);
+            }
+            map.put(nums[i], i);
+        }
+        return res;
+    }
 }
