@@ -53,8 +53,20 @@ public class hash {
      * 链式编程写法
      */
     public List<List<String>> groupAnagramsWithLinkCode(String[] strs) {
-        return new ArrayList<>(Arrays.stream(strs).collect(Collectors.groupingBy(s -> Arrays.toString(s.codePoints().sorted().toArray()))).values());
+        return new ArrayList<>(Arrays.stream(strs)
+                .collect(Collectors.groupingBy(s -> Arrays.toString(s.codePoints().sorted().toArray()))).values());
     }
 
+    /**
+     * 只出现一次的数字
+     * 这是异或运算的技巧
+     */
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for(int num : nums) {
+            res ^= num;
+        }
+        return res;
+    }
 
 }
