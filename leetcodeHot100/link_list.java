@@ -471,4 +471,63 @@ public class link_list {
         }
         return dummyHead.next;
     }
+
+    /**
+     * 删除链表的倒数第N个结点
+     * 7min ac
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode slow = head;
+        ListNode fast = head;
+        int count = 0;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode last = slow;
+        while (count != n) {
+            count--;
+            last = slow;
+            slow = slow.next;
+        }
+
+        ListNode res = head;
+
+        if (slow != head) {
+            last.next = slow.next;
+            slow.next = null;
+        }
+        else {
+            res = slow.next;
+            slow.next = null;
+        }
+        
+        return res;
+    }
+
+    /**
+     * 排序链表
+     * 4min30s ac，但是击败5.30%
+     */
+    public ListNode sortList(ListNode head) {
+        ListNode node = head;
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Integer::compareTo);
+        while (node != null) {
+            priorityQueue.offer(node.val);
+            node = node.next;
+        }
+    
+        ListNode dummyHead = null;
+        while (!priorityQueue.isEmpty()) {
+            Integer val = priorityQueue.poll();
+            ListNode temp = new ListNode(val);
+            if (dummyHead == null) {
+                dummyHead = new ListNode();
+                node = dummyHead;
+            }
+            node.next = temp;
+            node = temp;
+        }
+        return dummyHead == null ? null : dummyHead.next;
+    }
 }

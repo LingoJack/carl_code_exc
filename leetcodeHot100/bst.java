@@ -130,8 +130,8 @@ public class bst {
      * 没做出来，和题目“从后序和中序遍历序列构造二叉树”一样
      */
     public TreeNode buildTree(int[] preorder, int[] inorder) {
-       findInorderIndexMap = new HashMap<>();
-        for(int i = 0; i < inorder.length; i++) {
+        findInorderIndexMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
             findInorderIndexMap.put(inorder[i], i);
         }
         this.preorder = preorder;
@@ -154,65 +154,6 @@ public class bst {
     }
 
     /**
-     * 删除链表的倒数第N个结点
-     * 7min ac
-     */
-    public ListNode removeNthFromEnd(ListNode head, int n) {
-        ListNode slow = head;
-        ListNode fast = head;
-        int count = 0;
-        while (fast != null) {
-            fast = fast.next;
-            count++;
-        }
-        ListNode last = slow;
-        while (count != n) {
-            count--;
-            last = slow;
-            slow = slow.next;
-        }
-
-        ListNode res = head;
-
-        if (slow != head) {
-            last.next = slow.next;
-            slow.next = null;
-        }
-        else {
-            res = slow.next;
-            slow.next = null;
-        }
-        
-        return res;
-    }
-
-    /**
-     * 排序链表
-     * 4min30s ac，但是击败5.30%
-     */
-    public ListNode sortList(ListNode head) {
-        ListNode node = head;
-        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Integer::compareTo);
-        while (node != null) {
-            priorityQueue.offer(node.val);
-            node = node.next;
-        }
-    
-        ListNode dummyHead = null;
-        while (!priorityQueue.isEmpty()) {
-            Integer val = priorityQueue.poll();
-            ListNode temp = new ListNode(val);
-            if (dummyHead == null) {
-                dummyHead = new ListNode();
-                node = dummyHead;
-            }
-            node.next = temp;
-            node = temp;
-        }
-        return dummyHead == null ? null : dummyHead.next;
-    }
-
-    /**
      * B+树的叶子节点和非叶子节点
      */
     public class BPlusTreeNode {
@@ -222,12 +163,39 @@ public class bst {
         int count;
     }
 
-    public class BPlusTreeIndexNode extends BPlusTreeNode{
-        
+    public class BPlusTreeIndexNode extends BPlusTreeNode {
+
     }
 
     public class BPlusTreeLeafNode extends BPlusTreeNode {
         BPlusTreeLeafNode prev;
         BPlusTreeLeafNode next;
+    }
+
+    /**
+     * 路径总和III
+     * 这题和题目“和为K的子数组”类似，都需要类似前缀和的概念
+     */
+    private int pathCount = 0;
+    private Map<Integer, Integer> prefixSumCount;
+
+    public int pathSum(TreeNode root, int targetSum) {
+        prefixSumCount = new HashMap<>();
+        prefixSumCount.put(0, 1); // base case: one way to reach sum 0 (no elements)
+        calcPathSum(root, 0, targetSum);
+        return pathCount;
+    }
+
+    private void calcPathSum(TreeNode node, int currentSum, int targetSum) {
+        if (node == null) {
+            return;
+        }
+        currentSum += node.val;
+        pathCount += prefixSumCount.getOrDefault(currentSum - targetSum, 0);
+        prefixSumCount.put(currentSum, prefixSumCount.getOrDefault(currentSum, 0) + 1);
+        calcPathSum(node.left, currentSum, targetSum);
+        calcPathSum(node.right, currentSum, targetSum);
+        // 回溯，如果没有选这个
+        prefixSumCount.put(currentSum, prefixSumCount.get(currentSum) - 1);
     }
 }

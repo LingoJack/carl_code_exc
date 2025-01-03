@@ -2,6 +2,8 @@ package leetcodeHot100;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class monotonic_stack {
     /**
@@ -12,7 +14,7 @@ public class monotonic_stack {
         // 大的则需要把比它小的先弹出来
         Deque<Integer> monotonicStack = new ArrayDeque<>();
         int res = 0;
-        for(int i = 0; i < height.length; i++) {
+        for (int i = 0; i < height.length; i++) {
             while (!monotonicStack.isEmpty() && height[monotonicStack.peek()] <= height[i]) {
                 // 当前的柱子比栈顶的柱子高，而栈顶到栈底的柱子是递增的，所以会形成低洼
                 int bottom = monotonicStack.pop();
