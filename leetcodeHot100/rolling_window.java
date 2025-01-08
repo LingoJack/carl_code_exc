@@ -36,6 +36,7 @@ public class rolling_window {
     /**
      * 找到字符串中所有字母异位词
      * 思路粗暴，没做出来
+     * 核心是用数组作为map去统计每个字符出现的次数
      */
     public List<Integer> findAnagrams(String s, String p) {
         int sLen = s.length(), pLen = p.length();

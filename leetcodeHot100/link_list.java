@@ -496,12 +496,11 @@ public class link_list {
         if (slow != head) {
             last.next = slow.next;
             slow.next = null;
-        }
-        else {
+        } else {
             res = slow.next;
             slow.next = null;
         }
-        
+
         return res;
     }
 
@@ -516,7 +515,7 @@ public class link_list {
             priorityQueue.offer(node.val);
             node = node.next;
         }
-    
+
         ListNode dummyHead = null;
         while (!priorityQueue.isEmpty()) {
             Integer val = priorityQueue.poll();
@@ -530,4 +529,77 @@ public class link_list {
         }
         return dummyHead == null ? null : dummyHead.next;
     }
+
+    /**
+     * 两两交换链表中的节点
+     * 做了很久
+     */
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode();
+        // 1 2 3 4
+        // d 1 2 3 4
+        // s s
+        // f f
+        //
+        ListNode prevGroupEnd = dummy;
+        dummy.next = head;
+        int count = 0;
+        ListNode fast = head;
+        ListNode slow = head;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+            if (count == 2) {
+                count = 0;
+                ListNode last = null;
+                ListNode groupEnd = slow;
+                while (slow != fast) {
+                    ListNode next = slow.next;
+                    slow.next = last == null ? fast : last;
+                    last = slow;
+                    slow = next;
+                }
+                // slow == fast
+                prevGroupEnd.next = last;
+                prevGroupEnd = groupEnd;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 合并两个有序链表
+     * 5min ac
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (list1 != null || list2 != null) {
+            ListNode node = null;
+            if (list1 != null && list2 != null) {
+                if (list1.val < list2.val) {
+                    node = list1;
+                    last.next = node;
+                    last = node;
+                    list1 = list1.next;
+                } else {
+                    node = list2;
+                    last.next = node;
+                    last = node;
+                    list2 = list2.next;
+                }
+            }
+            else if (list1 == null) {
+                last.next = list2;
+                break;
+            }
+            else {
+                last.next = list1;
+                break;
+            }
+        }
+        return dummy.next;
+    }
+
+    
 }

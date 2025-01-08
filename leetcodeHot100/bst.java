@@ -198,4 +198,50 @@ public class bst {
         // 回溯，如果没有选这个
         prefixSumCount.put(currentSum, prefixSumCount.get(currentSum) - 1);
     }
+
+    /**
+     * 二叉树展开为链表
+     * 5min ac
+     * 但是时间复杂度太高
+     */
+    public void flatten(TreeNode root) {
+        List<TreeNode> list = new ArrayList<>();
+        preorder(root, list);
+        TreeNode last = new TreeNode(0);
+        for(TreeNode node : list) {
+            last.right = node;
+            last.left = null;
+            last = node;
+        }
+    }
+
+    private void preorder(TreeNode node, List<TreeNode> list) {
+        if (node == null) {
+            return;
+        }
+        list.add(node);
+        preorder(node.left, list);
+        preorder(node.right, list);
+    }
+
+    /**
+     * 二叉树展开为链表
+     * 思路我想到了，但是当时想着递归实现，没有实现出来，这个很巧
+     * 思路：根节点的右子树连接到根的左子树的最右节点成为其右子树，根的左子树成为根的右子树，根的左子树设置null
+     */
+    public void flattenWithAwesomeSolution(TreeNode root) {
+        while (root != null) {
+            TreeNode move = root.left;
+            while (move != null && move.right != null) {
+                move = move.right;
+            }
+            // 此时move为左子树的最右节点
+            if (move != null) {
+                move.right = root.right;
+                root.right = root.left;
+                root.left = null;
+            }
+            root = root.right;
+        }
+    }
 }

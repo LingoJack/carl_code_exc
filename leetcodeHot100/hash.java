@@ -57,16 +57,5 @@ public class hash {
                 .collect(Collectors.groupingBy(s -> Arrays.toString(s.codePoints().sorted().toArray()))).values());
     }
 
-    /**
-     * 只出现一次的数字
-     * 这是异或运算的技巧
-     */
-    public int singleNumber(int[] nums) {
-        int res = 0;
-        for(int num : nums) {
-            res ^= num;
-        }
-        return res;
-    }
-
+    
 }
