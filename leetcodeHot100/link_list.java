@@ -3,6 +3,9 @@ package leetcodeHot100;
 import java.security.Timestamp;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -588,12 +591,10 @@ public class link_list {
                     last = node;
                     list2 = list2.next;
                 }
-            }
-            else if (list1 == null) {
+            } else if (list1 == null) {
                 last.next = list2;
                 break;
-            }
-            else {
+            } else {
                 last.next = list1;
                 break;
             }
@@ -601,5 +602,202 @@ public class link_list {
         return dummy.next;
     }
 
-    
+    /**
+     * 回文链表
+     * 用栈去匹配的
+     */
+    public boolean isPalindrome(ListNode head) {
+        int len = 0;
+        ListNode node = head;
+        while (node != null) {
+            node = node.next;
+            len++;
+        }
+        int index = 0;
+        Deque<Integer> stack = new ArrayDeque<>();
+        if (len % 2 == 0) {
+            // 1 2 2 4
+            int mid = len / 2;
+            node = head;
+            while (index < mid) {
+                stack.push(node.val);
+                node = node.next;
+                index++;
+            }
+            while (index >= mid && node != null) {
+                if (stack.peek().equals(node.val)) {
+                    node = node.next;
+                    index++;
+                    stack.pop();
+                } else {
+                    return false;
+                }
+            }
+            if (stack.isEmpty()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            // 1 2 2 4 5
+            int mid = (len - 1) / 2;
+            node = head;
+            while (index < mid) {
+                stack.push(node.val);
+                node = node.next;
+                index++;
+            }
+            node = node.next;
+            index++;
+            while (index > mid && node != null) {
+                if (stack.peek().equals(node.val)) {
+                    node = node.next;
+                    index++;
+                    stack.pop();
+                } else {
+                    return false;
+                }
+            }
+            if (stack.isEmpty()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * 回文链表
+     * ArrayList解法
+     */
+    public boolean isPalindromeWithList(ListNode head) {
+        ListNode node = head;
+        List<Integer> list = new ArrayList<>();
+        while (node != null) {
+            if (node != null)
+                list.add(node.val);
+            node = node.next;
+        }
+        int lt = 0;
+        int rt = list.size() - 1;
+        while (lt < rt) {
+            if (!list.get(rt).equals(list.get(lt))) {
+                return false;
+            }
+            rt--;
+            lt++;
+        }
+        return true;
+    }
+
+    /**
+     * 回文链表
+     * 很巧妙的快慢指针解法
+     */
+    public boolean isPalindromeWithSlowFastPointer(ListNode head) {
+        if (head == null || head.next == null) {
+            return true;
+        }
+
+        ListNode slow = head, fast = head;
+
+        // fast每次走两步，slow每次走一步，这样当fast到达尾部，slow就在中间
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+
+        // 反转后半部分的链表
+        ListNode curr = slow, prev = null;
+        while (curr != null) {
+            ListNode temp = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = temp;
+        }
+
+        // 比较前部分和反转后的后部分
+        ListNode node1 = head, node2 = prev;
+        while (node1 != null && node2 != null) {
+            if (node1.val != node2.val)
+                return false;
+            node1 = node1.next;
+            node2 = node2.next;
+        }
+
+        return true;
+    }
+
+    /**
+     * 相交链表
+     * 思路：先分别计算两个链表的长度
+     * 让长的链表指针先走差值的步数，然后两个链表链表的指针同时往后走，遇到相等的就是相交的节点
+     */
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        int lenA = 0;
+        ListNode node = headA;
+        while (node != null) {
+            lenA++;
+            node = node.next;
+        }
+
+        int lenB = 0;
+        node = headB;
+        while (node != null) {
+            lenB++;
+            node = node.next;
+        }
+
+        if (lenA > lenB) {
+            int diff = lenA - lenB;
+            int count = 0;
+            ListNode nodeA = headA;
+            ListNode nodeB = headB;
+            while (count != diff) {
+                count++;
+                nodeA = nodeA.next;
+            }
+            while (true) {
+                if (nodeA == nodeB) {
+                    return nodeA;
+                }
+                nodeA = nodeA.next;
+                nodeB = nodeB.next;
+            }
+        }
+        else if (lenB > lenA) {
+            int diff = lenB - lenA;
+            int count = 0;
+            ListNode nodeA = headA;
+            ListNode nodeB = headB;
+            while (count != diff) {
+                count++;
+                nodeB = nodeB.next;
+            }
+            while (true) {
+                if (nodeA == nodeB) {
+                    return nodeA;
+                }
+                nodeA = nodeA.next;
+                nodeB = nodeB.next;
+            }
+        }
+        else {
+            int diff = 0;
+            int count = 0;
+            ListNode nodeA = headA;
+            ListNode nodeB = headB;
+            while (count != diff) {
+                count++;
+                nodeA = nodeA.next;
+            }
+            while (true) {
+                if (nodeA == nodeB) {
+                    return nodeA;
+                }
+                nodeA = nodeA.next;
+                nodeB = nodeB.next;
+            }
+        }
+    }
 }

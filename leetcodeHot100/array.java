@@ -227,4 +227,48 @@ public class array {
         }
         return res;
     }
+
+    /**
+     * 轮转数组
+     */
+    public void rotate(int[] nums, int k) {
+        // 1 2 3 4 5 6 7
+        // k = 3
+        // 5 6 7 1 2 3 4
+        int[] res = new int[k];
+        for(int i = 0; i < nums.length; i++) {
+            int newIndex = (i + k) % nums.length;
+            res[newIndex] = nums[i];
+        }
+        for(int i = 0; i < nums.length; i++) {
+            nums[i] = res[i];
+        }
+    }
+
+    /**
+     * 轮转数组
+     * 巧妙的反转解法
+     */
+    public void rotateWithAnotherSolution(int[] nums, int k) {
+        k %= nums.length;
+        reverseArray(nums, 0, nums.length - 1);
+        reverseArray(nums, 0, k - 1);
+        reverseArray(nums, k, nums.length - 1);
+    }
+
+    private void reverseArray(int[] nums, int start, int end) {
+        int lt = start;
+        int rt = end;
+        while(rt > lt) {
+            swapInArray(nums, lt, rt);
+            rt--;
+            lt++;
+        }
+    }
+
+    private void swapInArray(int[] nums, int a, int b) {
+        int t = nums[a];
+        nums[a] = nums[b];
+        nums[b] = t;
+    }
 }

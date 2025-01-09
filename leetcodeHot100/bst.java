@@ -208,7 +208,7 @@ public class bst {
         List<TreeNode> list = new ArrayList<>();
         preorder(root, list);
         TreeNode last = new TreeNode(0);
-        for(TreeNode node : list) {
+        for (TreeNode node : list) {
             last.right = node;
             last.left = null;
             last = node;
@@ -244,4 +244,49 @@ public class bst {
             root = root.right;
         }
     }
+
+    /**
+     * 二叉树的最近公共祖先
+     * 10min ac
+     * 击败99.78%
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        // p 包含 q， 或 q 包含 p
+        // p 与 q 不存在包含与被包含关系
+        // 最近公共祖先考虑的应该是广度优先遍历
+        if (contain(p, q)) {
+            return p;
+        }
+        else if (contain(q, p)) {
+            return q;
+        }
+        else {
+            Deque<TreeNode> queue = new ArrayDeque<>();
+            queue.offer(root);
+            TreeNode res = null;
+            while (!queue.isEmpty()) {
+                TreeNode cur = queue.poll();
+                if (contain(cur, p) && contain(cur, q)) {
+                    res = cur;
+                }
+                if (cur.left != null) {
+                    queue.offer(cur.left);
+                }
+                if (cur.right != null) {
+                    queue.offer(cur.right);
+                }
+            }
+            return res;
+        }
+    }
+
+    private boolean contain(TreeNode startNode, TreeNode targetNode) {
+        if (startNode == targetNode) {
+            return true;
+        } else if (startNode == null) {
+            return false;
+        }
+        return contain(startNode.left, targetNode) || contain(startNode.right, targetNode);
+    }
+
 }
