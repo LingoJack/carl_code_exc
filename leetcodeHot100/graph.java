@@ -2,6 +2,7 @@ package leetcodeHot100;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -262,10 +263,100 @@ public class graph {
         public class Node {
             char ch;
             Map<Character, Node> nextMap;
+
             public Node(char ch) {
                 this.ch = ch;
                 nextMap = new HashMap<>();
             }
         }
+    }
+
+    /**
+     * 岛屿数量
+     * 这是二刷了
+     * dfs解法
+     */
+    public int numIslandsWithDFS(char[][] grid) {
+        int row = grid.length;
+        int column = grid[0].length;
+        boolean[][] visited = new boolean[row][column];
+        int count = 0;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < column; j++) {
+                if (!visited[i][j] && grid[i][j] == '1') {
+                    count++;
+                    dfs(grid, visited, i, j);
+                }
+            }
+        }
+        return count;
+    }
+
+    private void dfs(char[][] grid, boolean[][] visited, int rowIndex, int columnIndex) {
+        if (!(columnIndex >= 0 && columnIndex < grid[0].length) || !(rowIndex >= 0 && rowIndex < grid.length)
+                || visited[rowIndex][columnIndex] || grid[rowIndex][columnIndex] == '0') {
+            return;
+        }
+        visited[rowIndex][columnIndex] = true;
+        dfs(grid, visited, rowIndex - 1, columnIndex);
+        dfs(grid, visited, rowIndex + 1, columnIndex);
+        dfs(grid, visited, rowIndex, columnIndex - 1);
+        dfs(grid, visited, rowIndex, columnIndex + 1);
+    }
+
+    /**
+     * 腐烂的橘子
+     * 二刷，依旧没做出来
+     * 而且思路还是不对
+     * 关键是利用BFS，类似树的层序遍历的思路
+     * 下面是修改过后的正确的代码
+     */
+    public int orangesRottingWithBfsAndFloorTraserval(int[][] grid) {
+        int freshNum = 0;
+        Deque<int[]> queue = new ArrayDeque<>();
+        int row = grid.length;
+        int column = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < column; j++) {
+                if (grid[i][j] == 1) {
+                    freshNum++;
+                } else if (grid[i][j] == 2) {
+                    queue.offer(new int[] { i, j });
+                }
+            }
+        }
+        if (freshNum == 0) {
+            return 0;
+        }
+        int minute = 0;
+        while (!queue.isEmpty() && freshNum > 0) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int[] index = queue.poll();
+                int rowIndex = index[0];
+                int columnIndex = index[1];
+                int diff = spread(grid, queue, rowIndex - 1, columnIndex)
+                        + spread(grid, queue, rowIndex + 1, columnIndex)
+                        + spread(grid, queue, rowIndex, columnIndex - 1)
+                        + spread(grid, queue, rowIndex, columnIndex + 1);
+                freshNum -= diff;
+            }
+            minute++;
+        }
+        return freshNum == 0 ? minute : -1;
+    }
+
+    private int spread(int[][] grid, Deque<int[]> queue, int rowIndex, int columnIndex) {
+        int row = grid.length;
+        int column = grid[0].length;
+        if (rowIndex < 0 || rowIndex >= row || columnIndex < 0 || columnIndex >= column) {
+            return 0;
+        }
+        if (grid[rowIndex][columnIndex] == 1) {
+            grid[rowIndex][columnIndex] = 2;
+            queue.offer(new int[] { rowIndex, columnIndex });
+            return 1;
+        }
+        return 0;
     }
 }
