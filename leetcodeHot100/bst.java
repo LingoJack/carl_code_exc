@@ -289,4 +289,23 @@ public class bst {
         return contain(startNode.left, targetNode) || contain(startNode.right, targetNode);
     }
 
+    /**
+     * 将有序数组转换为二叉搜索树
+     * 秒了，击败100%
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return getRoot(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode getRoot(int[] nums, int start, int end) {
+        if (end >= nums.length || start < 0 || end < start) {
+            return null;
+        }
+        int mid = (start + end) / 2;
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = getRoot(nums, start, mid - 1);
+        root.right = getRoot(nums, mid + 1, end);
+        return root;
+    }
+
 }

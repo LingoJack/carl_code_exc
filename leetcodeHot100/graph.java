@@ -359,4 +359,103 @@ public class graph {
         }
         return 0;
     }
+
+    /**
+     * 课程表
+     */
+    public boolean canFinishWithIndegreeAndQueueAndHashMap(int numCourses, int[][] prerequisites) {
+        int[] inDegree = new int[numCourses];
+        Map<Integer, List<Integer>> dependMap = new HashMap<>();
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int[] rel : prerequisites) {
+            inDegree[rel[0]]++;
+            dependMap.computeIfAbsent(rel[1], ArrayList::new).add(rel[0]);
+        }
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        while (!queue.isEmpty()) {
+            Integer preCourse = queue.poll();
+            for (int postCourse : dependMap.getOrDefault(preCourse, new ArrayList<>())) {
+                if (--inDegree[postCourse] == 0) {
+                    queue.offer(postCourse);
+                }
+            }
+            numCourses--;
+        }
+        return numCourses == 0;
+    }
+
+    /**
+     * 课程表，一样是使用入度来计算拓扑，但是使用ArrayList而不是HashMap来记录出入关系
+     * 击败66.42%
+     */
+    public boolean canFinishWithIndegreeAndQueueAndArrayList(int numCourses, int[][] prerequisites) {
+        int[] inDegree = new int[numCourses];
+        List<List<Integer>> dependMap = new ArrayList<>();
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < numCourses; i++) {
+            dependMap.add(new ArrayList<>());
+        }
+        for (int[] rel : prerequisites) {
+            inDegree[rel[0]]++;
+            dependMap.get(rel[1]).add(rel[0]);
+        }
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        while (!queue.isEmpty()) {
+            Integer preCourse = queue.poll();
+            for (int postCourse : dependMap.get(preCourse)) {
+                if (--inDegree[postCourse] == 0) {
+                    queue.offer(postCourse);
+                }
+            }
+            numCourses--;
+        }
+        return numCourses == 0;
+    }
+
+    List<List<Integer>> edges;
+    // 0 未搜索；1 搜索中；2 搜索过
+    int[] visited;
+    boolean valid = true;
+
+    public boolean canFinishWithDFS(int numCourses, int[][] prerequisites) {
+        edges = new ArrayList<List<Integer>>();
+        for (int i = 0; i < numCourses; ++i) {
+            edges.add(new ArrayList<Integer>());
+        }
+        visited = new int[numCourses];
+        for (int[] info : prerequisites) {
+            edges.get(info[1]).add(info[0]);
+        }
+        for (int i = 0; i < numCourses && valid; ++i) {
+            if (visited[i] == 0) {
+                dfs(i);
+            }
+        }
+        return valid;
+    }
+
+    public void dfs(int u) {
+        visited[u] = 1;
+        for (int v : edges.get(u)) {
+            if (visited[v] == 0) {
+                dfs(v);
+                if (!valid) {
+                    return;
+                }
+            } else if (visited[v] == 1) {
+                valid = false;
+                return;
+            }
+        }
+        visited[u] = 2;
+    }
+
 }

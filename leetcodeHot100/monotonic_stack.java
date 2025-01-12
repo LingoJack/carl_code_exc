@@ -32,4 +32,23 @@ public class monotonic_stack {
         }
         return res;
     }
+
+    /**
+     * 每日温度
+     * 6min ac
+     */
+    public int[] dailyTemperatures(int[] temperatures) {
+        int[] res = new int[temperatures.length];
+        // 栈顶到栈底递增，存储下标
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(0);
+        for (int i = 1; i < temperatures.length; i++) {
+            while (!stack.isEmpty() && temperatures[i] > temperatures[stack.peek()]) {
+                Integer index = stack.pop();
+                res[index] = i - index;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
 }
