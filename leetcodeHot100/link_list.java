@@ -88,6 +88,8 @@ public class link_list {
      * 双向链表（需要自己实现） + HashMap
      * 使用过的就放到链表头部，要淘汰直接淘汰最后的就是最久没有用过的
      * 最难想到的是虚拟头尾节点
+     * 核心是几点：
+     * 虚拟头尾节点，双向链表，Map和双向链表分开
      */
     public class LRUCache {
         public class Node {
@@ -510,6 +512,9 @@ public class link_list {
     /**
      * 排序链表
      * 4min30s ac，但是击败5.30%
+     * 实际面试是不应该用这种方法的，建议你去看看题解的做法
+     * 这道题2025.1.13我面试字节一面遇到了，硬是用插入排序写了个超时的解
+     * 一面还过了。。。谢天谢地，不过这也提醒你应该注意题解，不是用作弊的方法过了就好的
      */
     public ListNode sortList(ListNode head) {
         ListNode node = head;
