@@ -540,7 +540,7 @@ public class link_list {
 
     /**
      * 排序链表
-     * 归并排序
+     * 
      */
     public ListNode sortList(ListNode head) {
         if (head == null || head.next == null) {
@@ -549,12 +549,12 @@ public class link_list {
         ListNode slow = head;
         ListNode fast = head.next;
         while (fast != null && fast.next != null) {
-            fast = fast.next.next;
             slow = slow.next;
+            fast = fast.next.next;
         }
-        // 4 1 3 2 | 4 5
-        // s
-        // f
+        // 4 1 3 2 4 5
+        //     s
+        //         f
         ListNode nextPartHead = slow.next;
         slow.next = null;
         ListNode leftPartHead = sortList(head);
