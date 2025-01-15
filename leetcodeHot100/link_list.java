@@ -516,7 +516,7 @@ public class link_list {
      * 这道题2025.1.13我面试字节一面遇到了，硬是用插入排序写了个超时的解
      * 一面还过了。。。谢天谢地，不过这也提醒你应该注意题解，不是用作弊的方法过了就好的
      */
-    public ListNode sortList(ListNode head) {
+    public ListNode sortListWithPriorityQueue(ListNode head) {
         ListNode node = head;
         PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Integer::compareTo);
         while (node != null) {
@@ -536,6 +536,47 @@ public class link_list {
             node = temp;
         }
         return dummyHead == null ? null : dummyHead.next;
+    }
+
+    /**
+     * 排序链表
+     * 归并排序
+     */
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        // 4 1 3 2 | 4 5
+        // s
+        // f
+        ListNode nextPartHead = slow.next;
+        slow.next = null;
+        ListNode leftPartHead = sortList(head);
+        ListNode rightPartHead = sortList(nextPartHead);
+        return merge(leftPartHead, rightPartHead);
+    }
+
+    private ListNode merge(ListNode head1, ListNode head2) {
+        ListNode dummy = new ListNode();
+        ListNode cur = dummy;
+        while (head1 != null && head2 != null) {
+            if (head1.val < head2.val) {
+                cur.next = head1;
+                head1 = head1.next;
+            } else {
+                cur.next = head2;
+                head2 = head2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = head1 == null ? head2 : head1;
+        return dummy.next;
     }
 
     /**
@@ -769,8 +810,7 @@ public class link_list {
                 nodeA = nodeA.next;
                 nodeB = nodeB.next;
             }
-        }
-        else if (lenB > lenA) {
+        } else if (lenB > lenA) {
             int diff = lenB - lenA;
             int count = 0;
             ListNode nodeA = headA;
@@ -786,8 +826,7 @@ public class link_list {
                 nodeA = nodeA.next;
                 nodeB = nodeB.next;
             }
-        }
-        else {
+        } else {
             int diff = 0;
             int count = 0;
             ListNode nodeA = headA;
