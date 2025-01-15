@@ -540,25 +540,27 @@ public class link_list {
 
     /**
      * 排序链表
-     * 
+     * 这是递归归并的做法
+     * 空间复杂度是O(logn)
      */
     public ListNode sortList(ListNode head) {
         if (head == null || head.next == null) {
             return head;
         }
         ListNode slow = head;
-        ListNode fast = head.next;
+        ListNode fast = head;
+        ListNode last = null;
         while (fast != null && fast.next != null) {
+            last = slow;
             slow = slow.next;
             fast = fast.next.next;
         }
         // 4 1 3 2 4 5
-        //     s
-        //         f
-        ListNode nextPartHead = slow.next;
-        slow.next = null;
+        // s
+        // l f
+        last.next = null;
         ListNode leftPartHead = sortList(head);
-        ListNode rightPartHead = sortList(nextPartHead);
+        ListNode rightPartHead = sortList(slow);
         return merge(leftPartHead, rightPartHead);
     }
 
@@ -577,6 +579,79 @@ public class link_list {
         }
         cur.next = head1 == null ? head2 : head1;
         return dummy.next;
+    }
+
+    /**
+     * 排序链表
+     * O(1)空间复杂度
+     */
+    public ListNode sortListWithStep(ListNode head) {
+        ListNode node2CountLength = head;
+        int len = 0;
+        while (node2CountLength != null) {
+            node2CountLength = node2CountLength.next;
+            len++;
+        }
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        for (int step = 1; step <= len; step *= 2) {
+            ListNode prevGourpEnd = dummy;
+            ListNode cur = dummy.next;
+            while (cur != null) {
+                ListNode head1 = cur;
+                ListNode head2 = spilt(head1, step);
+                cur = spilt(head2, step);
+                ListNode[] mergeResult = mergeList(head1, head2);
+                ListNode newHead = mergeResult[0];
+                ListNode newTail = mergeResult[1];
+                prevGourpEnd.next = newHead;
+                prevGourpEnd = newTail;
+                newTail.next = cur;
+            }
+        }
+        return dummy.next;
+    }
+
+    private ListNode spilt(ListNode head, int len) {
+        // 1 3 2 4
+        // h
+        // n=2
+        if (head == null) {
+            return head;
+        }
+        ListNode last = null;
+        ListNode node = head;
+        int count = 0;
+        while (node != null && count < len) {
+            last = node;
+            node = node.next;
+            count++;
+        }
+        last.next = null;
+        return node;
+    }
+
+    private ListNode[] mergeList(ListNode head1, ListNode head2) {
+        ListNode dummy = new ListNode();
+        ListNode cur = dummy;
+        while (head1 != null && head2 != null) {
+            if (head1.val < head2.val) {
+                cur.next = head1;
+                head1 = head1.next;
+            } else {
+                cur.next = head2;
+                head2 = head2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = head1 == null ? head2 : head1;
+        cur = dummy.next;
+        ListNode tail = null;
+        while (cur != null) {
+            tail = cur;
+            cur = cur.next;
+        }
+        return new ListNode[] { dummy.next, tail };
     }
 
     /**

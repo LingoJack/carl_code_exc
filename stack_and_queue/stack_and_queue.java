@@ -310,6 +310,7 @@ public class stack_and_queue {
      * 2. 删除，下沉
      * 3. 增加，上浮
      * 4. heapify在下沉时维护堆的性质，最下一层的非叶子节点开始
+     * 5. 根据数组建堆的时候应该从非叶子节点逐个下沉
      */
     public int[] topKFrequent(int[] nums, int k) {
         // 统计每个数字的出现频率
