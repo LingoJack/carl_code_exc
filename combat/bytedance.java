@@ -1,6 +1,11 @@
 package combat;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class bytedance {
 
@@ -142,7 +147,49 @@ public class bytedance {
         while (tail.next != null) {
             tail = tail.next;
         }
-        return new ListNode[]{dummy.next, tail};
+        return new ListNode[] { dummy.next, tail };
     }
 
+    /**
+     * 检测是否存在依赖循环
+     * 字节二面， 没撕出来
+     * map的api不熟悉
+     */
+    public static boolean detectLoop(char[][] depend) {
+        Map<Character, List<Character>> dependMap = new HashMap<>();
+        Map<Character, Integer> inDegreeMap = new HashMap<>();
+        boolean[] existed = new boolean[26];
+        int taskNum = 0;
+        for (char[] relation : depend) {
+            if (!existed[relation[0] - 'a']) {
+                existed[relation[0] - 'a'] = true;
+                taskNum++;
+            }
+            if (!existed[relation[1] - 'a']) {
+                existed[relation[1] - 'a'] = true;
+                taskNum++;
+            }
+            List<Character> list = dependMap.getOrDefault(relation[1], new ArrayList<>());
+            list.add(relation[0]);
+            inDegreeMap.put(relation[1], inDegreeMap.getOrDefault(relation[1], 0) + 1);
+        }
+        int count = 0;
+        Deque<Character> queue = new ArrayDeque<>();
+        for (HashMap.Entry<Character, Integer> entry : inDegreeMap.entrySet()) {
+            if (entry.getValue() == 0) {
+                queue.offer(entry.getKey());
+                count++;
+            }
+        }
+        while (!queue.isEmpty()) {
+            for (char ch : dependMap.getOrDefault(queue.poll(), new ArrayList<>())) {
+                inDegreeMap.put(ch, inDegreeMap.getOrDefault(ch, 0) - 1);
+                if (inDegreeMap.get(ch) == 0) {
+                    queue.offer(ch);
+                    count++;
+                }
+            }
+        }
+        return count != taskNum;
+    }
 }
