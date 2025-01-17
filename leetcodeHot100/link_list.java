@@ -693,6 +693,7 @@ public class link_list {
 
     /**
      * 合并两个有序链表
+     * 有更优雅简洁的写法 TODO
      * 5min ac
      */
     public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
