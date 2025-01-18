@@ -154,6 +154,7 @@ public class bytedance {
      * 检测是否存在依赖循环
      * 字节二面， 没撕出来
      * map的api不熟悉
+     * 思路混乱
      */
     public static boolean detectLoop(char[][] depend) {
         Map<Character, List<Character>> dependMap = new HashMap<>();

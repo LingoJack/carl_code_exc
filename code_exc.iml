@@ -14,6 +14,9 @@
       <sourceFolder url="file://$MODULE_DIR$/monotonic_stack" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/stack_and_queue" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/string" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/combat" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/graph" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/leetcodeHot100" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
