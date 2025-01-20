@@ -1,9 +1,11 @@
 package leetcodeHot100;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class dynamic_program {
@@ -381,6 +383,55 @@ public class dynamic_program {
         return s.substring(index, index + max);
     }
 
+    /**
+     * 杨辉三角
+     */
+    public List<List<Integer>> generate(int numRows) {
+        // 1
+        // 1 1
+        // 1 2 1
+        // 1 3 3 1
+        List<List<Integer>> res = new ArrayList<>();
+        int[][] dp = new int[numRows][numRows];
+        dp[0][0] = 1;
+        for (int i = 0; i < numRows; i++) {
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j <= i; j++) {
+                dp[i][j] = 1;
+                if (j - 1 >= 0) {
+                    dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j];
+                }
+                list.add(dp[i][j]);
+            }
+            res.add(list);
+        }
+        return res;
+    }
 
-    
+    /**
+     * 乘积最大子数组
+     * 没做出来
+     */
+    public int maxProduct(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int len = nums.length;
+        // maxDp[i]表示以nums[i]结尾的子数组的最大乘积
+        int[] maxDp = new int[len];
+        int[] minDp = new int[len];
+        maxDp[0] = minDp[0] = nums[0];
+        int ans = nums[0];
+        for (int i = 1; i < len; i++) {
+            if (nums[i] >= 0) {
+                maxDp[i] = Math.max(nums[i], maxDp[i - 1] * nums[i]);
+                minDp[i] = Math.min(nums[i], minDp[i - 1] * nums[i]);
+            } else {
+                maxDp[i] = Math.max(nums[i], minDp[i - 1] * nums[i]);
+                minDp[i] = Math.min(nums[i], maxDp[i - 1] * nums[i]);
+            }
+            ans = Math.max(ans, maxDp[i]);
+        }
+        return ans;
+    }
 }

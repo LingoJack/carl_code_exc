@@ -181,7 +181,7 @@ public class array {
     public List<List<Integer>> threeSum(int[] nums) {
         Arrays.sort(nums);
         Set<List<Integer>> res = new HashSet<>();
-        for(int i = 0; i < nums.length - 2; i++) {
+        for (int i = 0; i < nums.length - 2; i++) {
             List<List<Integer>> list = findTwoNumSum(nums, i + 1, -nums[i]);
             if (list.isEmpty()) {
                 continue;
@@ -199,7 +199,7 @@ public class array {
         Map<Integer, Integer> map = new HashMap<>();
         List<List<Integer>> res = new ArrayList<>();
         List<Integer> list = null;
-        for(int i = start; i < nums.length; i++) {
+        for (int i = start; i < nums.length; i++) {
             Integer index = map.get(target - nums[i]);
             if (index != null) {
                 list = new ArrayList<>();
@@ -218,7 +218,7 @@ public class array {
     public int maxSubArray(int[] nums) {
         int res = nums[0];
         int sum = 0;
-        for(int num : nums) {
+        for (int num : nums) {
             if (sum < 0) {
                 sum = 0;
             }
@@ -236,11 +236,11 @@ public class array {
         // k = 3
         // 5 6 7 1 2 3 4
         int[] res = new int[k];
-        for(int i = 0; i < nums.length; i++) {
+        for (int i = 0; i < nums.length; i++) {
             int newIndex = (i + k) % nums.length;
             res[newIndex] = nums[i];
         }
-        for(int i = 0; i < nums.length; i++) {
+        for (int i = 0; i < nums.length; i++) {
             nums[i] = res[i];
         }
     }
@@ -259,7 +259,7 @@ public class array {
     private void reverseArray(int[] nums, int start, int end) {
         int lt = start;
         int rt = end;
-        while(rt > lt) {
+        while (rt > lt) {
             swapInArray(nums, lt, rt);
             rt--;
             lt++;
@@ -270,5 +270,27 @@ public class array {
         int t = nums[a];
         nums[a] = nums[b];
         nums[b] = t;
+    }
+
+    /**
+     * 除自身以为数组的乘积
+     * 没做出来，需要用到前缀积、后缀积
+     */
+    public int[] productExceptSelf(int[] nums) {
+        int[] prefixProd = new int[nums.length];
+        int[] suffixProd = new int[nums.length];
+        Arrays.fill(prefixProd, 1);
+        Arrays.fill(suffixProd, 1);
+        for (int i = 0; i < nums.length; i++) {
+            prefixProd[i] = i >= 1 ? prefixProd[i - 1] * nums[i] : nums[i];
+        }
+        for (int i = nums.length - 1; i >= 0; i--) {
+            suffixProd[i] = (i + 1) < nums.length ? suffixProd[i + 1] * nums[i] : nums[i];
+        }
+        int[] res = new int[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            res[i] = ((i - 1 >= 0) ? prefixProd[i - 1] : 1) * ((i + 1 < nums.length) ? suffixProd[i + 1] : 1);
+        }
+        return res;
     }
 }

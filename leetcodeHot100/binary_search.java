@@ -255,4 +255,11 @@ public class binary_search {
             }
         }
     }
+
+    /**
+     * 搜索旋转排序的数组
+     */
+    public int search(int[] nums, int target) {
+        
+    }
 }
