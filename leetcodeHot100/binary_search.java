@@ -258,8 +258,46 @@ public class binary_search {
 
     /**
      * 搜索旋转排序的数组
+     * 20min ac 击败100%
      */
     public int search(int[] nums, int target) {
-        
+        int lt = 0;
+        int rt = nums.length - 1;
+        while(rt > lt) {
+            int mid = (lt + rt) / 2;
+            if(nums[mid] > nums[lt]){
+                lt = mid;
+            }
+            else if(nums[mid] < nums[lt]) {
+                rt = mid;
+            }
+            else {
+                break;
+            }
+        }
+        int s1 = bs(nums, 0, lt, target);
+        int s2 = bs(nums, lt + 1, nums.length - 1, target);
+        if(s1 == -1 && s2 == -1) {
+            return -1;
+        }
+        return s1 == -1 ? s2 : s1;
+    }
+
+    private int bs(int[] nums, int start, int end, int target) {
+        int lt = start;
+        int rt = end;
+        while(rt >= lt) {
+            int mid = (lt + rt) / 2;
+            if(nums[mid] == target) {
+                return mid;
+            }
+            else if(nums[mid] > target) {
+                rt = mid - 1;
+            }
+            else if(nums[mid] < target) {
+                lt = mid + 1;
+            }
+        }
+        return -1;
     }
 }
