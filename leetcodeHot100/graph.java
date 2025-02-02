@@ -458,4 +458,52 @@ public class graph {
         visited[u] = 2;
     }
 
+    public class TrieTwoEx {
+        private class Node {
+            Map<Character, Node> children = new HashMap<>();
+            boolean isEndOfWord;
+
+            public Node() {
+                isEndOfWord = false;
+            }
+        }
+
+        private final Node root;
+
+        public TrieTwoEx() {
+            root = new Node();
+        }
+
+        public void insert(String word) {
+            Node node = root;
+            for (char c : word.toCharArray()) {
+                node.children.putIfAbsent(c, new Node());
+                node = node.children.get(c);
+            }
+            node.isEndOfWord = true;
+        }
+
+        public boolean search(String word) {
+            Node node = root;
+            for (char c : word.toCharArray()) {
+                if (!node.children.containsKey(c)) {
+                    return false;
+                }
+                node = node.children.get(c);
+            }
+            return node.isEndOfWord;
+        }
+
+        public boolean startsWith(String prefix) {
+            Node node = root;
+            for (char c : prefix.toCharArray()) {
+                if (!node.children.containsKey(c)) {
+                    return false;
+                }
+                node = node.children.get(c);
+            }
+            return true;
+        }
+    }
+
 }

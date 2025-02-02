@@ -13,7 +13,7 @@ public class stack_and_queue {
      * 这题十分考察对栈和队列的掌握程度
      */
     class MyQueue {
-        
+
         private LinkedList<Integer> stackIn; // 入栈
         private LinkedList<Integer> stackOut; // 出栈
 
@@ -21,7 +21,7 @@ public class stack_and_queue {
             this.stackIn = new LinkedList<>();
             this.stackOut = new LinkedList<>();
         }
-        
+
         // 将元素 x 推到队列的末尾
         public void push(int x) {
             stackIn.push(x);
@@ -34,7 +34,7 @@ public class stack_and_queue {
             }
             return stackOut.isEmpty() ? -1 : stackOut.pop(); // 如果为空则返回 -1
         }
-        
+
         // 返回队列开头的元素
         public int peek() {
             if (stackOut.isEmpty()) {
@@ -42,7 +42,7 @@ public class stack_and_queue {
             }
             return stackOut.isEmpty() ? -1 : stackOut.peek(); // 如果为空则返回 -1
         }
-        
+
         // 如果队列为空，返回 true ；否则，返回 false
         public boolean empty() {
             return stackIn.isEmpty() && stackOut.isEmpty();
@@ -66,7 +66,7 @@ public class stack_and_queue {
         public MyStack() {
             this.queue = new LinkedList<>();
         }
-        
+
         // 将元素 x 压入栈顶
         public void push(int x) {
             int size = queue.size();
@@ -76,17 +76,17 @@ public class stack_and_queue {
                 queue.add(queue.poll());
             }
         }
-        
+
         // 移除并返回栈顶元素
         public int pop() {
             return queue.poll();
         }
-        
+
         // 获取栈顶元素
         public int top() {
             return queue.peek();
         }
-        
+
         // 如果栈是空的，返回 true；否则，返回 false
         public boolean empty() {
             return queue.isEmpty();
@@ -100,7 +100,7 @@ public class stack_and_queue {
     public boolean isValid(String s) {
         LinkedList<Character> stack = new LinkedList<>();
         char[] str = s.toCharArray();
-        for(int i = 0; i< str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             switch (str[i]) {
                 case '{':
                     stack.push(str[i]);
@@ -114,24 +114,21 @@ public class stack_and_queue {
                 case '}':
                     if (stack.peek() != null && stack.peek().equals('{')) {
                         stack.poll();
-                    }
-                    else {
+                    } else {
                         return false;
                     }
                     break;
                 case ']':
                     if (stack.peek() != null && stack.peek().equals('[')) {
                         stack.poll();
-                    }
-                    else {
+                    } else {
                         return false;
                     }
                     break;
                 case ')':
                     if (stack.peek() != null && stack.peek().equals('(')) {
                         stack.poll();
-                    }
-                    else {
+                    } else {
                         return false;
                     }
                     break;
@@ -151,18 +148,17 @@ public class stack_and_queue {
         ArrayDeque<Character> stack = new ArrayDeque<>();
         StringBuilder sb = new StringBuilder();
         char[] str = s.toCharArray();
-        for(int i = 0; i < str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             char ch = str[i];
             if (stack.peek() == null || ch != stack.peek()) {
                 stack.push(ch);
-            }
-            else {
+            } else {
                 stack.poll();
                 continue;
             }
         }
 
-        for(Character ch : stack) {
+        for (Character ch : stack) {
             sb.append(ch);
         }
 
@@ -219,15 +215,15 @@ public class stack_and_queue {
     public int[] maxSlidingWindowError(int[] nums, int k) {
         if (nums.length <= k) {
             int sum = 0;
-            for(int num : nums) {
+            for (int num : nums) {
                 sum += num;
             }
-            return new int[]{sum};
+            return new int[] { sum };
         }
 
         ArrayDeque<Integer> queue = new ArrayDeque<>(k + 1);
         int sum = 0;
-        for(int i = 0; i < k; i++) {
+        for (int i = 0; i < k; i++) {
             sum += nums[i];
             queue.offer(nums[i]);
         }
@@ -235,11 +231,10 @@ public class stack_and_queue {
         int[] res = new int[nums.length - 2];
         res[0] = sum;
         int lastIntervalSum = sum;
-        
 
-        // 1,3,-1,-3,5,3,6,7   k=3   
+        // 1,3,-1,-3,5,3,6,7 k=3
 
-        for(int i = 1; i < nums.length - 2; i++){
+        for (int i = 1; i < nums.length - 2; i++) {
             int out = nums[i - 1];
             int in = nums[i + 2];
             lastIntervalSum = lastIntervalSum - out + in;
@@ -267,29 +262,22 @@ public class stack_and_queue {
     public int[] maxSlidingWindow(int[] nums, int k) {
         // 单调队列,内部放的是元素索引
         ArrayDeque<Integer> deque = new ArrayDeque<>();
-        
         int len = nums.length;
-        
         int[] res = new int[len - k + 1];
-        
         int idx = 0;
-        
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             // 在[i - k + 1, i] 中选到最大值
             // 队列头结点需要在[i - k + 1, i]范围内，不符合则要弹出
-            while(!deque.isEmpty() && deque.peek() < i - k + 1){
+            while (!deque.isEmpty() && deque.peek() < i - k + 1) {
                 deque.poll();
             }
-
             // 要保证单调性，就要保证每次放进去的数字要比末尾的都大，否则也弹出
-            while(!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {
+            while (!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {
                 deque.pollLast();
             }
-
             deque.offer(i);
-
             // 因为单调，当i增长到符合第一个k范围的时候，每滑动一步都将队列头节点放入结果就行了
-            if(i >= k - 1){
+            if (i >= k - 1) {
                 res[idx++] = nums[deque.peek()];
             }
         }
@@ -321,8 +309,7 @@ public class stack_and_queue {
 
         // 使用优先队列（最小堆），根据频率排序
         PriorityQueue<Map.Entry<Integer, Integer>> minHeap = new PriorityQueue<>(
-            (a, b) -> a.getValue() - b.getValue()
-        );
+                (a, b) -> a.getValue() - b.getValue());
 
         // 将频率信息添加到最小堆中，只保留频率最高的 k 个元素
         for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
@@ -341,8 +328,5 @@ public class stack_and_queue {
 
         return result;
     }
-    
-
-    
 
 }

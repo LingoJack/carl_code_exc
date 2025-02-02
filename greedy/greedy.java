@@ -530,23 +530,17 @@ public class greedy {
      * 然后遍历
      */
     public List<Integer> partitionLabels(String s) {
-
         List<Integer> res = new ArrayList<>();
-        
         char[] str = s.toCharArray();
-
         // 每个单词最后出现的位置
         int[] last = new int[26];
         Arrays.fill(last, -1);
-
         // ababcbacadefegdehijhklij
         for(int i = 0; i < str.length; i++) {
             last[str[i] - 97] = i;
         }
-
         // 当前串内的字母出现的最后边界
         int edge = 0;
-
         // 记录串长度
         int count = 0;
         for(int i = 0; i < str.length; i++) {
@@ -558,7 +552,6 @@ public class greedy {
                 count = 0;
             }
         }
-
         return res;
     }
 

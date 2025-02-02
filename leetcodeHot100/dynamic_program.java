@@ -434,4 +434,113 @@ public class dynamic_program {
         }
         return ans;
     }
+
+    /**
+     * 编辑距离
+     */
+    public int minDistance(String word1, String word2) {
+        int l1 = word1.length();
+        int l2 = word2.length();
+        // 仅考虑到i，j为止的编辑距离
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 0; i < l1 + 1; i++) {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i < l2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    // 考虑是删除、替换、增加
+                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i - 1][j - 1] + 1, dp[i][j - 1] + 1);
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    private int min(int a, int b, int c) {
+        return Math.min(a, Math.min(c, b));
+    }
+
+    /**
+     * 完全平方数
+     */
+    public int numSquares(int n) {
+        // 这个可以转化为完全背包问题
+        // 就是对于所有平方后小于n的数，可重复选任意个使其和为n，且个数最少
+        // 和为i的最少完全平方数个数
+        int[] dp = new int[n + 1];
+        for (int i = 0; i < n + 1; i++) {
+            dp[i] = i;
+        }
+        for (int num = 1; num < n + 1; num++) {
+            for (int i = 1; i * i <= num; i++) {
+                dp[num] = Math.min(dp[num], dp[num - i * i] + 1);
+            }
+        }
+        return dp[n];
+    }
+
+    /**
+     * 零钱兑换
+     * 这里的遍历顺序是先遍历硬币数组再遍历amount
+     * 因为一个硬币可以被多次选
+     */
+    public int coinChange(int[] coins, int amount) {
+        // 明显的完全背包问题
+        // dp[i]表示和为i的硬币的最少数量
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, amount + 1);
+        dp[0] = 0;
+        for (int i = 1; i < amount + 1; i++) {
+            for (int j = 0; j < coins.length; j++) {
+                if (i >= coins[j]) {
+                    dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1);
+                }
+            }
+        }
+        return dp[amount] == amount + 1 ? -1 : dp[amount];
+    }
+
+    /**
+     * 爬楼梯
+     */
+    public int climbStairs(int n) {
+        // dp[i]表示到达i阶的方法数
+        int[] dp = new int[n + 1];
+        if (n >= 1) {
+            dp[1] = 1;
+            if (n >= 2) {
+                dp[2] = 2;
+            }
+        }
+        for (int i = 3; i < n + 1; i++) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+        return dp[n];
+    }
+
+    /**
+     * 单词拆分
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int len = s.length();
+        // 长度为i的字符串是否可以被字典组成
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        // leetcode leet
+        // 从长度开始遍历
+        for (int i = 1; i < len + 1; i++) {
+            for (String word : wordDict) {
+                if (i - word.length() >= 0 && dp[i - word.length()] && s.substring(i - word.length(), i).equals(word)) {
+                    dp[i] = true;
+                }
+            }
+        }
+        return dp[len];
+    }
 }

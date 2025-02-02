@@ -293,4 +293,41 @@ public class array {
         }
         return res;
     }
+
+    /**
+     * 合并区间
+     * 做出来了，核心是先排序
+     * 然后考虑相邻的数组之间的合并关系
+     * 可以用一个Stack存储合并的中间结果
+     */
+    public int[][] merge(int[][] intervals) {
+        // [1,3],[2,6],[8,10],[15,18]
+        Arrays.sort(intervals, (a, b) -> {
+            if (a[0] != b[0]) {
+                return a[0] - b[0];
+            } else {
+                return a[1] - b[1];
+            }
+        });
+        Deque<int[]> stack = new ArrayDeque<>();
+        stack.push(intervals[0]);
+        for (int i = 1; i < intervals.length; i++) {
+            int[] curInterval = intervals[i];
+            int[] lastInterval = stack.peek();
+            if (curInterval[0] <= lastInterval[1]) {
+                int start = Math.min(curInterval[0], lastInterval[0]);
+                int end = Math.max(curInterval[1], lastInterval[1]);
+                stack.pop();
+                stack.push(new int[] { start, end });
+                continue;
+            }
+            stack.push(curInterval);
+        }
+        int size = stack.size();
+        int[][] res = new int[size][2];
+        for (int i = size - 1; i >= 0; i--) {
+            res[i] = stack.pop();
+        }
+        return res;
+    }
 }

@@ -308,4 +308,51 @@ public class bst {
         return root;
     }
 
+    public List<Integer> rightSideView(TreeNode root) {
+        // 层序遍历，每一层的最后一个
+        List<Integer> res = new ArrayList<>();
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        stack.push(root);
+        while(!stack.isEmpty()) {
+            int size = stack.size();
+            for(int i = 0; i < size; i++) {
+                TreeNode node = stack.pop();
+                if(i == 0) {
+                    res.add(node.val);
+                }
+                if(node.left != null) {
+                    stack.push(node.left);
+                }
+                if (node.right != null) {
+                    stack.push(node.right);
+                }
+            }
+        }
+        return res;
+    }
+
+    private Integer lastVal = null;
+
+    private boolean valid = true;
+
+    /**
+     * 验证二叉搜索树
+     * 一个先序遍历就搞定了
+     */
+    public boolean isValidBST(TreeNode root) {
+        validBSTHelper(root);
+        return valid;
+    }
+
+    private void validBSTHelper(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        validBSTHelper(node.left);
+        if (lastVal != null && lastVal >= node.val) {
+            valid = false;
+        }
+        lastVal = node.val;
+        validBSTHelper(node.right);
+    }
 }
