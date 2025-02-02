@@ -317,7 +317,8 @@ public class leetcodeExercise {
         return res;
     }
 
-    private void dfs4CombainationSum(int[] candidates, int target, List<List<Integer>> res, List<Integer> list, int index) {
+    private void dfs4CombainationSum(int[] candidates, int target, List<List<Integer>> res, List<Integer> list,
+            int index) {
         if (target == 0) {
             res.add(new ArrayList<>(list));
             return;
