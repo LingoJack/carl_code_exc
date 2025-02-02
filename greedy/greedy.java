@@ -32,13 +32,13 @@ public class greedy {
         int index = 0;
         for (int i = 0; i < childNum; i++) {
             // 用尽可能小的饼干去匹配胃口小的孩子
-            while (index < s.length && g[i] > s[index]) index++;
+            while (index < s.length && g[i] > s[index])
+                index++;
             // g[i] <= s[index]
             if (index < s.length) {
                 count++;
                 index++;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -71,12 +71,15 @@ public class greedy {
      * 但是我也没有想到
      * 至于最后一种DP解法，就不实现了
      * 说一下DP解法的思路：
-     * 很容易可以发现，对于我们当前考虑的这个数，要么是作为山峰（即 nums[i] > nums[i-1]），要么是作为山谷（即 nums[i] < nums[i - 1]）。
+     * 很容易可以发现，对于我们当前考虑的这个数，要么是作为山峰（即 nums[i] > nums[i-1]），要么是作为山谷（即 nums[i] <
+     * nums[i - 1]）。
      * 设 dp 状态dp[i][0]，表示考虑前 i 个数，第 i 个数作为山峰的摆动子序列的最长长度
      * 设 dp 状态dp[i][1]，表示考虑前 i 个数，第 i 个数作为山谷的摆动子序列的最长长度
      * 则转移方程为：
-     * dp[i][0] = max(dp[i][0], dp[j][1] + 1)，其中0 < j < i且nums[j] < nums[i]，表示将 nums[i]接到前面某个山谷后面，作为山峰。
-     * dp[i][1] = max(dp[i][1], dp[j][0] + 1)，其中0 < j < i且nums[j] > nums[i]，表示将 nums[i]接到前面某个山峰后面，作为山谷。
+     * dp[i][0] = max(dp[i][0], dp[j][1] + 1)，其中0 < j < i且nums[j] < nums[i]，表示将
+     * nums[i]接到前面某个山谷后面，作为山峰。
+     * dp[i][1] = max(dp[i][1], dp[j][0] + 1)，其中0 < j < i且nums[j] > nums[i]，表示将
+     * nums[i]接到前面某个山峰后面，作为山谷。
      * 初始状态：
      * 由于一个数可以接到前面的某个数后面，也可以以自身为子序列的起点，所以初始状态为：dp[0][0] = dp[0][1] = 1。
      */
@@ -84,16 +87,16 @@ public class greedy {
         if (nums.length <= 1) {
             return nums.length;
         }
-        //当前差值
+        // 当前差值
         int curDiff = 0;
-        //上一个差值
+        // 上一个差值
         int preDiff = 0;
         int count = 1;
         for (int i = 1; i < nums.length; i++) {
-            //得到当前差值
+            // 得到当前差值
             curDiff = nums[i] - nums[i - 1];
-            //如果当前差值和上一个差值为一正一负
-            //等于0的情况表示初始时的preDiff
+            // 如果当前差值和上一个差值为一正一负
+            // 等于0的情况表示初始时的preDiff
             if ((curDiff > 0 && preDiff <= 0) || (curDiff < 0 && preDiff >= 0)) {
                 count++;
                 preDiff = curDiff;
@@ -133,7 +136,7 @@ public class greedy {
      */
     public int maxProfit(int[] prices) {
         int res = 0;
-        for(int i = 0; i < prices.length - 1; i++) {
+        for (int i = 0; i < prices.length - 1; i++) {
             int t = prices[i + 1] - prices[i];
             res += t > 0 ? t : 0;
         }
@@ -175,21 +178,17 @@ public class greedy {
         int curMostFar = 0;
         int cur = 0;
         int count = 0;
-
         if (nums.length == 1) {
             return 0;
         }
-
         // 从位置0到位置i的最远范围中的最大值
         int[] tilMostFar = new int[nums.length];
         tilMostFar[0] = nums[0];
-        
-        for(int i = 1; i < nums.length; i++) {
+        for (int i = 1; i < nums.length; i++) {
             // 当前位置i的最远可达范围
             curMostFar = i + nums[i];
             tilMostFar[i] = Math.max(tilMostFar[i - 1], curMostFar);
         }
-
         while (true) {
             // 贪心，让fast每一次都跨度最大
             cur = tilMostFar[cur];
@@ -209,9 +208,9 @@ public class greedy {
      */
     public int largestSumAfterKNegations(int[] nums, int k) {
         PriorityQueue<Integer> minHeap = new PriorityQueue<>(IntStream.of(nums).boxed().collect(Collectors.toList()));
-        for(int i = 0; i < k; i++) {
-           int val = minHeap.poll();
-           minHeap.offer(-val);
+        for (int i = 0; i < k; i++) {
+            int val = minHeap.poll();
+            minHeap.offer(-val);
         }
         return minHeap.stream().mapToInt(Integer::intValue).sum();
     }
@@ -229,7 +228,7 @@ public class greedy {
         int len = gas.length;
         int[] diff = new int[len];
         int totalDiff = 0;
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             diff[i] = gas[i] - cost[i];
             totalDiff += diff[i];
         }
@@ -274,46 +273,45 @@ public class greedy {
      * 但是运行效率太高了
      */
     public int candyTroubleTimeEffective(int[] ratings) {
-            
+
         int len = ratings.length;
         int candyNum = len;
-        
+
         int[] candys = new int[len];
         Arrays.fill(candys, 1);
 
         int[] diff = new int[len];
 
         // 1 0 2 2 4 3 1
-        //  -1 2 0 2 -1 -2
-        // 
+        // -1 2 0 2 -1 -2
+        //
         // 1 1 1 1 1 1 1
         // 2 1 2 1 3 2 1
 
         // 1 2 2
-        //   1 0
-        //   
+        // 1 0
+        //
 
         // 1 3 2 2 1
-        //   2 -1 0 -1
+        // 2 -1 0 -1
         // 1 2 1 2 1
         // 1 3 1 2 1
 
         // 1 2 3 1 3 2 1
 
         // 1 2 87 87 87 2 1
-        //   + +  =  =  - -
-        // 1 2 3  1  2  1 1
+        // + + = = - -
+        // 1 2 3 1 2 1 1
 
-        for(int i = 1; i < len; i++) {
+        for (int i = 1; i < len; i++) {
             diff[i] = ratings[i] - ratings[i - 1];
             if (diff[i] > 0) {
-                if(candys[i - 1] >= candys[i]) {
+                if (candys[i - 1] >= candys[i]) {
                     candys[i]++;
                     candyNum++;
                 }
-            }
-            else if (diff[i] < 0) {
-                if(candys[i - 1] <= candys[i]){
+            } else if (diff[i] < 0) {
+                if (candys[i - 1] <= candys[i]) {
                     candys[i - 1]++;
                     candyNum++;
                 }
@@ -323,16 +321,15 @@ public class greedy {
         boolean change = true;
         while (change) {
             change = false;
-            for(int i = 1; i < len; i++) {
+            for (int i = 1; i < len; i++) {
                 if (diff[i] > 0) {
-                    if(candys[i - 1] >= candys[i]) {
+                    if (candys[i - 1] >= candys[i]) {
                         candys[i]++;
                         candyNum++;
                         change = true;
                     }
-                }
-                else if (diff[i] < 0) {
-                    if(candys[i - 1] <= candys[i]){
+                } else if (diff[i] < 0) {
+                    if (candys[i - 1] <= candys[i]) {
                         candys[i - 1]++;
                         candyNum++;
                         change = true;
@@ -340,7 +337,7 @@ public class greedy {
                 }
             }
         }
-        
+
         return candyNum;
     }
 
@@ -361,24 +358,24 @@ public class greedy {
         Arrays.fill(candys, 1);
 
         // 从前往后确定右孩子大于左孩子的情况
-        for(int i = 1; i < len; i++) {
+        for (int i = 1; i < len; i++) {
             if (ratings[i] > ratings[i - 1]) {
                 candys[i] = candys[i - 1] + 1;
             }
         }
 
         // 从后往前确定左孩子大于右孩子的情况
-        for(int i = len - 2; i >= 0; i--) {
-           if(ratings[i + 1] < ratings[i]) {
+        for (int i = len - 2; i >= 0; i--) {
+            if (ratings[i + 1] < ratings[i]) {
                 candys[i] = Math.max(candys[i + 1] + 1, candys[i]);
             }
         }
 
         int candyNum = 0;
-        for(int candy : candys) {
+        for (int candy : candys) {
             candyNum += candy;
         }
-        
+
         return candyNum;
     }
 
@@ -397,34 +394,29 @@ public class greedy {
 
         int count5 = 0;
         int count10 = 0;
-    
-        for(int i = 0; i < bills.length; i++) {
-           if (bills[i] == 5) {
+
+        for (int i = 0; i < bills.length; i++) {
+            if (bills[i] == 5) {
                 count5++;
-           }
-           else if (bills[i] == 10) {
+            } else if (bills[i] == 10) {
                 if (count5 > 0) {
                     count5--;
                     count10++;
-                }
-                else {
+                } else {
                     return false;
                 }
-           }
-           else {
+            } else {
                 if (count10 > 0 && count5 > 0) {
                     count10--;
                     count5--;
-                }
-                else if (count5 >= 3) {
+                } else if (count5 >= 3) {
                     count5 -= 3;
-                }
-                else {
+                } else {
                     return false;
                 }
-           }
+            }
         }
-        
+
         return true;
     }
 
@@ -448,7 +440,7 @@ public class greedy {
 
         // 遍历排序后的数组，将每个人插入到指定位置
         for (int[] person : people) {
-            result.add(person[1] > result.size() ? result.size() : person[1], person); 
+            result.add(person[1] > result.size() ? result.size() : person[1], person);
         }
 
         return result.toArray(new int[result.size()][]);
@@ -461,14 +453,15 @@ public class greedy {
      * 核心是先排序
      */
     public int findMinArrowShots(int[][] points) {
-        if (points.length == 0) return 0;
+        if (points.length == 0)
+            return 0;
 
         // 按照每个区间的右端点进行排序
         Arrays.sort(points, (a, b) -> Integer.compare(a[1], b[1]));
-    
+
         int arrows = 1;
         int arrowPos = points[0][1]; // 当前箭射的位置设为第一个区间的右端点
-    
+
         for (int i = 1; i < points.length; i++) {
             // 如果当前区间的左端点在当前箭的射击范围外，则需要一个新的箭
             if (points[i][0] > arrowPos) {
@@ -476,7 +469,7 @@ public class greedy {
                 arrowPos = points[i][1]; // 更新射箭位置为当前区间的右端点
             }
         }
-    
+
         return arrows;
     }
 
@@ -497,25 +490,25 @@ public class greedy {
         int count = 0;
 
         // [1,2] [2,3] [3,4]
-        // 
+        //
         Arrays.sort(intervals, (e1, e2) -> {
             // comment 1: return e1[0] - e2[0] == 0 ? e1[1] - e2[1] : e1[0] - e2[0];
             return e1[0] - e2[0];
         });
 
         // ,,,,,,,,,,,
-        // [-73,-26] [-65,-11] [-63,2] [-62,-49] [-52,31] [-40,-26] [-31,49] [30,47] [58,95] [66,98] [82,97] [95,99]
-        // 
+        // [-73,-26] [-65,-11] [-63,2] [-62,-49] [-52,31] [-40,-26] [-31,49] [30,47]
+        // [58,95] [66,98] [82,97] [95,99]
+        //
 
         // 上一个非重叠区间的有边界
         int prevMax = intervals[0][1];
 
-        for(int i = 1; i < intervals.length; i++) {
+        for (int i = 1; i < intervals.length; i++) {
             if (intervals[i][0] < prevMax) {
                 count++;
                 prevMax = Math.min(prevMax, intervals[i][1]);
-            }
-            else {
+            } else {
                 prevMax = intervals[i][1];
             }
         }
@@ -536,14 +529,14 @@ public class greedy {
         int[] last = new int[26];
         Arrays.fill(last, -1);
         // ababcbacadefegdehijhklij
-        for(int i = 0; i < str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             last[str[i] - 97] = i;
         }
         // 当前串内的字母出现的最后边界
         int edge = 0;
         // 记录串长度
         int count = 0;
-        for(int i = 0; i < str.length; i++) {
+        for (int i = 0; i < str.length; i++) {
             // 更新串内字母的最后边界
             edge = Math.max(edge, last[str[i] - 97]);
             count++;
@@ -566,7 +559,7 @@ public class greedy {
     public int[][] merge(int[][] intervals) {
         // [1,3],[2,6],[8,10],[15,18]
         // [1,3] [2,6] [8,10] [15,18]
-        
+
         Arrays.sort(intervals, (min, max) -> {
             return min[0] - max[0];
         });
@@ -575,15 +568,14 @@ public class greedy {
         stack.push(intervals[0]);
         int[] prev;
         int[] cur;
- 
-        for(int i = 1; i < intervals.length; i++) {
+
+        for (int i = 1; i < intervals.length; i++) {
             cur = intervals[i];
             prev = stack.pop();
             if (cur[0] >= prev[0] && cur[0] <= prev[1]) {
                 prev[1] = Math.max(cur[1], prev[1]);
                 stack.push(prev);
-            }
-            else {
+            } else {
                 stack.push(prev);
                 stack.push(cur);
             }
@@ -620,13 +612,13 @@ public class greedy {
         int marker = len; // 用于标记需要变成9的位置
 
         // 3 3 2
-        //   i  
+        // i
 
         // 从右向左遍历，找到第一个不满足单调递增的数字
         for (int i = len - 1; i > 0; i--) {
             if (num[i - 1] > num[i]) {
-                num[i - 1]--;  // 当前位减 1
-                marker = i;    // 标记需要变成9的位置
+                num[i - 1]--; // 当前位减 1
+                marker = i; // 标记需要变成9的位置
             }
         }
 
@@ -645,50 +637,52 @@ public class greedy {
      */
     class Solution {
         private int count = 0;
-    
+
         public int minCameraCover(TreeNode root) {
             if (dfs(root) == -1) {
                 count++;
             }
             return count;
         }
-    
+
         // 返回值:
         // 0: 当前节点被覆盖
         // 1: 当前节点未被覆盖，但不需要放置摄像头
         // -1: 当前节点未被覆盖，需要放置摄像头
         private int dfs(TreeNode node) {
-            if (node == null) return 0; // 空节点视为已覆盖
-    
+            if (node == null)
+                return 0; // 空节点视为已覆盖
+
             int left = dfs(node.left);
             int right = dfs(node.right);
-    
+
             // 如果左右子节点至少有一个未被覆盖，则当前节点需要放置摄像头
             if (left == -1 || right == -1) {
                 count++;
                 return 1;
             }
-    
+
             // 如果左右子节点至少有一个放置了摄像头，则当前节点已被覆盖
             if (left == 1 || right == 1) {
                 return 0;
             }
-    
+
             // 当前节点未被覆盖，但不需要放置摄像头
             return -1;
         }
     }
-    
+
     /**
      * Definition for a binary tree node.
      */
     public class TreeNode {
-        int val;          // 节点的值
-        TreeNode left;    // 左子节点
-        TreeNode right;   // 右子节点
+        int val; // 节点的值
+        TreeNode left; // 左子节点
+        TreeNode right; // 右子节点
 
         // 无参构造方法
-        public TreeNode() {}
+        public TreeNode() {
+        }
 
         // 单参数构造方法
         public TreeNode(int val) {
@@ -703,5 +697,3 @@ public class greedy {
         }
     }
 }
-
-

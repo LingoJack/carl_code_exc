@@ -118,8 +118,8 @@ public class trick {
      */
     public void nextPermutation(int[] nums) {
         // 2 3 1
-        // i
-        // j
+        // i 
+        //     j
         int i = nums.length - 2;
         // 从后往前找到第一个升序
         while (i >= 0 && nums[i] >= nums[i + 1]) {
