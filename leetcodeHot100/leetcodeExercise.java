@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 public class leetcodeExercise {
     /**
@@ -333,5 +335,148 @@ public class leetcodeExercise {
                 list.remove(list.size() - 1);
             }
         }
+    }
+
+    /**
+     * 两数之和
+     */
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        int[] res = new int[2];
+        for (int i = 0; i < nums.length; i++) {
+            if (map.get(nums[i]) != null) {
+                res[0] = i;
+                res[1] = map.get(nums[i]);
+            }
+            map.put(target - nums[i], i);
+        }
+        return res;
+    }
+
+    /**
+     * 字母异位词分组
+     */
+    public List<List<String>> groupAnagrams(String[] strs) {
+        // 字母映射到一个列表
+        Map<String, List<String>> map = new HashMap<>();
+        for (String s : strs) {
+            char[] chs = s.toCharArray();
+            Arrays.sort(chs);
+            String sorted = new String(chs);
+            List<String> list = map.getOrDefault(sorted, new ArrayList<>());
+            list.add(s);
+            map.put(sorted, list);
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    /**
+     * 最长连续序列
+     * 这次的做法比第一次的做法好，击败90%
+     */
+    public int longestConsecutive(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        Arrays.sort(nums);
+        int count = 1;
+        int res = 1;
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[i] == nums[i - 1])
+                continue;
+            if (nums[i] == nums[i - 1] + 1) {
+                count++;
+                res = Math.max(res, count);
+            } else {
+                count = 1;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 移动零
+     */
+    public void moveZeroes(int[] nums) {
+        int slow = 0;
+        int fast = 0;
+        while (fast < nums.length) {
+            if (nums[fast] != 0) {
+                int t = nums[fast];
+                nums[fast] = nums[slow];
+                nums[slow] = t;
+                slow++;
+            }
+            fast++;
+        }
+    }
+
+    /**
+     * 盛最多水的容器
+     * 没做出来，但其实思路很简单，就是一开始左右指针，选择较矮的柱子移动
+     */
+    public int maxArea(int[] height) {
+        int lt = 0;
+        int rt = height.length - 1;
+        int max = (rt - lt) * Math.min(height[rt], height[lt]);
+        while (lt < rt) {
+            if (height[rt] > height[lt]) {
+                lt++;
+            } else {
+                rt--;
+            }
+            max = Math.max(max, (rt - lt) * Math.min(height[rt], height[lt]));
+        }
+        return max;
+    }
+
+    /**
+     * 三数之和
+     * 思路是对的，但是实现有些问题，最终还是做出来了
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        // -1,0,1,2,-1,-4
+        // -1 -1 0 1 2
+        Arrays.sort(nums);
+        List<List<Integer>> res = new ArrayList<>();
+        int lt = 0, mid = 1, rt = nums.length - 1;
+        while (lt <= nums.length - 2) {
+            if (lt >= 1 && nums[lt] == nums[lt - 1]) {
+                lt++;
+                continue;
+            }
+            rt = nums.length - 1;
+            mid = lt + 1;
+            int target = -nums[lt];
+            while (rt > mid) {
+                if (nums[rt] + nums[mid] > target) {
+                    rt--;
+                    // 跳过重复的
+                    while (rt > mid && nums[rt] == nums[rt + 1]) {
+                        rt--;
+                    }
+                } else if (nums[rt] + nums[mid] < target) {
+                    mid++;
+                    while (mid < rt && nums[mid] == nums[mid - 1]) {
+                        mid++;
+                    }
+                } else {
+                    res.add(List.of(nums[lt], nums[mid], nums[rt]));
+                    mid++;
+                    while (mid < rt && nums[mid] == nums[mid - 1]) {
+                        mid++;
+                    }
+                }
+            }
+            lt++;
+        }
+        return res;
+    }
+
+    /**
+     * 接雨水
+     */
+    public int trap(int[] height) {
+
     }
 }

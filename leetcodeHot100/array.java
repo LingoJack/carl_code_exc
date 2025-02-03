@@ -92,6 +92,7 @@ public class array {
      * 核心：
      * 去重
      * 只从序列的第一个数开始查找
+     * 后面还有更简单的方法，是第三次做的时候自己想出来的
      */
     public int longestConsecutive(int[] nums) {
         if (nums == null || nums.length == 0) {
