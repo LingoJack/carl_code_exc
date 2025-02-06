@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -477,6 +478,669 @@ public class leetcodeExercise {
      * 接雨水
      */
     public int trap(int[] height) {
+        int res = 0;
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int i = 0; i < height.length; i++) {
+            while (!stack.isEmpty() && height[stack.peek()] < height[i]) {
+                int lowIndex = stack.pop();
+                int h = stack.peek() != null ? (Math.min(height[stack.peek()], height[i])) - height[lowIndex] : 0;
+                int w = stack.peek() != null ? i - stack.peek() - 1 : 0;
+                res += w * h;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
 
+    /**
+     * 无重复字符子串
+     */
+    public int lengthOfLongestSubstring(String s) {
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        int max = 0;
+        int slow = 0;
+        Map<Character, Boolean> map = new HashMap<>();
+        int len = s.length();
+        for (int fast = 0; fast < len; fast++) {
+            while (map.getOrDefault(s.charAt(fast), false)) {
+                map.put(s.charAt(slow), false);
+                slow++;
+            }
+            map.put(s.charAt(fast), true);
+            max = Math.max(max, fast - slow + 1);
+        }
+        return max;
+    }
+
+    /**
+     * 找到字符串中的所有字母异位词
+     * 做出来了，但这不是最好的方法
+     */
+    public List<Integer> findAnagrams(String s, String p) {
+        int count = 0;
+        int[] exist = new int[26];
+        int[] used = new int[26];
+        char[] pChars = p.toCharArray();
+        for (char ch : pChars) {
+            exist[ch - 'a']++;
+        }
+
+        List<Integer> res = new ArrayList<>();
+        // cbaeb 5 2
+        // abc
+        for (int i = 0; i <= s.length() - p.length(); i++) {
+            int cur = i;
+            while (cur <= p.length() - 1 + i) {
+                if (exist[s.charAt(cur) - 'a'] > 0 && used[s.charAt(cur) - 'a'] < exist[s.charAt(cur) - 'a']) {
+                    used[s.charAt(cur) - 'a']++;
+                    count++;
+                }
+                cur++;
+            }
+            if (count == p.length()) {
+                res.add(i);
+            }
+            Arrays.fill(used, 0);
+            count = 0;
+        }
+        return res;
+    }
+
+    /**
+     * 和为K的子数组
+     * 前缀和
+     * 二刷了，没做出来
+     */
+    public int subarraySum(int[] nums, int k) {
+        if (nums == null) {
+            return 0;
+        }
+        int[] prefixSum = new int[nums.length];
+        prefixSum[0] = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            prefixSum[i] = nums[i] + prefixSum[i - 1];
+        }
+        int count = 0;
+        // 记录前缀和出现的次数
+        Map<Integer, Integer> map = new HashMap<>();
+        // 初始化前缀和为0的情况，这个非常重要
+        map.put(0, 1);
+        for (int i = 0; i < nums.length; i++) {
+            if (map.get(prefixSum[i] - k) != null) {
+                count += map.getOrDefault(prefixSum[i] - k, 0);
+            }
+            map.put(prefixSum[i], map.getOrDefault(prefixSum[i], 0) + 1);
+        }
+        return count;
+    }
+
+    /**
+     * 滑动窗口的最大值
+     * 四刷了，终于艰难地自己写了出来
+     */
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        // 1,3,-1,-3,5,3,6,7
+        // i
+        // 3 -1 -3
+
+        // 1,3,1,2,0,5
+        // i
+        // 3 2 0
+        // 存放下标
+        Deque<Integer> queue = new ArrayDeque<>();
+        int[] res = new int[nums.length - k + 1];
+        for (int i = 0; i < nums.length; i++) {
+            while (!queue.isEmpty() && nums[queue.peekLast()] < nums[i]) {
+                queue.pollLast();
+            }
+            queue.offerLast(i);
+            if (i >= k - 1) {
+                // 对于窗口之外的元素，应该移除
+                while (queue.peekFirst() < i - k + 1) {
+                    queue.pollFirst();
+                }
+                res[i - k + 1] = nums[queue.peekFirst()];
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 最小覆盖子串
+     * 三刷，没做出来
+     * 有快慢指针的思路
+     * 但是实现有问题
+     */
+    public String minWindow(String s, String t) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> have = new HashMap<>();
+        int sLen = s.length();
+        int tLen = t.length();
+        for (int i = 0; i < tLen; i++) {
+            need.put(t.charAt(i), need.getOrDefault(t.charAt(i), 0) + 1);
+        }
+        int slow = 0;
+        int fast = 0;
+        int count = 0;
+        int start = 0;
+        int minLen = Integer.MAX_VALUE;
+        while (fast < sLen) {
+            if (count < need.size()) {
+                char fastChar = s.charAt(fast);
+                if (need.containsKey(fastChar)) {
+                    have.put(fastChar, have.getOrDefault(fastChar, 0) + 1);
+                    if (have.get(fastChar).equals(need.get(fastChar))) {
+                        count++;
+                    }
+                }
+                fast++;
+            }
+            while (count == need.size()) {
+                if (fast - slow < minLen) {
+                    minLen = fast - slow;
+                    start = slow;
+                }
+                char slowChar = s.charAt(slow);
+                if (need.containsKey(slowChar)) {
+                    if (have.get(slowChar).equals(need.get(slowChar))) {
+                        count--;
+                    }
+                    have.put(slowChar, have.getOrDefault(slowChar, 0) - 1);
+                }
+                slow++;
+            }
+        }
+        return minLen == Integer.MAX_VALUE ? "" : s.substring(start, start + minLen);
+    }
+
+    /**
+     * 最大子数组和
+     * 没做出来
+     * 主要是步骤1和2的顺序不能错，而且初始化要对
+     */
+    public int maxSubArray(int[] nums) {
+        int len = nums.length;
+        int sum = 0;
+        int max = nums[0];
+        for (int i = 0; i < len; i++) {
+            // 1
+            if (sum < 0) {
+                sum = 0;
+            }
+            // 2
+            sum += nums[i];
+            max = Math.max(sum, max);
+        }
+        return max;
+    }
+
+    /**
+     * 合并区间
+     */
+    public int[][] merge(int[][] intervals) {
+        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> {
+            return a[0] != b[0] ? a[0] - b[0] : a[1] - b[1];
+        });
+        for (int[] interval : intervals) {
+            heap.offer(interval);
+        }
+        Deque<int[]> stack = new ArrayDeque<>();
+        while (!heap.isEmpty()) {
+            if (stack.isEmpty()) {
+                stack.push(heap.poll());
+            } else {
+                int[] last = stack.peek();
+                int[] cur = heap.poll();
+                if (last[1] >= cur[0]) {
+                    stack.pop();
+                    stack.push(new int[] { last[0], Math.max(last[1], cur[1]) });
+                } else {
+                    stack.push(cur);
+                }
+            }
+        }
+        int size = stack.size();
+        int[][] res = new int[size][2];
+        for (int i = 0; i < size; i++) {
+            res[i] = stack.pop();
+        }
+        return res;
+    }
+
+    /**
+     * 轮转数组
+     */
+    public void rotate(int[] nums, int k) {
+        // 1,2,3,4,5,6,7
+        // 7 6 5 4 3 2 1
+        // 5,6,7,1,2,3,4
+        k %= nums.length;
+        reverse(nums, 0, nums.length - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, nums.length - 1);
+    }
+
+    private void reverse(int[] nums, int start, int end) {
+        if (start < 0 || end >= nums.length) {
+            return;
+        }
+        int lt = start;
+        int rt = end;
+        while (lt < rt) {
+            int t = nums[rt];
+            nums[rt] = nums[lt];
+            nums[lt] = t;
+            lt++;
+            rt--;
+        }
+    }
+
+    /**
+     * 除自身以外的数组的乘积
+     * 前缀积和后缀积
+     */
+    public int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] ans = new int[len];
+        int[] prefix = new int[len];
+        int[] suffix = new int[len];
+        int prod = 1;
+        for (int i = 0; i < len; i++) {
+            prod *= nums[i];
+            prefix[i] = prod;
+        }
+        prod = 1;
+        for (int i = len - 1; i >= 0; i--) {
+            prod *= nums[i];
+            suffix[i] = prod;
+        }
+        for (int i = 0; i < len; i++) {
+            int prefixProd = i - 1 >= 0 ? prefix[i - 1] : 1;
+            int suffixProd = i + 1 < len ? suffix[i + 1] : 1;
+            ans[i] = prefixProd * suffixProd;
+        }
+        return ans;
+    }
+
+    /**
+     * 缺失的第一个正数
+     * 核心是想到长度和正数
+     */
+    public int firstMissingPositive(int[] nums) {
+        int len = nums.length;
+        boolean[] exist = new boolean[len + 1];
+        for (int num : nums) {
+            if (num > 0 && num <= len) {
+                exist[num] = true;
+            }
+        }
+        int count = 0;
+        for (int i = 1; i < len + 1 && exist[i]; i++) {
+            count++;
+        }
+        return count + 1;
+    }
+
+    /**
+     * 矩阵置零
+     */
+    public void setZeroes(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        boolean[] rowRecord = new boolean[row];
+        boolean[] colRecord = new boolean[col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    rowRecord[i] = true;
+                    colRecord[j] = true;
+                }
+            }
+        }
+        for (int i = 0; i < row; i++) {
+            if (rowRecord[i]) {
+                for (int j = 0; j < col; j++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        for (int j = 0; j < col; j++) {
+            if (colRecord[j]) {
+                for (int i = 0; i < row; i++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * 螺旋矩阵
+     */
+    public List<Integer> spiralOrder(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        List<Integer> list = new ArrayList<>();
+        boolean[][] visited = new boolean[row][col];
+        int rowIndex = 0;
+        int colIndex = 0;
+        int count = 0;
+        // 上右下左
+        int dir = 2;
+        while (count < row * col) {
+            if (dir == 1) {
+                for (int i = rowIndex; i >= 0; i--) {
+                    if (!visited[i][colIndex]) {
+                        list.add(matrix[i][colIndex]);
+                        rowIndex = i;
+                        visited[i][colIndex] = true;
+                        count++;
+                    }
+                }
+                dir = 2;
+            } else if (dir == 2) {
+                for (int i = 0; i < col; i++) {
+                    if (!visited[rowIndex][i]) {
+                        list.add(matrix[rowIndex][i]);
+                        colIndex = i;
+                        count++;
+                        visited[rowIndex][i] = true;
+                    }
+                }
+                dir = 3;
+            } else if (dir == 3) {
+                for (int i = 0; i < row; i++) {
+                    if (!visited[i][colIndex]) {
+                        list.add(matrix[i][colIndex]);
+                        rowIndex = i;
+                        count++;
+                        visited[i][colIndex] = true;
+                    }
+                }
+                dir = 4;
+            } else if (dir == 4) {
+                for (int i = colIndex; i >= 0; i--) {
+                    if (!visited[rowIndex][i]) {
+                        list.add(matrix[rowIndex][i]);
+                        colIndex = i;
+                        count++;
+                        visited[rowIndex][i] = true;
+                    }
+                }
+                dir = 1;
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 旋转图像
+     */
+    public void rotate(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        // 水平翻转
+        for (int j = 0; j < col; j++) {
+            for (int i = 0; i < row / 2; i++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[row - i - 1][j];
+                matrix[row - i - 1][j] = t;
+            }
+        }
+        // 沿主对角线翻转
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < i; j++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = t;
+            }
+        }
+    }
+
+    /**
+     * 搜索二维矩阵II
+     * 做出来了，但是时间复杂度不够优秀
+     * 题解的做法是如果从右上角看，左边的比其小，下边的比其大，是个BST去搜索
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int colNum = matrix[0].length;
+        for (int[] row : matrix) {
+            if (row[0] <= target && row[colNum - 1] >= target) {
+                int lt = 0;
+                int rt = colNum - 1;
+                while (rt >= lt) {
+                    int mid = (lt + rt) / 2;
+                    if (row[mid] > target) {
+                        rt = mid - 1;
+                    } else if (row[mid] < target) {
+                        lt = mid + 1;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 相交链表
+     */
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        ListNode nodeA = headA;
+        ListNode nodeB = headB;
+        int lenA = 0;
+        while (nodeA != null) {
+            nodeA = nodeA.next;
+            lenA++;
+        }
+        int lenB = 0;
+        while (nodeB != null) {
+            nodeB = nodeB.next;
+            lenB++;
+        }
+        nodeA = headA;
+        nodeB = headB;
+        if (lenA > lenB) {
+            for (int i = 0; i < lenA - lenB; i++) {
+                nodeA = nodeA.next;
+            }
+        } else {
+            for (int i = 0; i < lenB - lenA; i++) {
+                nodeB = nodeB.next;
+            }
+        }
+        while (nodeA != null && nodeB != null && nodeA != nodeB) {
+            nodeA = nodeA.next;
+            nodeB = nodeB.next;
+        }
+        return nodeA == null ? null : nodeA;
+    }
+
+    /**
+     * 反转链表
+     */
+    public ListNode reverseList(ListNode head) {
+        ListNode node = head;
+        ListNode last = null;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return last;
+    }
+
+    /**
+     * 回文链表
+     */
+    public boolean isPalindrome(ListNode head) {
+        ListNode fast = head;
+        ListNode slow = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode node = slow;
+        ListNode last = null;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        fast = last;
+        slow = head;
+        while (fast != null && slow != null) {
+            if (fast.val != slow.val) {
+                return false;
+            }
+            fast = fast.next;
+            slow = slow.next;
+        }
+        return true;
+    }
+
+    /**
+     * 环形链表
+     */
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (slow == fast) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 环形链表II
+     */
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (slow == fast) {
+                ListNode node1 = slow;
+                ListNode node2 = head;
+                while (node1 != node2) {
+                    node1 = node1.next;
+                    node2 = node2.next;
+                }
+                return node1;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 合并两个有序链表
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode n1 = list1;
+        ListNode n2 = list2;
+        ListNode dummy = new ListNode();
+        ListNode node = dummy;
+        while (n1 != null && n2 != null) {
+            if (n1.val < n2.val) {
+                node.next = n1;
+                n1 = n1.next;
+            } else {
+                node.next = n2;
+                n2 = n2.next;
+            }
+            node = node.next;
+        }
+        node.next = n1 == null ? n2 : n1;
+        return dummy.next;
+    }
+
+    /**
+     * 两数相加
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode();
+        ListNode node = dummy;
+        ListNode n1 = l1;
+        ListNode n2 = l2;
+        int carryout = 0;
+        while (n1 != null || n2 != null || carryout == 1) {
+            int val = (n1 == null ? 0 : n1.val) + (n2 == null ? 0 : n2.val) + carryout;
+            carryout = 0;
+            if (val >= 10) {
+                carryout++;
+                val %= 10;
+            }
+            node.next = new ListNode(val);
+            node = node.next;
+            if (n1 != null) {
+                n1 = n1.next;
+            }
+            if (n2 != null) {
+                n2 = n2.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 删除链表的倒数第N个结点
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode last = null;
+        ListNode fast = head;
+        ListNode slow = head;
+        for (int i = 0; i < n; i++) {
+            fast = fast.next;
+        }
+        while (fast != null) {
+            last = slow;
+            slow = slow.next;
+            fast = fast.next;
+        }
+        if (slow != head) {
+            last.next = slow.next;
+        } else {
+            dummy.next = slow.next;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 两两交换链表中的节点
+     */
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode slow = head;
+        ListNode fast = head;
+        ListNode nextGroupStart = head;
+        ListNode prevGroupEnd = dummy;
+        while (nextGroupStart != null && nextGroupStart.next != null) {
+            fast = nextGroupStart.next;
+            slow = prevGroupEnd.next;
+            nextGroupStart = fast.next;
+            prevGroupEnd.next = fast;
+            fast.next = slow;
+            slow.next = nextGroupStart;
+            prevGroupEnd = slow;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * K个一组翻转链表
+     */
+    public ListNode reverseKGroup(ListNode head, int k) {
+        
     }
 }
