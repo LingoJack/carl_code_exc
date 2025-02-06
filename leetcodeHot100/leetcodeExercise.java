@@ -1141,6 +1141,355 @@ public class leetcodeExercise {
      * K个一组翻转链表
      */
     public ListNode reverseKGroup(ListNode head, int k) {
-        
+        ListNode dummy = new ListNode(0, head);
+        ListNode nextGoupStart = head;
+        ListNode prevGroupEnd = dummy;
+        while (true) {
+            ListNode fast = nextGoupStart;
+            ListNode slow = nextGoupStart;
+            int count = 0;
+            while (count < k && fast != null) {
+                fast = fast.next;
+                count++;
+            }
+            if (count < k) {
+                break;
+            }
+            ListNode node = slow;
+            ListNode last = null;
+            while (node != fast) {
+                ListNode next = node.next;
+                node.next = last;
+                last = node;
+                node = next;
+            }
+            prevGroupEnd.next = last;
+            prevGroupEnd = slow;
+            nextGoupStart = fast;
+            slow.next = nextGoupStart;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 随机链表的复制
+     */
+    public Node copyRandomList(Node head) {
+        Node node = head;
+        Node last = null;
+        Map<Node, Node> map = new HashMap<>();
+        while (node != null) {
+            Node newNode = new Node(node.val);
+            if (last != null) {
+                last.next = newNode;
+            }
+            last = newNode;
+            map.put(node, newNode);
+            node = node.next;
+        }
+        node = head;
+        while (node != null) {
+            map.get(node).random = map.get(node.random);
+            node = node.next;
+        }
+        return map.get(head);
+    }
+
+    class Node {
+        int val;
+        Node next;
+        Node random;
+
+        public Node(int val) {
+            this.val = val;
+            this.next = null;
+            this.random = null;
+        }
+    }
+
+    /**
+     * 排序链表
+     * 没做出来，大部分是对的
+     * 就是while (fast.next != null && fast.next.next != null) {这里没对
+     * 我错误写成了while (fast != null && fast.next != null)
+     * 这里寻找中间节点的逻辑是要注意的
+     */
+    public ListNode sortList(ListNode head) {
+        // 4 2 1 3
+        // f
+        // s
+        return spilt(head);
+    }
+
+    private ListNode spilt(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode slow = head, fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode secondHead = slow.next;
+        slow.next = null;
+        ListNode ltPart = spilt(head);
+        ListNode rtPart = spilt(secondHead);
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (ltPart != null && rtPart != null) {
+            if (ltPart.val < rtPart.val) {
+                last.next = ltPart;
+                last = ltPart;
+                ltPart = ltPart.next;
+            } else {
+                last.next = rtPart;
+                last = rtPart;
+                rtPart = rtPart.next;
+            }
+        }
+        last.next = rtPart == null ? ltPart : rtPart;
+        return dummy.next;
+    }
+
+    /**
+     * 合并k个升序链表
+     */
+    public ListNode mergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode> heap = new PriorityQueue<>((a, b) -> a.val - b.val);
+        for (ListNode node : lists) {
+            if (node != null) {
+                heap.offer(node);
+            }
+        }
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (!heap.isEmpty()) {
+            ListNode node = heap.poll();
+            if (node != null && node.next != null) {
+                heap.offer(node.next);
+            }
+            last.next = node;
+            last = node;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * LRU缓存
+     */
+    public class LRUCache {
+
+        private Map<Integer, Node> map = new HashMap<>();
+
+        private Node head;
+
+        private int capacity;
+
+        private Node tail;
+
+        public class Node {
+            int key;
+            int val;
+            Node next;
+            Node prev;
+
+            public Node(int key, int val) {
+                this.key = key;
+                this.val = val;
+            }
+
+            public Node() {
+
+            }
+        }
+
+        public LRUCache(int capacity) {
+            this.capacity = capacity;
+            this.head = new Node();
+            this.tail = new Node();
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
+        }
+
+        public int get(int key) {
+            Node node = map.get(key);
+            if (node != null) {
+                node.prev.next = node.next;
+                node.next.prev = node.prev;
+                node.next = this.head.next;
+                this.head.next.prev = node;
+                node.prev = this.head;
+                this.head.next = node;
+                return node.val;
+            }
+            return -1;
+        }
+
+        public void put(int key, int value) {
+            Node node = map.get(key);
+            if (node == null) {
+                node = new Node(key, value);
+                map.put(key, node);
+                node.next = this.head.next;
+                this.head.next.prev = node;
+                this.head.next = node;
+                node.prev = this.head;
+                if (map.entrySet().size() > capacity) {
+                    Node removeNode = this.tail.prev;
+                    this.tail.prev = removeNode.prev;
+                    removeNode.prev.next = this.tail;
+                    map.remove(removeNode.key);
+                }
+            } else {
+                if (value == node.val) {
+                    node.prev.next = node.next;
+                    node.next.prev = node.prev;
+                    node.next = this.head.next;
+                    this.head.next.prev = node;
+                    node.prev = this.head;
+                    this.head.next = node;
+                } else {
+                    node.val = value;
+                    node.prev.next = node.next;
+                    node.next.prev = node.prev;
+                    node.next = this.head.next;
+                    this.head.next.prev = node;
+                    node.prev = this.head;
+                    this.head.next = node;
+                }
+            }
+        }
+    }
+
+    /**
+     * 二叉树的中序遍历
+     */
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        inorder(list, root);
+        return list;
+    }
+
+    private void inorder(List<Integer> list, TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        inorder(list, node.left);
+        list.add(node.val);
+        inorder(list, node.right);
+    }
+
+    /**
+     * 二叉树的最大深度
+     */
+    public int maxDepthTwoEx(TreeNode root) {
+        return maxGain(root);
+    }
+
+    private int maxGain(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return Math.max(maxGain(node.left), maxGain(node.right)) + 1;
+    }
+
+    /**
+     * 翻转二叉树
+     */
+    public TreeNode invertTreeTwoEx(TreeNode root) {
+        invertTwoEx(root);
+        return root;
+    }
+
+    private void invertTwoEx(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        TreeNode t = node.left;
+        node.left = node.right;
+        node.right = t;
+        invertTwoEx(node.left);
+        invertTwoEx(node.right);
+    }
+
+    /**
+     * 对称二叉树
+     */
+    public boolean isSymmetricTwoEx(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return checkSymmetric(root.left, root.right);
+    }
+
+    private boolean checkSymmetric(TreeNode lt, TreeNode rt) {
+        if (lt != null && rt != null) {
+            if (lt.val != rt.val) {
+                return false;
+            }
+            return checkSymmetric(lt.left, rt.right) && checkSymmetric(lt.right, rt.left);
+        }
+        return lt == null && rt == null;
+    }
+
+    /**
+     * 二叉树的直径
+     * 写出来了，但是原来的做法时间复杂度太高
+     * 所以这里改成了正确的快的做法
+     * 其实思路是一样的
+     * 只是快的做法是在计算高度的时候拿到左右子树的高度就同时更新最大直径
+     * 两种做法同样都是在树的高度上做文章
+     */
+    public int diameterOfBinaryTree(TreeNode root) {
+        maxDiameterGain(root);
+        return maxDiameter;
+    }
+
+    private int maxDiameter = 0;
+
+    private int maxDiameterGain(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = maxDiameterGain(node.left);
+        int rt = maxDiameterGain(node.right);
+        int height = Math.max(lt, rt) + 1;
+        maxDiameter = Math.max(maxDiameter, lt + rt);
+        return height;
+    }
+
+    /**
+     * 二叉树的层序遍历
+     */
+    public List<List<Integer>> levelOrderTwoEx(TreeNode root) {
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                list.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 将有序数组转为二叉树
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+
     }
 }
