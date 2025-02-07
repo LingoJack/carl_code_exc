@@ -1490,6 +1490,309 @@ public class leetcodeExercise {
      * 将有序数组转为二叉树
      */
     public TreeNode sortedArrayToBST(int[] nums) {
+        return getRoot(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode getRoot(int[] nums, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int mid = (start + end) / 2;
+        TreeNode node = new TreeNode(nums[mid]);
+        node.left = getRoot(nums, start, mid - 1);
+        node.right = getRoot(nums, mid + 1, end);
+        return node;
+    }
+
+    /**
+     * 验证二叉搜索树
+     * 这里是中序遍历去做的，但是时间复杂度不优秀
+     */
+    public boolean isValidBST(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        inorderTraversal(list, root);
+        Integer last = null;
+        for (int num : list) {
+            if (last != null && num <= last) {
+                return false;
+            }
+            last = num;
+        }
+        return true;
+    }
+
+    private void inorderTraversal(List<Integer> list, TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        inorderTraversal(list, node.left);
+        list.add(node.val);
+        inorderTraversal(list, node.right);
+    }
+
+    public boolean isValidBSTTwoEx(TreeNode root) {
+        return validate(root);
+    }
+
+    private boolean validate(TreeNode node) {
+        if (node == null) {
+            return true;
+        }
+        if (node.left != null) {
+            TreeNode lt = node.left;
+            while (lt != null && lt.right != null) {
+                lt = lt.right;
+            }
+            if (node.val <= lt.val) {
+                return false;
+            }
+        }
+        if (node.right != null) {
+            TreeNode rt = node.right;
+            while (rt != null && rt.left != null) {
+                rt = rt.left;
+            }
+            if (node.val >= rt.val) {
+                return false;
+            }
+        }
+        return validate(node.left) && validate(node.right);
+    }
+
+    /**
+     * 二叉搜索树中第K小的元素
+     */
+    public int kthSmallest(TreeNode root, int k) {
+        inorderFind(root, k);
+        return val;
+    }
+
+    private int count = 0;
+
+    private int val = 0;
+
+    private void inorderFind(TreeNode node, int k) {
+        if (node == null || count >= k) {
+            return;
+        }
+        inorderFind(node.left, k);
+        count++;
+        if (count == k) {
+            this.val = node.val;
+        }
+        inorderFind(node.right, k);
+    }
+
+    /**
+     * 二叉树的右视图
+     */
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        if (root == null) {
+            return list;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (i == size - 1) {
+                    list.add(node.val);
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 二叉树展开为链表
+     * 递归解法没做出来
+     * 迭代解法一下做出来了
+     * 就是一直向右遍历，遇到有左子树的就处理
+     */
+    public void flatten(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        TreeNode node = root;
+        while (node != null) {
+            if (node.left != null) {
+                TreeNode ltTail = node.left;
+                while (ltTail != null && ltTail.right != null) {
+                    ltTail = ltTail.right;
+                }
+                ltTail.right = node.right;
+                node.right = node.left;
+                node.left = null;
+            }
+            node = node.right;
+        }
+    }
+
+    /**
+     * 从前序遍历和中序遍历序列构造二叉树
+     * 没做出来，这是第二次没做出来了
+     * 核心是限定中序遍历的子树的构造范围
+     */
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        // 3 9 20 15 7
+        // 9 3 15 20 7
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            map.put(inorder[i], i);
+        }
+        return getRoot(map, preorder, inorder, 0, inorder.length - 1);
+    }
+
+    private int preorderIndex = 0;
+
+    private TreeNode getRoot(Map<Integer, Integer> map, int[] preorder, int[] inorder, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int index = map.get(preorder[preorderIndex]);
+        TreeNode node = new TreeNode(preorder[preorderIndex]);
+        preorderIndex++;
+        node.left = getRoot(map, preorder, inorder, start, index - 1);
+        node.right = getRoot(map, preorder, inorder, index + 1, end);
+        return node;
+    }
+
+    /**
+     * 路经总和III
+     * 暴力解做出来了
+     * 但其实更好的做法是用前缀和
+     * 没有做出最优解
+     */
+    public int pathSum(TreeNode root, long targetSum) {
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        if (root == null) {
+            return 0;
+        }
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            dfs(node, targetSum);
+            if (node.left != null) {
+                queue.offer(node.left);
+            }
+            if (node.right != null) {
+                queue.offer(node.right);
+            }
+        }
+        return pathCount;
+    }
+
+    public int pathSumThreeEx(TreeNode root, long targetSum) {
+        preorder(root, targetSum);
+        return pathCount;
+    }
+
+    private void preorder(TreeNode node, long target) {
+        if (node == null) {
+            return;
+        }
+        dfs(node, target);
+        preorder(node.left, target);
+        preorder(node.right, target);
+    }
+
+    private int pathCount = 0;
+
+    private void dfs(TreeNode node, long targetSum) {
+        if (node == null) {
+            return;
+        }
+        if (targetSum - node.val == 0) {
+            pathCount++;
+        }
+        dfs(node.left, targetSum - node.val);
+        dfs(node.right, targetSum - node.val);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        // 如果没有这一个前置判断，在Leetcode的运行时间会大大增加
+        if (haveSon(p, q)) {
+            return p;
+        } else if (haveSon(q, p)) {
+            return q;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        if (root == null) {
+            return null;
+        }
+        queue.offer(root);
+        TreeNode res = null;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            boolean updated = false;
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (haveSon(node, p) && haveSon(node, q)) {
+                    res = node;
+                    updated = true;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            if (!updated && res != null) {
+                break;
+            }
+        }
+        return res;
+    }
+
+    private boolean haveSon(TreeNode node, TreeNode target) {
+        if (node == null) {
+            return false;
+        }
+        if (node == target) {
+            return true;
+        }
+        return haveSon(node.left, target) || haveSon(node.right, target);
+    }
+
+    /**
+     * 二叉树中的最大路径和
+     * 计算每个节点作为路径转点的最大路劲和
+     * 然后遍历这里是后序遍历的
+     * 击败100%
+     */
+    public int maxPathSum(TreeNode root) {
+        maxPathSumGain(root);
+        return max;
+    }
+
+    private int max = Integer.MIN_VALUE;
+
+    private int maxPathSumGain(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = maxPathSumGain(node.left);
+        int rt = maxPathSumGain(node.right);
+        max = Math.max(max, (lt < 0 ? 0 : lt) + (rt < 0 ? 0 : rt) + node.val);
+        return Math.max((lt < 0 ? 0 : lt), (rt < 0 ? 0 : rt)) + node.val;
+    }
+
+    /**
+     * 岛屿数量
+     */
+    public int numIslands(char[][] grid) {
 
     }
 }
