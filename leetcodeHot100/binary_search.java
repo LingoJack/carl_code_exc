@@ -114,7 +114,6 @@ public class binary_search {
         if (nums[lt] < nums[rt]) {
             return nums[lt];
         }
-
         while (lt < rt) {
             int mid = lt + (rt - lt) / 2;
             if (nums[mid] > nums[rt]) {
@@ -259,6 +258,7 @@ public class binary_search {
     /**
      * 搜索旋转排序的数组
      * 20min ac 击败100%
+     * 能顺利ac是因为上面做了题目：搜索旋转排序数组的中的最小值
      */
     public int search(int[] nums, int target) {
         int lt = 0;

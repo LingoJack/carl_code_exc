@@ -17,5 +17,6 @@
     "editor.mouseWheelZoom": false,
     "editor.renderLineHighlightOnlyWhenFocus": false,
     "editor.fontSize": 16,
-    "codesnap.shutterAction": "copy"
+    "codesnap.shutterAction": "copy",
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable"
 }

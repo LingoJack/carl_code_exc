@@ -228,7 +228,6 @@ public class backtracking {
             res.add(new ArrayList<>(path));
             return;
         }
-
         // 从起始位置开始尝试分割
         for (int end = start; end < s.length(); end++) {
             // 如果从 start 到 end 是回文，则进行下一步递归
@@ -721,18 +720,18 @@ public class backtracking {
         solveSudokuHelper(board);
     }
 
-    private boolean solveSudokuHelper(char[][] board){
-        //「一个for循环遍历棋盘的行，一个for循环遍历棋盘的列，
+    private boolean solveSudokuHelper(char[][] board) {
+        // 「一个for循环遍历棋盘的行，一个for循环遍历棋盘的列，
         // 一行一列确定下来之后，递归遍历这个位置放9个数字的可能性！」
-        for (int i = 0; i < 9; i++){ // 遍历行
-            for (int j = 0; j < 9; j++){ // 遍历列
-                if (board[i][j] != '.'){ // 跳过原始数字
+        for (int i = 0; i < 9; i++) { // 遍历行
+            for (int j = 0; j < 9; j++) { // 遍历列
+                if (board[i][j] != '.') { // 跳过原始数字
                     continue;
                 }
-                for (char k = '1'; k <= '9'; k++){ // (i, j) 这个位置放k是否合适
-                    if (isValidSudoku(i, j, k, board)){
+                for (char k = '1'; k <= '9'; k++) { // (i, j) 这个位置放k是否合适
+                    if (isValidSudoku(i, j, k, board)) {
                         board[i][j] = k;
-                        if (solveSudokuHelper(board)){ // 如果找到合适一组立刻返回
+                        if (solveSudokuHelper(board)) { // 如果找到合适一组立刻返回
                             return true;
                         }
                         board[i][j] = '.';
@@ -750,29 +749,29 @@ public class backtracking {
 
     /**
      * 判断棋盘是否合法有如下三个维度:
-     *     同行是否重复
-     *     同列是否重复
-     *     9宫格里是否重复
+     * 同行是否重复
+     * 同列是否重复
+     * 9宫格里是否重复
      */
-    private boolean isValidSudoku(int row, int col, char val, char[][] board){
+    private boolean isValidSudoku(int row, int col, char val, char[][] board) {
         // 同行是否重复
-        for (int i = 0; i < 9; i++){
-            if (board[row][i] == val){
+        for (int i = 0; i < 9; i++) {
+            if (board[row][i] == val) {
                 return false;
             }
         }
         // 同列是否重复
-        for (int j = 0; j < 9; j++){
-            if (board[j][col] == val){
+        for (int j = 0; j < 9; j++) {
+            if (board[j][col] == val) {
                 return false;
             }
         }
         // 9宫格里是否重复
         int startRow = (row / 3) * 3;
         int startCol = (col / 3) * 3;
-        for (int i = startRow; i < startRow + 3; i++){
-            for (int j = startCol; j < startCol + 3; j++){
-                if (board[i][j] == val){
+        for (int i = startRow; i < startRow + 3; i++) {
+            for (int j = startCol; j < startCol + 3; j++) {
+                if (board[i][j] == val) {
                     return false;
                 }
             }
