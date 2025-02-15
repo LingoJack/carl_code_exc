@@ -1782,6 +1782,8 @@ public class leetcodeExercise {
 
     private int max = Integer.MIN_VALUE;
 
+    private int length;
+
     private int maxPathSumGain(TreeNode node) {
         if (node == null) {
             return 0;
@@ -3958,9 +3960,185 @@ public class leetcodeExercise {
 
     /**
      * 最长有效括号
+     * 这是DP的思路，还有另外一种思路是boolean数组+栈匹配，把有效匹配的括号设置true，然后统计最长的连续的true的个数
+     * 当然还是DP更高效
      */
     public int longestValidParentheses(String s) {
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        // 以字符i结尾的最长有效括号的长度
+        int[] dp = new int[s.length()];
+        dp[0] = 0;
+        int max = 0;
+        for (int i = 1; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    // ()()
+                    dp[i] = 2 + (i >= 2 ? dp[i - 2] : 0);
+                } else {
+                    // (())
+                    dp[i] = i - dp[i - 1] - 1 >= 0 && s.charAt(i - dp[i - 1] - 1) == '('
+                            ? 2 + dp[i - 1] + (i - dp[i - 1] - 2 >= 0 ? dp[i - dp[i - 1] - 2] : 0)
+                            : 0;
+                }
+            }
+            max = Math.max(max, dp[i]);
+        }
+        return max;
+    }
 
+    /**
+     * 不同路径
+     */
+    public int uniquePathsTwoEx(int m, int n) {
+        int[][] dp = new int[m][n];
+        for (int i = 0; i < n; i++) {
+            dp[0][i] = 1;
+        }
+        for (int i = 0; i < m; i++) {
+            dp[i][0] = 1;
+        }
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+
+    /**
+     * 最长公共子序列
+     * 没做出来，dp数组的定义是对的，但是初始化有问题
+     * 可以这么初始化dp数组来简化初始化：
+     * int[][] dp = new int[l1 + 1][l2 + 1];
+     */
+    public int longestCommonSubsequence(String text1, String text2) {
+        int l1 = text1.length(), l2 = text2.length();
+        // 考虑到字符串1的i和字符串2的j为止的最长公共子序列长度
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 编辑距离
+     */
+    public int minDistance(String word1, String word2) {
+        // word1转换word2
+        // 仅考虑到word1的第i位和word2的第j位为止的编辑距离
+        int l1 = word1.length();
+        int l2 = word2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 0; i < l1 + 1; i++) {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i < l2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    // 删除，增加，替换
+                    dp[i][j] = Math.min(dp[i - 1][j], Math.min(dp[i][j - 1], dp[i - 1][j - 1])) + 1;
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 只出现一次的数字
+     */
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for (int num : nums) {
+            res ^= num;
+        }
+        return res;
+    }
+
+    /**
+     * 多数元素
+     * 没做出来，主要是这个占领高地的算法忘记了
+     */
+    public int majorityElement(int[] nums) {
+        // 占领高地算法
+        int winner = nums[0];
+        int count = 0;
+        for (int i = 0; i < nums.length; i++) {
+            if (count == 0) {
+                winner = nums[i];
+            }
+            if (winner != nums[i]) {
+                count--;
+            } else {
+                count++;
+            }
+        }
+        return winner;
+    }
+
+    /**
+     * 颜色分类
+     */
+    public void sortColors(int[] nums) {
+        quickSort(nums);
+    }
+
+    /**
+     * 下一个排列
+     * 没做出来
+     * 从数组倒着查找，找到nums[i] 比nums[i+1]小的时候（遇到第一个升序），
+     * 就将nums[i]跟nums[i+1]到nums[nums.length - 1]当中找到一个最小的比nums[i]大的元素交换。
+     * 交换后，再把nums[i+1]到nums[nums.length-1]排序
+     */
+    public void nextPermutation(int[] nums) {
+        int i = nums.length - 2;
+        while (i >= 0 && nums[i] >= nums[i + 1]) {
+            i--;
+        }
+        if (i >= 0) {
+            int j = nums.length - 1;
+            while (nums[j] <= nums[i]) {
+                j--;
+            }
+            swap(nums, i, j);
+        }
+        reverse(nums, i + 1);
+    }
+
+    private void reverse(int[] nums, int start) {
+        int i = start, j = nums.length - 1;
+        while (i < j) {
+            swap(nums, i, j);
+            i++;
+            j--;
+        }
+    }
+
+    /**
+     * 寻找重复数
+     */
+    public int findDuplicate(int[] nums) {
+        Arrays.sort(nums);
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[i] == nums[i - 1]) {
+                return nums[i];
+            }
+        }
+        return -1;
     }
 
     /**
