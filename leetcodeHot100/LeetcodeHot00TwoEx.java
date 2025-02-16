@@ -79,9 +79,64 @@ public class LeetcodeHot00TwoEx {
 
     /**
      * 最小覆盖子串
+     * 又没做出来
+     * 实现有问题，这已经是第三次刷了
+     * 三次都没有做出来，都是有思路但是一写就bug多
+     * 根本原因是我没有掌握滑动窗口的模板写法
+     * 滑动窗口的模板写法应该是外层循环写右边界的移动（增大窗口），内层循环写左边界的移动（缩小窗口）
+     * 
+     * <pre>
+    * int left = 0, right = 0;
+    * // 外层循环增大窗口
+    * while (right < nums.size()) {
+    *     window.addLast(nums[right]);
+    *     right++;
+    *     // 内层循环缩小窗口
+    *     while (window needs shrink) {
+    *         window.removeFirst(nums[left]);
+    *         left++;
+    *     }
+    * }
+     * </pre>
      */
     public String minWindow(String s, String t) {
-
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> have = new HashMap<>();
+        int count = 0;
+        for (char c : t.toCharArray()) {
+            need.putIfAbsent(c, 0);
+            need.put(c, need.get(c) + 1);
+        }
+        int fast = 0;
+        int slow = 0;
+        int minLen = Integer.MAX_VALUE;
+        int start = 0;
+        while (fast < s.length()) {
+            char fastCh = s.charAt(fast);
+            if (need.containsKey(fastCh)) {
+                have.putIfAbsent(fastCh, 0);
+                have.put(fastCh, have.get(fastCh) + 1);
+                if (have.get(fastCh).equals(need.get(fastCh))) {
+                    count++;
+                }
+            }
+            fast++;
+            while (slow < s.length() && count == need.size()) {
+                char slowCh = s.charAt(slow);
+                if (fast - slow + 1 < minLen) {
+                    minLen = fast - slow + 1;
+                    start = slow;
+                }
+                if (need.containsKey(slowCh)) {
+                    have.put(slowCh, have.get(slowCh) - 1);
+                    if (have.get(slowCh) < need.get(slowCh)) {
+                        count--;
+                    }
+                }
+                slow++;
+            }
+        }
+        return minLen == Integer.MAX_VALUE ? "" : s.substring(start, Math.min(start + minLen, s.length()));
     }
 
     /**
@@ -186,6 +241,31 @@ public class LeetcodeHot00TwoEx {
      * 多数元素
      */
     public int majorityElement(int[] nums) {
+
+    }
+
+    /**
+     * LFU
+     */
+    class LFUCache {
+
+        public LFUCache(int capacity) {
+
+        }
+
+        public int get(int key) {
+
+        }
+
+        public void put(int key, int value) {
+
+        }
+    }
+
+    /**
+     * 找出数组的最大公约数（lc1979）
+     */
+    public int findGCD(int[] nums) {
 
     }
 }
