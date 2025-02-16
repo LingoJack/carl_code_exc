@@ -1,7 +1,9 @@
 package leetcodeHot100;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class LeetcodeHot00TwoEx {
@@ -36,14 +38,43 @@ public class LeetcodeHot00TwoEx {
      * 盛最多水的容器
      */
     public int maxArea(int[] height) {
-        
+        int len = height.length;
+        int lt = 0;
+        int rt = len - 1;
+        int max = 0;
+        while (rt >= lt) {
+            int h = Math.min(height[lt], height[rt]);
+            int w = rt - lt;
+            max = Math.max(max, w * h);
+            if (height[lt] < height[rt]) {
+                lt++;
+            } else {
+                rt--;
+            }
+        }
+        return max;
     }
 
     /**
      * 和为K的子数组
      */
     public int subarraySum(int[] nums, int k) {
-        CompletableFuture
+        int[] prefix = new int[nums.length];
+        prefix[0] = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            prefix[i] = prefix[i - 1] + nums[i];
+        }
+        int count = 0;
+        // 1 1 1
+        // 1 2 3
+        // 3
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 1);
+        for (int i = 0; i < prefix.length; i++) {
+            count += map.getOrDefault(prefix[i] - k, 0);
+            map.put(prefix[i], map.getOrDefault(prefix[i], 0) + 1);
+        }
+        return count;
     }
 
     /**
