@@ -397,7 +397,42 @@ public class LeetcodeHot00TwoEx {
      * 搜索旋转排序数组
      */
     public int search(int[] nums, int target) {
+        // 4,5,6,7,0,1,2
+        // 找到低谷
+        int end = findLowest(nums);
+        int ans1 = binarySearch(nums, 0, end, target);
+        int ans2 = binarySearch(nums, end + 1, nums.length - 1, target);
+        return ans1 == -1 ? ans2 : ans1;
+    }
 
+    private int findLowest(int[] nums) {
+        int lt = 0;
+        int rt = nums.length - 1;
+        while (rt > lt) {
+            int mid = (lt + rt) / 2;
+            if (nums[lt] < nums[mid]) {
+                lt = mid;
+            } else {
+                rt = mid;
+            }
+        }
+        return lt;
+    }
+
+    private int binarySearch(int[] nums, int start, int end, int target) {
+        int lt = start;
+        int rt = end;
+        while (lt <= rt) {
+            int mid = (lt + rt) / 2;
+            if (nums[mid] > target) {
+                rt = mid - 1;
+            } else if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
     }
 
     /**
