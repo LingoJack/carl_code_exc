@@ -1,9 +1,12 @@
 package leetcodeHot100;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.concurrent.CompletableFuture;
 
 public class LeetcodeHot00TwoEx {
@@ -327,16 +330,67 @@ public class LeetcodeHot00TwoEx {
 
     /**
      * 复原ip地址
+     * 试错了比较多次，且被提示才做出来
+     * 被认为是：没做出来
+     * 核心是count还有ip地址段的判断：先判断长度，再判断前缀0，再判断值合理
      */
     public List<String> restoreIpAddresses(String s) {
-        
+        List<String> res = new ArrayList<>();
+        dfs(s, res, new StringBuilder(), 0, 0);
+        return res;
+    }
+
+    private void dfs(String s, List<String> res, StringBuilder sb, int start, int count) {
+        if (count == 4) {
+            if (start == s.length()) {
+                res.add(sb.substring(0, sb.length() - 1).toString());
+            }
+            return;
+        }
+        for (int i = start; i < s.length(); i++) {
+            String segement = s.substring(start, i + 1);
+            if (valid(segement)) {
+                int size = sb.length();
+                sb.append(segement).append(".");
+                dfs(s, res, sb, i + 1, count + 1);
+                sb.setLength(size);
+            }
+        }
+    }
+
+    private boolean valid(String s) {
+        if (s.length() > 3 || s.startsWith("0") && s.length() > 1) {
+            return false;
+        }
+        int segement = Integer.valueOf(s);
+        if (segement < 0 || segement > 255) {
+            return false;
+        }
+        return true;
     }
 
     /**
      * 用最少的箭引爆气球
+     * 依旧是重试了很多次才做出来
+     * 核心：Integer.compare，还有count和rightBound的初始值的设定
      */
     public int findMinArrowShots(int[][] points) {
-
+        Arrays.sort(points, (a, b) -> {
+            return Integer.compare(a[0], b[0]) == 0 ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
+        });
+        // [1,6][2,8][7,12][10,16]
+        int count = 1;
+        long rightBound = points[0][1];
+        for (int i = 1; i < points.length; i++) {
+            int[] point = points[i];
+            if (rightBound >= point[0]) {
+                rightBound = Math.min(point[1], rightBound);
+            } else {
+                rightBound = point[1];
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -390,19 +444,93 @@ public class LeetcodeHot00TwoEx {
 
     /**
      * LFU
+     * 没做出来
      */
     class LFUCache {
 
-        public LFUCache(int capacity) {
+        private static class Node {
+            int key, value, freq = 1; // 新书只读了一次
+            Node prev, next;
 
+            Node(int key, int value) {
+                this.key = key;
+                this.value = value;
+            }
+        }
+
+        private final int capacity;
+        private final Map<Integer, Node> keyToNode = new HashMap<>();
+        private final Map<Integer, Node> freqToDummy = new HashMap<>();
+        private int minFreq;
+
+        public LFUCache(int capacity) {
+            this.capacity = capacity;
         }
 
         public int get(int key) {
-
+            Node node = getNode(key);
+            return node != null ? node.value : -1;
         }
 
         public void put(int key, int value) {
+            Node node = getNode(key);
+            if (node != null) { // 有这本书
+                node.value = value; // 更新 value
+                return;
+            }
+            if (keyToNode.size() == capacity) { // 书太多了
+                Node dummy = freqToDummy.get(minFreq);
+                Node backNode = dummy.prev; // 最左边那摞书的最下面的书
+                keyToNode.remove(backNode.key);
+                remove(backNode); // 移除
+                if (dummy.prev == dummy) { // 这摞书是空的
+                    freqToDummy.remove(minFreq); // 移除空链表
+                }
+            }
+            node = new Node(key, value); // 新书
+            keyToNode.put(key, node);
+            pushFront(1, node); // 放在「看过 1 次」的最上面
+            minFreq = 1;
+        }
 
+        private Node getNode(int key) {
+            if (!keyToNode.containsKey(key)) { // 没有这本书
+                return null;
+            }
+            Node node = keyToNode.get(key); // 有这本书
+            remove(node); // 把这本书抽出来
+            Node dummy = freqToDummy.get(node.freq);
+            if (dummy.prev == dummy) { // 抽出来后，这摞书是空的
+                freqToDummy.remove(node.freq); // 移除空链表
+                if (minFreq == node.freq) {
+                    minFreq++;
+                }
+            }
+            pushFront(++node.freq, node); // 放在右边这摞书的最上面
+            return node;
+        }
+
+        // 创建一个新的双向链表
+        private Node newList() {
+            Node dummy = new Node(0, 0); // 哨兵节点
+            dummy.prev = dummy;
+            dummy.next = dummy;
+            return dummy;
+        }
+
+        // 在链表头添加一个节点（把一本书放在最上面）
+        private void pushFront(int freq, Node x) {
+            Node dummy = freqToDummy.computeIfAbsent(freq, k -> newList());
+            x.prev = dummy;
+            x.next = dummy.next;
+            x.prev.next = x;
+            x.next.prev = x;
+        }
+
+        // 删除一个节点（抽出一本书）
+        private void remove(Node x) {
+            x.prev.next = x.next;
+            x.next.prev = x.prev;
         }
     }
 
