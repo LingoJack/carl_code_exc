@@ -703,7 +703,7 @@ public class LeetcodeHot00TwoEx {
      * 找出数组的最大公约数（lc1979）
      */
     public int findGCD(int[] nums) {
-
+        
     }
 
     /**
