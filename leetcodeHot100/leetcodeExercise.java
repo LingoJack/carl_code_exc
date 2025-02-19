@@ -3354,8 +3354,8 @@ public class leetcodeExercise {
         int lt = 0, rt = l1;
         while (lt < rt) {
             int take1 = (lt + rt) / 2;
-            int take2 = count - take1 - 1;
-            if (nums1[take1] >= nums2[take2]) {
+            int take2 = count - take1;
+            if (nums1[take1] >= nums2[take2 - 1]) {
                 rt = take1;
             } else {
                 lt = take1 + 1;

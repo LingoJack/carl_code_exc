@@ -437,44 +437,174 @@ public class LeetcodeHot00TwoEx {
 
     /**
      * 寻找两个正序数组的中位数
+     * 没做出来
+     * 有思路但是没能实现
      */
     public double findMedianSortedArraysTwoEx(int[] nums1, int[] nums2) {
+        int l1 = nums1.length;
+        int l2 = nums2.length;
+        if (l1 > l2) {
+            return findMedianSortedArraysTwoEx(nums2, nums1);
+        }
+        // l1 <= l2
+        // 1 3 5 8 9
+        // 2 4 7
+        int take1Left = 0, take1Right = l1;
+        // 前半部分（奇数则取较大部分）的数量: 0000111、000111
+        int take = (l1 + l2 + 1) / 2;
+        while (take1Right > take1Left) {
+            int take1 = (take1Left + take1Right) / 2;
+            int take2 = take - take1;
+            // 判断依据是nums1取的最后一个元素的下一个元素与nums2取的最后一个元素的大小关系
+            if (nums1[(take1 - 1) + 1] > nums2[take2 - 1]) {
+                // 最多就取到这了
+                take1Right = take1;
+            } else if (nums1[(take1 - 1) + 1] <= nums2[take2 - 1]) {
+                // 取少了
+                take1Left = take1 + 1;
+            }
+        }
 
+        return -1;
     }
 
     /**
      * 最长回文子串
      */
     public String longestPalindrome(String s) {
-
+        int size = s.length();
+        boolean[][] dp = new boolean[size][size];
+        int offset = 0;
+        int maxLen = 0;
+        for (int len = 1; len < size + 1; len++) {
+            for (int start = 0; start < size - len + 1; start++) {
+                int end = start + len - 1;
+                if (len <= 2) {
+                    dp[start][end] = s.charAt(start) == s.charAt(end);
+                } else {
+                    dp[start][end] = s.charAt(start) == s.charAt(end) && dp[start + 1][end - 1];
+                }
+                if (dp[start][end] && maxLen < len) {
+                    offset = start;
+                    maxLen = len;
+                }
+            }
+        }
+        return s.substring(offset, offset + maxLen);
     }
 
     /**
      * 数据流的中位数
      */
     class MedianFinder {
+        private PriorityQueue<Integer> minPriorityQueue;
+        private PriorityQueue<Integer> maxPriorityQueue;
 
+        public MedianFinder() {
+            this.minPriorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+            this.maxPriorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+        }
+
+        public void addNum(int num) {
+            // 2 3 4
+            if (maxPriorityQueue.isEmpty() || maxPriorityQueue.peek() >= num) {
+                maxPriorityQueue.offer(num);
+                if (maxPriorityQueue.size() > minPriorityQueue.size() + 1) {
+                    minPriorityQueue.offer(maxPriorityQueue.poll());
+                }
+            } else {
+                minPriorityQueue.offer(num);
+                if (minPriorityQueue.size() > maxPriorityQueue.size()) {
+                    maxPriorityQueue.offer(minPriorityQueue.poll());
+                }
+            }
+        }
+
+        public double findMedian() {
+            if ((maxPriorityQueue.size() + minPriorityQueue.size()) % 2 == 0) {
+                return (minPriorityQueue.peek() + maxPriorityQueue.peek()) / 2.0;
+            } else {
+                return maxPriorityQueue.peek();
+            }
+        }
     }
 
     /**
      * 分割等和子集
+     * 没做出来
+     * 最开始居然想着用回溯做
      */
     public boolean canPartition(int[] nums) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        if (sum % 2 == 1) {
+            return false;
+        }
+        int target = sum / 2;
+        boolean[][] dp = new boolean[nums.length][target + 1];
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] <= target) {
+                dp[i][nums[i]] = true;
+            }
+            dp[i][0] = true;
+        }
+        for (int index = 1; index < nums.length; index++) {
+            for (int curSum = 0; curSum < target + 1; curSum++) {
+                dp[index][curSum] = dp[index - 1][curSum]
+                        || (nums[index] <= curSum && dp[index - 1][curSum - nums[index]]);
+                if (dp[index][target]) {
+                    return true;
+                }
+            }
+        }
+        return dp[nums.length - 1][target];
+    }
 
+    private boolean dfs(int[] nums, int target, int start) {
+        if (target <= 0 || start == nums.length) {
+            return target == 0;
+        }
+        // 放入与不放入元素start
+        return dfs(nums, target, start + 1) || dfs(nums, target - nums[start], start + 1);
     }
 
     /**
      * 最长公共子序列
      */
     public int longestCommonSubsequence(String text1, String text2) {
-
+        int[][] dp = new int[text1.length() + 1][text2.length() + 1];
+        dp[0][0] = 0;
+        for (int i = 1; i < text1.length() + 1; i++) {
+            for (int j = 1; j < text2.length() + 1; j++) {
+                if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[text1.length()][text2.length()];
     }
 
     /**
      * 多数元素
      */
     public int majorityElement(int[] nums) {
-
+        int count = 0;
+        int winner = 0;
+        for (int num : nums) {
+            if (count == 0) {
+                winner = num;
+            }
+            if (winner == num) {
+                count++;
+            } else {
+                count--;
+            }
+        }
+        return winner;
     }
 
     /**
@@ -573,6 +703,20 @@ public class LeetcodeHot00TwoEx {
      * 找出数组的最大公约数（lc1979）
      */
     public int findGCD(int[] nums) {
+
+    }
+
+    /**
+     * 最小公倍数
+     */
+    public int findLCM(int[] nums) {
+
+    }
+
+    /**
+     * 字符串的最小公倍数
+     */
+    public String findGCDString(String s1, String s2) {
 
     }
 }
