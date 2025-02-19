@@ -1,8 +1,10 @@
 package leetcodeHot100;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -703,7 +705,31 @@ public class LeetcodeHot00TwoEx {
      * 找出数组的最大公约数（lc1979）
      */
     public int findGCD(int[] nums) {
-        
+        // 2 5 6 9 10
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int num : nums) {
+            min = Math.min(min, num);
+            max = Math.max(max, num);
+        }
+        // 辗转相除法
+        // 2 5
+        return gcd(min, max);
+    }
+
+    /**
+     * 辗转相除法的模板
+     * 记忆方法：
+     * 上一个余数做被除数，被除数对上个余数取余作为新余数，知道被除数为0
+     */
+    private int gcd(int num1, int num2) {
+        return num2 == 0 ? num1 : gcd(num2, num1 % num2);
+    }
+
+    private void swap(int[] nums, int a, int b) {
+        int t = nums[a];
+        nums[a] = nums[b];
+        nums[b] = t;
     }
 
     /**
@@ -718,5 +744,41 @@ public class LeetcodeHot00TwoEx {
      */
     public String findGCDString(String s1, String s2) {
 
+    }
+
+    /**
+     * 任务调度器
+     * 没做出来 预留空置位是这题的核心，而且要意识到具体的任务名不重要
+     */
+    public int leastInterval(char[] tasks, int n) {
+        int[] taskCounts = new int[26];
+        for (char c : tasks) {
+            taskCounts[c - 'A']++;
+        }
+        int minute = 0;
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+        for (int taskCount : taskCounts) {
+            if (taskCount != 0) {
+                priorityQueue.offer(taskCount);
+            }
+        }
+        while (!priorityQueue.isEmpty()) {
+            List<Integer> list = new ArrayList<>();
+            int time = 0;
+            for (int i = 0; i < n + 1; i++) {
+                if (!priorityQueue.isEmpty()) {
+                    list.add(priorityQueue.poll());
+                    time++;
+                }
+            }
+            for (Integer freq : list) {
+                freq--;
+                if (freq > 0) {
+                    priorityQueue.offer(freq);
+                }
+            }
+            minute += !priorityQueue.isEmpty() ? (n + 1) : time;
+        }
+        return minute;
     }
 }
