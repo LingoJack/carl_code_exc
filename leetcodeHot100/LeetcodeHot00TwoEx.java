@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -610,98 +611,6 @@ public class LeetcodeHot00TwoEx {
     }
 
     /**
-     * LFU
-     * 没做出来
-     */
-    class LFUCache {
-
-        private static class Node {
-            int key, value, freq = 1; // 新书只读了一次
-            Node prev, next;
-
-            Node(int key, int value) {
-                this.key = key;
-                this.value = value;
-            }
-        }
-
-        private final int capacity;
-        private final Map<Integer, Node> keyToNode = new HashMap<>();
-        private final Map<Integer, Node> freqToDummy = new HashMap<>();
-        private int minFreq;
-
-        public LFUCache(int capacity) {
-            this.capacity = capacity;
-        }
-
-        public int get(int key) {
-            Node node = getNode(key);
-            return node != null ? node.value : -1;
-        }
-
-        public void put(int key, int value) {
-            Node node = getNode(key);
-            if (node != null) { // 有这本书
-                node.value = value; // 更新 value
-                return;
-            }
-            if (keyToNode.size() == capacity) { // 书太多了
-                Node dummy = freqToDummy.get(minFreq);
-                Node backNode = dummy.prev; // 最左边那摞书的最下面的书
-                keyToNode.remove(backNode.key);
-                remove(backNode); // 移除
-                if (dummy.prev == dummy) { // 这摞书是空的
-                    freqToDummy.remove(minFreq); // 移除空链表
-                }
-            }
-            node = new Node(key, value); // 新书
-            keyToNode.put(key, node);
-            pushFront(1, node); // 放在「看过 1 次」的最上面
-            minFreq = 1;
-        }
-
-        private Node getNode(int key) {
-            if (!keyToNode.containsKey(key)) { // 没有这本书
-                return null;
-            }
-            Node node = keyToNode.get(key); // 有这本书
-            remove(node); // 把这本书抽出来
-            Node dummy = freqToDummy.get(node.freq);
-            if (dummy.prev == dummy) { // 抽出来后，这摞书是空的
-                freqToDummy.remove(node.freq); // 移除空链表
-                if (minFreq == node.freq) {
-                    minFreq++;
-                }
-            }
-            pushFront(++node.freq, node); // 放在右边这摞书的最上面
-            return node;
-        }
-
-        // 创建一个新的双向链表
-        private Node newList() {
-            Node dummy = new Node(0, 0); // 哨兵节点
-            dummy.prev = dummy;
-            dummy.next = dummy;
-            return dummy;
-        }
-
-        // 在链表头添加一个节点（把一本书放在最上面）
-        private void pushFront(int freq, Node x) {
-            Node dummy = freqToDummy.computeIfAbsent(freq, k -> newList());
-            x.prev = dummy;
-            x.next = dummy.next;
-            x.prev.next = x;
-            x.next.prev = x;
-        }
-
-        // 删除一个节点（抽出一本书）
-        private void remove(Node x) {
-            x.prev.next = x.next;
-            x.next.prev = x.prev;
-        }
-    }
-
-    /**
      * 找出数组的最大公约数（lc1979）
      */
     public int findGCD(int[] nums) {
@@ -734,16 +643,64 @@ public class LeetcodeHot00TwoEx {
 
     /**
      * 最小公倍数
+     * 利用公式，a > 0，b > 0 两数字的最小公倍数lcm和最大公约数gcd满足：
+     * lcm = (a * b) / gcd
      */
-    public int findLCM(int[] nums) {
+    public long findLCM(long a, long b) {
+        return (long) Math.abs(a * b) / getGCD(a, b);
+    }
 
+    private long getGCD(long a, long b) {
+        return b == 0 ? a : getGCD(b, a % b);
     }
 
     /**
-     * 字符串的最小公倍数
+     * 最小公倍数等于K的子数组
+     */
+    public int subarrayLCM(int[] nums, int k) {
+        int n = nums.length;
+        int count = 0;
+        // [i,j]的最小公倍数为dp[i][j]
+        long[][] dp = new long[n][n];
+        for (int len = 1; len < n + 1; len++) {
+            for (int start = 0; start < n - len + 1; start++) {
+                int end = start + len - 1;
+                if (len == 1) {
+                    dp[start][end] = nums[start];
+                } else {
+                    // 应对溢出的测试用例
+                    dp[start][end] = dp[start][end - 1] > k ? (k + 1) : findLCM(dp[start][end - 1], nums[end]);
+                }
+                if (dp[start][end] == k) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 字符串的最小公倍数先按照“字符串最小公倍数”的长度，
+     * 用他们自身来各自构造两个字符串的相等，
+     * 如果构造的字符串相等，
+     * 那么构造出来的两个字符串就是他们的“字符串最小公倍数”，如果不相等则就直接输出-1
      */
     public String findGCDString(String s1, String s2) {
-
+        int l1 = s1.length(), l2 = s2.length();
+        long lcm = findLCM(l1, l2);
+        String t1, t2;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lcm / l1; i++) {
+            sb.append(s1);
+        }
+        t1 = sb.toString();
+        sb.setLength(0);
+        for (int i = 0; i < lcm / l2; i++) {
+            sb.append(s2);
+        }
+        t2 = sb.toString();
+        sb.setLength(0);
+        return t1.equals(t2) ? t1 : "-1";
     }
 
     /**
@@ -780,5 +737,103 @@ public class LeetcodeHot00TwoEx {
             minute += !priorityQueue.isEmpty() ? (n + 1) : time;
         }
         return minute;
+    }
+
+    /**
+     * LFU
+     * 看了灵神的思路才做出来
+     * 核心：
+     * 每个频率一个双向链表
+     * 维护一个最小频率
+     * 一个key到Node的缓存
+     */
+    class LFUCache {
+
+        public class Node {
+            private int key;
+            private int val;
+            private int freq;
+
+            public Node() {
+                this.freq = 1;
+            }
+
+            public Node(int key, int val) {
+                this.key = key;
+                this.val = val;
+                this.freq = 1;
+            }
+        }
+
+        private Map<Integer, Node> cache;
+
+        private Map<Integer, LinkedList<Node>> freqListMap;
+
+        private int capacity;
+
+        private int minFreq;
+
+        public LFUCache(int capacity) {
+            this.capacity = capacity;
+            this.cache = new HashMap<>();
+            this.freqListMap = new HashMap<>();
+        }
+
+        public int get(int key) {
+            Node node = cache.get(key);
+            if (node == null) {
+                return -1;
+            }
+            LinkedList<Node> freqList = freqListMap.get(node.freq);
+            freqList.remove(node);
+            if (freqListMap.get(minFreq).isEmpty()) {
+                minFreq++;
+            }
+            node.freq++;
+            freqListMap.putIfAbsent(node.freq, new LinkedList<>());
+            freqListMap.get(node.freq).addFirst(node);
+            return node.val;
+        }
+
+        public void put(int key, int value) {
+            Node node = cache.get(key);
+            if (node != null) {
+                get(key);
+                node.val = value;
+                return;
+            }
+            // node == null
+            if (cache.size() >= capacity) {
+                LinkedList<Node> minFreqList = freqListMap.get(minFreq);
+                Node removedNode = minFreqList.removeLast();
+                cache.remove(removedNode.key);
+            }
+            node = new Node(key, value);
+            minFreq = 1;
+            cache.put(key, node);
+            freqListMap.putIfAbsent(node.freq, new LinkedList<>());
+            LinkedList<Node> freqList = freqListMap.get(node.freq);
+            freqList.addFirst(node);
+        }
+    }
+
+    /**
+     * 树的最长路径（二叉树的直径）
+     */
+    public int diameterOfBinaryTree(TreeNode root) {
+        dfs(root);
+        return maxDiameter;
+    }
+
+    private int maxDiameter = 0;
+
+    private int dfs(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = dfs(node.left);
+        int rt = dfs(node.right);
+        maxDiameter = Math.max(maxDiameter, lt + rt);
+        return Math.max(lt, rt) + 1;
     }
 }
