@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 
 public class LeetcodeHot00TwoEx {
@@ -835,5 +837,300 @@ public class LeetcodeHot00TwoEx {
         int rt = dfs(node.right);
         maxDiameter = Math.max(maxDiameter, lt + rt);
         return Math.max(lt, rt) + 1;
+    }
+
+    public static void main(String[] args) {
+        LeetcodeHot00TwoEx l = new LeetcodeHot00TwoEx();
+        MyQueue myQueue = l.new MyQueue();
+        myQueue.offer(1);
+        myQueue.offer(2);
+        myQueue.offer(3);
+        myQueue.offer(4);
+        myQueue.offer(5);
+        for (int i = 0; i < 5; i++) {
+            System.out.println(myQueue.poll());
+        }
+    }
+
+    /**
+     * 反转英语句子
+     */
+    public String reverseWords(String input) {
+        String[] statements = input.split(",");
+        StringBuilder sb = new StringBuilder();
+        for (String statement : statements) {
+            sb.append(reverseStatement(statement)).append(",");
+        }
+        return sb.substring(0, sb.length() - 1).toString();
+    }
+
+    private String reverseStatement(String statement) {
+        if (statement.isBlank()) {
+            return null;
+        }
+        Deque<String> stack = new ArrayDeque<>();
+        int start = 0;
+        while (start < statement.length()) {
+            while (statement.charAt(start) == ' ') {
+                start++;
+            }
+            int len = 1;
+            while (start + len - 1 < statement.length() && statement.charAt(start + len - 1) != ' ') {
+                len++;
+            }
+            stack.push(statement.substring(start, Math.min(start + len, statement.length())));
+            start = start + len;
+        }
+        StringBuilder sb = new StringBuilder();
+        while (!stack.isEmpty()) {
+            sb.append(stack.pop()).append(" ");
+        }
+        return sb.substring(0, sb.length() - 1).toString();
+    }
+
+    /**
+     * 用两个栈实现队列
+     */
+    public class MyQueue {
+        Deque<Integer> stack;
+        Deque<Integer> tempStack;
+
+        public MyQueue() {
+            stack = new ArrayDeque<>();
+            tempStack = new ArrayDeque<>();
+        }
+
+        public void offer(int x) {
+            while (!stack.isEmpty()) {
+                tempStack.push(stack.pop());
+            }
+            stack.push(x);
+            while (!tempStack.isEmpty()) {
+                stack.push(tempStack.pop());
+            }
+        }
+
+        public int peek() {
+            return stack.peek();
+        }
+
+        public int poll() {
+            return stack.pop();
+        }
+
+        public boolean empty() {
+            return stack.isEmpty();
+        }
+    }
+
+    /**
+     * 四数之和
+     */
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        Arrays.sort(nums); // 先对数组进行排序
+        List<List<Integer>> res = new ArrayList<>();
+        int len = nums.length;
+        for (int first = 0; first < len - 3; first++) {
+            if (first > 0 && nums[first] == nums[first - 1]) {
+                continue; // 跳过重复元素
+            }
+            for (int second = first + 1; second < len - 2; second++) {
+                if (second > first + 1 && nums[second] == nums[second - 1]) {
+                    continue; // 跳过重复元素
+                }
+                int third = second + 1, fourth = len - 1;
+                long sumToFind = (long) target - (long) nums[first] - (long) nums[second]; // 注意溢出
+                while (third < fourth) {
+                    if (nums[third] + nums[fourth] < sumToFind) {
+                        third++;
+                    } else if (nums[third] + nums[fourth] > sumToFind) {
+                        fourth--;
+                    } else {
+                        res.add(Arrays.asList(nums[first], nums[second], nums[third], nums[fourth]));
+                        while (third < fourth && nums[third] == nums[++third])
+                            ; // 跳过重复元素
+                        while (third < fourth && nums[fourth] == nums[--fourth])
+                            ; // 跳过重复元素
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 使字符串达到最小字典序的最少交换次数
+     * 感觉是快排？其实就是对每个字母排序
+     * 那么就是快排找到应该插入的位置，如果一样就不自增计数
+     * 腾讯wxg二面
+     */
+    public int minSwapTimeExceed(String s) {
+        char[] chars = s.toCharArray();
+        int len = chars.length;
+        int count = 0;
+        for (int i = 0; i < len; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < len; j++) {
+                if (chars[j] < chars[minIndex]) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                swap(chars, i, minIndex);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 使字符串达到最小字典序的最少交换次数
+     * wxg 微信支付二面
+     * 可以明确的是，最少交换次数一定小于等于逆序对数
+     */
+    public int minSwap(String s) {
+        char[] chars = s.toCharArray();
+        int n = chars.length;
+        char[] sorted = chars.clone();
+        Arrays.sort(sorted);
+        // 预处理每个字符在排序后的位置队列
+        Map<Character, Queue<Integer>> charPositions = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            char c = sorted[i];
+            charPositions.putIfAbsent(c, new LinkedList<>());
+            charPositions.get(c).add(i);
+        }
+        // 构建映射数组，记录原字符串每个字符应该映射到排序后的哪个位置
+        int[] map = new int[n];
+        for (int i = 0; i < n; i++) {
+            char c = chars[i];
+            map[i] = charPositions.get(c).poll();
+        }
+        // 计算环的数量，从而计算最少交换次数
+        boolean[] visited = new boolean[n];
+        int swaps = 0;
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                int cycleSize = 0;
+                int j = i;
+                while (!visited[j]) {
+                    visited[j] = true;
+                    j = map[j];
+                    cycleSize++;
+                }
+                swaps += (cycleSize - 1);
+            }
+        }
+        return swaps;
+    }
+
+    private void swap(char[] chars, int i, int j) {
+        char temp = chars[i];
+        chars[i] = chars[j];
+        chars[j] = temp;
+    }
+
+    /**
+     * 重排链表
+     */
+    public void reorderList(ListNode head) {
+        // 1 2 3 4
+        // s
+        // f
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode second = slow.next;
+        slow.next = null;
+        ListNode last = null;
+        ListNode temp = second;
+        while (temp != null) {
+            ListNode next = temp.next;
+            temp.next = last;
+            last = temp;
+            temp = next;
+        }
+        ListNode node2 = last;
+        ListNode node1 = head;
+        ListNode dummy = new ListNode();
+        ListNode prev = dummy;
+        int count = 0;
+        while (node1 != null && node2 != null) {
+            if (count % 2 == 0) {
+                prev.next = node1;
+                prev = node1;
+                node1 = node1.next;
+            } else {
+                prev.next = node2;
+                prev = node2;
+                node2 = node2.next;
+            }
+            count++;
+        }
+        prev.next = node1 == null ? node2 : node1;
+        head = dummy.next;
+    }
+
+    private ListNode[] spiltTwo(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode second = slow.next;
+        slow.next = null;
+        return new ListNode[] { head, second };
+    }
+
+    private ListNode reverse(ListNode head) {
+        ListNode last = null;
+        ListNode node = head;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return last;
+    }
+
+    /**
+     * 不同路径II
+     */
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int row = obstacleGrid.length, col = obstacleGrid[0].length;
+        int[][] dp = new int[row][col];
+        boolean hasObstacle = false;
+        for (int i = 0; i < col; i++) {
+            hasObstacle = hasObstacle || (obstacleGrid[0][i] == 1);
+            if (!hasObstacle) {
+                dp[0][i] = 1;
+            } else {
+                dp[0][i] = 0;
+            }
+        }
+        hasObstacle = false;
+        for (int i = 0; i < row; i++) {
+            hasObstacle = hasObstacle || (obstacleGrid[i][0] == 1);
+            if (!hasObstacle) {
+                dp[i][0] = 1;
+            } else {
+                dp[i][0] = 0;
+            }
+        }
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                if (obstacleGrid[i][j] == 1) {
+                    dp[i][j] = 0;
+                    continue;
+                }
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[row - 1][col - 1];
     }
 }
