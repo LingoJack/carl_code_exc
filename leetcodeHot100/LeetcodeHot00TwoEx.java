@@ -1162,4 +1162,37 @@ public class LeetcodeHot00TwoEx {
         }
         return num != 1;
     }
+
+    /**
+     * 组成新集合
+     */
+    public List<List<Integer>> subsetCombinations(List<List<Integer>> lists) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(lists, 0, new HashMap<>(), res, new ArrayList<>());
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> lists, int start, Map<Integer, Boolean> existed, List<List<Integer>> res,
+            List<Integer> list) {
+        if (start == list.size()) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        List<Integer> curList = lists.get(start);
+        for (int i = 0; i < curList.size(); i++) {
+            int element = curList.get(i);
+            if (!existed.getOrDefault(element, false)) {
+                list.add(element);
+                existed.put(element, true);
+                dfs(lists, start + 1, existed, res, list);
+                list.remove(list.size() - 1);
+                existed.put(element, false);
+            }
+        }
+    }
+
+    /**
+     * 
+     */
+    
 }
