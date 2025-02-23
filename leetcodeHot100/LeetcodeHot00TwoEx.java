@@ -1133,4 +1133,33 @@ public class LeetcodeHot00TwoEx {
         }
         return dp[row - 1][col - 1];
     }
+
+    /**
+     * 方阵求对角线元素最大质数
+     */
+    public int diagonalPrime(int[][] nums) {
+        // 1 2 3
+        // 4 5 6
+        // 7 8 9
+        int len = nums.length;
+        int max = 0;
+        for (int i = 0; i < len; i++) {
+            if (isPrime(nums[i][i])) {
+                max = Math.max(max, nums[i][i]);
+            }
+            if (isPrime(nums[i][len - 1 - i])) {
+                max = Math.max(max, nums[i][len - 1 - i]);
+            }
+        }
+        return max;
+    }
+
+    private boolean isPrime(int num) {
+        for (int i = 2; i * i <= num; i++) {
+            if (num % i == 0) {
+                return false;
+            }
+        }
+        return num != 1;
+    }
 }
