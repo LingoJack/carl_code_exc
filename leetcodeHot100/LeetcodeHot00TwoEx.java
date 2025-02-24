@@ -1164,35 +1164,49 @@ public class LeetcodeHot00TwoEx {
     }
 
     /**
-     * 组成新集合
+     * 删除链表的倒数第N个节点
      */
-    public List<List<Integer>> subsetCombinations(List<List<Integer>> lists) {
-        List<List<Integer>> res = new ArrayList<>();
-        dfs(lists, 0, new HashMap<>(), res, new ArrayList<>());
-        return res;
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        // 2 3 5 4
+        //         f
+        //     s
+        // n = 2
+        ListNode fast = head;
+        int count = 0;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode dummy = new ListNode(0, head);
+        ListNode last = dummy;
+        ListNode slow = head;
+        while(count > n && slow != null) {
+            last = slow;
+            slow = slow.next;
+            count--;
+        }
+        if(slow != null) {
+            last.next = slow.next;
+            slow.next = null;
+        }
+        return dummy.next;
     }
 
-    private void dfs(List<List<Integer>> lists, int start, Map<Integer, Boolean> existed, List<List<Integer>> res,
-            List<Integer> list) {
-        if (start == list.size()) {
-            res.add(new ArrayList<>(list));
-            return;
+    public class ListNode {
+        int val;
+        ListNode next;
+
+        public ListNode() {
+
         }
-        List<Integer> curList = lists.get(start);
-        for (int i = 0; i < curList.size(); i++) {
-            int element = curList.get(i);
-            if (!existed.getOrDefault(element, false)) {
-                list.add(element);
-                existed.put(element, true);
-                dfs(lists, start + 1, existed, res, list);
-                list.remove(list.size() - 1);
-                existed.put(element, false);
-            }
+
+        public ListNode(int val) {
+            this.val = val;
+        }
+
+        public ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
         }
     }
-
-    /**
-     * 
-     */
-    
 }
