@@ -1164,35 +1164,108 @@ public class LeetcodeHot00TwoEx {
     }
 
     /**
-     * 组成新集合
+     * 删除链表的倒数第N个节点
      */
-    public List<List<Integer>> subsetCombinations(List<List<Integer>> lists) {
-        List<List<Integer>> res = new ArrayList<>();
-        dfs(lists, 0, new HashMap<>(), res, new ArrayList<>());
-        return res;
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        // 2 3 5 4
+        // f
+        // s
+        // n = 2
+        ListNode fast = head;
+        int count = 0;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode dummy = new ListNode(0, head);
+        ListNode last = dummy;
+        ListNode slow = head;
+        while (count > n && slow != null) {
+            last = slow;
+            slow = slow.next;
+            count--;
+        }
+        if (slow != null) {
+            last.next = slow.next;
+            slow.next = null;
+        }
+        return dummy.next;
     }
 
-    private void dfs(List<List<Integer>> lists, int start, Map<Integer, Boolean> existed, List<List<Integer>> res,
-            List<Integer> list) {
-        if (start == list.size()) {
-            res.add(new ArrayList<>(list));
-            return;
+    public class ListNode {
+        int val;
+        ListNode next;
+
+        public ListNode() {
+
         }
-        List<Integer> curList = lists.get(start);
-        for (int i = 0; i < curList.size(); i++) {
-            int element = curList.get(i);
-            if (!existed.getOrDefault(element, false)) {
-                list.add(element);
-                existed.put(element, true);
-                dfs(lists, start + 1, existed, res, list);
-                list.remove(list.size() - 1);
-                existed.put(element, false);
-            }
+
+        public ListNode(int val) {
+            this.val = val;
+        }
+
+        public ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
         }
     }
 
     /**
-     *  
+     * 买卖股票的最佳时机
+     * 只能交易一次
      */
-    
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+        // 0 未持有 1 持有
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+            dp[i][1] = Math.max(-prices[i], dp[i - 1][1]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机II
+     * 不限制交易次数
+     */
+    public int maxProfitII(int[] prices) {
+        int len = prices.length;
+        // 0 未持有 1 持有
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 没做出来
+     */
+    public int maxProfitIII(int[] prices) {
+        int len = prices.length;
+        // i,j,k 标识 j 交易次数，k持有状态
+        int[][][] dp = new int[len][3][2];
+        for(int tradeCount = 0; tradeCount < 3; tradeCount++) {
+            
+        }
+        for (int index = 1; index < len; index++) {
+            for (int tradeCount = 0; index < 3; tradeCount++) {
+                if (tradeCount > 0) {
+                    dp[index][tradeCount][0] = Math.max(dp[index - 1][tradeCount][0], dp[index - 1][tradeCount - 1][1] + prices[index]);
+                    dp[index][tradeCount][1] = Math.max(dp[index - 1][tradeCount][0] - prices[index], dp[index - 1][tradeCount][1]);
+                } else {
+                    // 交易次数 == 0
+                    dp[index][0][0] = Math.max(dp[index - 1][0][1], dp[index - 1][0][0] - prices[index]);
+                }
+            }
+        }
+        return dp[len - 1][2][0];
+    }
 }
