@@ -1247,25 +1247,47 @@ public class LeetcodeHot00TwoEx {
     /**
      * 买卖股票的最佳时机III
      * 没做出来
+     * 股票系列应该从状态机的角度去思考
+     * dfs解法，从最后一天往前推
      */
     public int maxProfitIII(int[] prices) {
         int len = prices.length;
-        // i,j,k 标识 j 交易次数，k持有状态
-        int[][][] dp = new int[len][3][2];
-        for(int tradeCount = 0; tradeCount < 3; tradeCount++) {
-            
+        int tradeNum = 2;
+        return dfs(prices, len - 1, tradeNum, false);
+    }
+
+    private int dfs(int[] prices, int day, int tradeNum, boolean hold) {
+        if (tradeNum < 0) {
+            return Integer.MIN_VALUE;
         }
-        for (int index = 1; index < len; index++) {
-            for (int tradeCount = 0; index < 3; tradeCount++) {
-                if (tradeCount > 0) {
-                    dp[index][tradeCount][0] = Math.max(dp[index - 1][tradeCount][0], dp[index - 1][tradeCount - 1][1] + prices[index]);
-                    dp[index][tradeCount][1] = Math.max(dp[index - 1][tradeCount][0] - prices[index], dp[index - 1][tradeCount][1]);
-                } else {
-                    // 交易次数 == 0
-                    dp[index][0][0] = Math.max(dp[index - 1][0][1], dp[index - 1][0][0] - prices[index]);
-                }
+        if (day == -1) {
+            return hold ? Integer.MIN_VALUE : 0;
+        }
+        if (hold) {
+            return Math.max(dfs(prices, day - 1, tradeNum, false) - prices[day], dfs(prices, day - 1, tradeNum, true));
+        } else {
+            return Math.max(dfs(prices, day - 1, tradeNum - 1, true) + prices[day],
+                    dfs(prices, day - 1, tradeNum, false));
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 没做出来
+     */
+    public int maxProfitIIIWithDp(int[] prices) {
+        int len = prices.length;
+        int tradeNum = 2;
+        int[][][] dp = new int[len + 1][tradeNum + 1][2];
+        for (int i = 0; i < tradeNum + 1; i++) {
+            dp[0][i][1] = 0;
+        }
+        for (int i = 1; i < len + 1; i++) {
+            for (int j = 1; j < tradeNum + 1; j++) {
+                dp[i][j][0] = Math.max(dp[i - 1][j - 1][1] + prices[i - 1], dp[i - 1][j][0]);
+                dp[i][j][1] = Math.max(dp[i - 1][j][0] - prices[i - 1], dp[i - 1][j][1]);
             }
         }
-        return dp[len - 1][2][0];
+        return dp[len][tradeNum][0];
     }
 }
