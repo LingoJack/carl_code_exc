@@ -1290,4 +1290,30 @@ public class LeetcodeHot00TwoEx {
         }
         return dp[len][tradeNum][0];
     }
+
+    /**
+     * 单词拆分
+     * 没做出来
+     * 感觉代码随想录还得刷一遍
+     * 或者说，你其实缺少框架？hot100要循环往复刷
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int len = s.length();
+        // dp[i] 仅考虑前i个字符是否可以拆分
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        // 0leetcode
+        // 4
+        for (int i = 1; i <= len; i++) {
+            for (String word : wordDict) {
+                dp[i] = (i - word.length() >= 0 && dp[i - word.length()]
+                        && s.substring(i - word.length(), Math.min(len, i)).equals(word))
+                        || dp[i];
+                if (dp[i]) {
+                    break;
+                }
+            }
+        }
+        return dp[len];
+    }
 }
