@@ -1274,21 +1274,74 @@ public class LeetcodeHot00TwoEx {
     /**
      * 买卖股票的最佳时机III
      * 没做出来
+     * 核心是初始化，以及以买入为一次交易的计数点
      */
     public int maxProfitIIIWithDp(int[] prices) {
         int len = prices.length;
         int tradeNum = 2;
-        int[][][] dp = new int[len + 1][tradeNum + 1][2];
+        int[][][] dp = new int[len][tradeNum + 1][2];
         for (int i = 0; i < tradeNum + 1; i++) {
-            dp[0][i][1] = 0;
+            dp[0][i][1] = -prices[0];
         }
-        for (int i = 1; i < len + 1; i++) {
+        for (int i = 1; i < len; i++) {
             for (int j = 1; j < tradeNum + 1; j++) {
-                dp[i][j][0] = Math.max(dp[i - 1][j - 1][1] + prices[i - 1], dp[i - 1][j][0]);
-                dp[i][j][1] = Math.max(dp[i - 1][j][0] - prices[i - 1], dp[i - 1][j][1]);
+                dp[i][j][0] = Math.max(dp[i - 1][j][1] + prices[i], dp[i - 1][j][0]);
+                dp[i][j][1] = Math.max(dp[i - 1][j - 1][0] - prices[i], dp[i - 1][j][1]);
             }
         }
-        return dp[len][tradeNum][0];
+        return dp[len - 1][tradeNum][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机IV
+     */
+    public int maxProfit(int k, int[] prices) {
+        int len = prices.length;
+        int tradeNum = k;
+        int[][][] dp = new int[len][tradeNum + 1][2];
+        for (int i = 0; i < tradeNum + 1; i++) {
+            dp[0][i][1] = -prices[0];
+        }
+        for (int i = 1; i < len; i++) {
+            for (int j = 1; j < tradeNum + 1; j++) {
+                dp[i][j][0] = Math.max(dp[i - 1][j][1] + prices[i], dp[i - 1][j][0]);
+                dp[i][j][1] = Math.max(dp[i - 1][j - 1][0] - prices[i], dp[i - 1][j][1]);
+            }
+        }
+        return dp[len - 1][tradeNum][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机含手续费
+     */
+    public int maxProfitFee(int[] prices, int fee) {
+        int len = prices.length;
+        // 0 未持有 1 持有
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0] - fee;
+        dp[0][0] = 0;
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+            dp[i][1] = Math.max(dp[i - 1][0] - prices[i] - fee, dp[i - 1][1]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机含冷冻期
+     */
+    public int maxProfitFrozen(int[] prices) {
+        int len = prices.length;
+        // 0 未持有 1 持有
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        dp[0][0] = 0;
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);
+            dp[i][1] = i >= 2 ? Math.max(dp[i - 2][0] - prices[i], dp[i - 1][1])
+                    : Math.max(dp[0][1], dp[1][0] - prices[1]);
+        }
+        return dp[len - 1][0];
     }
 
     /**
