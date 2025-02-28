@@ -122,100 +122,75 @@ public class Leetcodehot100ThreeEx {
     }
 
     /**
-     * 基于时间轮的滑动窗口限流
+     * 最大交换
+     * ac 本题的关键是利用后缀最大值表和倒排索引
      */
-    public class SlidingWindowRateLimiter {
-
-        public class TimeWheel {
-            private final int size; // 时间轮的槽数量
-            private final int interval; // 每个槽对应的时间间隔，单位是毫秒
-            private final AtomicInteger[] slots; // 存储每个槽内的请求计数
-            private final ReentrantLock[] locks; // 每个槽的锁
-            private int currentSlot = 0; // 当前时间轮槽的位置
-
-            public TimeWheel(int size, int interval) {
-                this.size = size;
-                this.interval = interval;
-                this.slots = new AtomicInteger[size];
-                this.locks = new ReentrantLock[size];
-
-                // 初始化每个槽
-                for (int i = 0; i < size; i++) {
-                    slots[i] = new AtomicInteger(0);
-                    locks[i] = new ReentrantLock();
+    public int maximumSwap(int num) {
+        List<Integer> list = new ArrayList<>();
+        while (num > 0) {
+            list.add(0, num % 10);
+            num /= 10;
+        }
+        // 2 7 3 6
+        // s
+        // f
+        int max = Integer.MIN_VALUE;
+        int[] suffixMax = new int[list.size()];
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < list.size(); i++) {
+            map.put(list.get(i), i);
+            suffixMax[list.size() - 1 - i] = Math.max(i == 0 ? Integer.MIN_VALUE : suffixMax[list.size() - i],
+                    list.get(list.size() - 1 - i));
+        }
+        for (int i = 0; i < list.size(); i++) {
+            max = suffixMax[i];
+            if (!list.get(i).equals(max)) {
+                if (map.get(max) > i) {
+                    swap(list, i, map.get(max));
+                    break;
                 }
             }
+        }
+        int sum = 0;
+        int power = 0;
+        int index = list.size() - 1;
+        while (index >= 0) {
+            sum += list.get(index--) * Math.pow(10, power++);
+        }
+        return sum;
+    }
 
-            // 获取当前时间轮位置的槽的计数
-            public int getSlotCount() {
-                return slots[currentSlot].get();
-            }
+    private void swap(List<Integer> list, int idx1, int idx2) {
+        int t = list.get(idx1);
+        list.set(idx1, list.get(idx2));
+        list.set(idx2, t);
+    }
 
-            // 增加当前槽的计数
-            public void addRequest() {
-                slots[currentSlot].incrementAndGet();
-            }
-
-            // 每隔指定时间更新一次时间轮，模拟滑动
-            public void tick() {
-                currentSlot = (currentSlot + 1) % size;
-            }
-
-            // 获取指定槽的计数
-            public int getCountAtSlot(int slot) {
-                return slots[slot].get();
-            }
-
-            // 重置指定槽的计数
-            public void resetSlot(int slot) {
-                slots[slot].set(0);
-            }
-
-            public int getSize() {
-                return size;
-            }
-
-            public int getInterval() {
-                return interval;
-            }
-
-            public ReentrantLock getSlotLock(int slot) {
-                return locks[slot];
+    /**
+     * 盛最多水的容器
+     */
+    public int maxArea(int[] height) {
+        int len = height.length;
+        int lt = 0;
+        int rt = len - 1;
+        int max = 0;
+        while (rt > lt) {
+            int h = Math.min(height[lt], height[rt]);
+            int w = rt - lt;
+            max = Math.max(max, w * h);
+            if (height[rt] < height[lt]) {
+                rt--;
+            } else {
+                lt++;
             }
         }
+        return max;
+    }
 
-        private final TimeWheel timeWheel;
-        private final int maxRequests; // 允许的最大请求数
-
-        public SlidingWindowRateLimiter(int maxRequests, int windowSize, int windowInterval) {
-            this.maxRequests = maxRequests;
-            this.timeWheel = new TimeWheel(windowSize, windowInterval);
-
-            // 启动时间轮更新任务
-            new Thread(() -> {
-                while (true) {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(windowInterval);
-                        timeWheel.tick();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }).start();
-        }
-
-        // 判断是否允许请求
-        public boolean allowRequest() {
-            int currentSlotCount = timeWheel.getSlotCount();
-
-            // 如果当前时间轮中的请求数已超过最大请求数，拒绝请求
-            if (currentSlotCount >= maxRequests) {
-                return false;
-            }
-
-            // 否则，允许请求，并且增加请求计数
-            timeWheel.addRequest();
-            return true;
-        }
+    /**
+     * 三数之和
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        
     }
 }
