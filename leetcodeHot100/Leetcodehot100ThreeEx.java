@@ -1,5 +1,6 @@
 package leetcodeHot100;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -191,6 +192,132 @@ public class Leetcodehot100ThreeEx {
      * 三数之和
      */
     public List<List<Integer>> threeSum(int[] nums) {
-        
+        // -1,0,1,2,-1,-4
+        // -4 -1 -1 0 1 2
+        // i l r
+        Arrays.sort(nums);
+        int len = nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        for (int i = 0; i <= len - 2; i++) {
+            if (i >= 1 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            int target = -nums[i];
+            int lt = i + 1;
+            int rt = len - 1;
+            while (lt < rt) {
+                int sum = nums[lt] + nums[rt];
+                if (sum > target) {
+                    rt--;
+                    while (lt < rt && nums[rt] == nums[rt + 1]) {
+                        rt--;
+                    }
+                } else if (sum < target) {
+                    lt++;
+                    while (lt < rt && nums[lt] == nums[lt - 1]) {
+                        lt++;
+                    }
+                } else {
+                    res.add(List.of(nums[i], nums[lt], nums[rt]));
+                    lt++;
+                    while (lt < rt && nums[lt] == nums[lt - 1]) {
+                        lt++;
+                    }
+                }
+            }
+        }
+        return res;
     }
+
+    /**
+     * 接雨水
+     */
+    public int trap(int[] height) {
+        int area = 0;
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int i = 0; i < height.length; i++) {
+            while (!stack.isEmpty() && height[stack.peek()] < height[i]) {
+                int low = height[stack.pop()];
+                int h = stack.isEmpty() ? 0 : Math.min(height[i], height[stack.peek()]) - low;
+                int w = stack.isEmpty() ? 0 : i - stack.peek() - 1;
+                area += w * h;
+            }
+            stack.push(i);
+        }
+        return area;
+    }
+
+    /**
+     * 无重复字符的最长子串
+     * 之前都对了，这次反倒没做出来
+     * 因为我看了滑动窗口的框架反倒错了???
+     * 不过稍微改一下又对了，还是按照模板来写
+     */
+    public int lengthOfLongestSubstring(String s) {
+        char[] str = s.toCharArray();
+        int lt = 0;
+        int rt = 0;
+        int max = 0;
+        int len = s.length();
+        Map<Character, Boolean> exist = new HashMap<>();
+        while (rt < len) {
+            exist.put(str[rt], true);
+            max = Math.max(max, rt - lt + 1);
+            rt++;
+            while (rt < len && exist.getOrDefault(str[rt], false)) {
+                exist.put(str[lt++], false);
+            }
+        }
+        return max;
+    }
+
+    /**
+     * 找到字符串中所有字母异位词
+     * 滑动窗口我很不熟
+     * 没做出来
+     * 操，但好像是我把这题和最小覆盖子串那题记混了
+     * 不过都是用滑动窗口来做的，之前我的做法十分的混乱
+     * 而实际上是有方法论的
+     * 扩大后的效果 -> 判断是否加入结果集 -> rt++ -> 缩小后的效果 -> lt++
+     */
+    public List<Integer> findAnagrams(String s, String p) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> contain = new HashMap<>();
+        for (char c : p.toCharArray()) {
+            need.put(c, need.getOrDefault(c, 0) + 1);
+        }
+        int valid = 0;
+        int lt = 0, rt = 0;
+        List<Integer> list = new ArrayList<>();
+        while (rt < s.length()) {
+            // 扩大
+            char rc = s.charAt(rt);
+            if (need.containsKey(rc)) {
+                contain.put(rc, contain.getOrDefault(rc, 0) + 1);
+                if (contain.get(rc).equals(need.get(rc))) {
+                    valid++;
+                }
+                if (valid == need.size()) {
+                    list.add(lt);
+                }
+            }
+            rt++;
+            // 缩小
+            while (rt - lt + 1 > p.length()) {
+                char lc = s.charAt(lt);
+                if (need.containsKey(lc)) {
+                    if (contain.get(lc).equals(need.get(lc))) {
+                        valid--;
+                    }
+                    contain.put(lc, contain.get(lc) - 1);
+                }
+                lt++;
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 
+     */
 }

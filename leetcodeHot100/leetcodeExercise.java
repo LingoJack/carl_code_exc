@@ -518,7 +518,7 @@ public class leetcodeExercise {
     }
 
     /**
-     * 找到字符串中的所有字母异位词
+     * 找到字符串中所有字母异位词
      * 做出来了，但这不是最好的方法
      */
     public List<Integer> findAnagrams(String s, String p) {
