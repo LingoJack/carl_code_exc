@@ -1,5 +1,6 @@
 package leetcodeHot100;
 
+import java.lang.foreign.GroupLayout;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,8 +9,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -691,5 +694,611 @@ public class Leetcodehot100ThreeEx {
             node = node.next;
         }
         return stack.isEmpty() && node == null;
+    }
+
+    /**
+     * 环形链表
+     */
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 环形链表II
+     */
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                ListNode node = head;
+                while (node != slow) {
+                    node = node.next;
+                    slow = slow.next;
+                }
+                return slow;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 合并两个有序链表
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode node1 = list1, node2 = list2;
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (node1 != null && node2 != null) {
+            if (node1.val < node2.val) {
+                last.next = node1;
+                last = last.next;
+                node1 = node1.next;
+            } else {
+                last.next = node2;
+                last = last.next;
+                node2 = node2.next;
+            }
+        }
+        last.next = node1 == null ? node2 : node1;
+        return dummy.next;
+    }
+
+    /**
+     * 两数相加
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode n1 = l1;
+        ListNode n2 = l2;
+        int carry = 0;
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (n1 != null || n2 != null || carry != 0) {
+            int sum = (n1 == null ? 0 : n1.val) + (n2 == null ? 0 : n2.val) + carry;
+            carry = sum / 10;
+            sum = sum % 10;
+            ListNode node = new ListNode(sum);
+            last.next = node;
+            last = node;
+            if (n1 != null) {
+                n1 = n1.next;
+            }
+            if (n2 != null) {
+                n2 = n2.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 删除链表的倒数第N个结点
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode slow = head, fast = head;
+        int count = 0;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode last = dummy;
+        while (count > n) {
+            count--;
+            last = slow;
+            slow = slow.next;
+        }
+        last.next = slow.next;
+        slow.next = null;
+        return dummy.next;
+    }
+
+    /**
+     * 两两交换链表中的节点
+     */
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode groupStart = head;
+        ListNode prevGroupEnd = dummy;
+        while (groupStart != null) {
+            ListNode fast = groupStart;
+            ListNode slow = groupStart;
+            int count = 2;
+            while (count > 0 && fast != null) {
+                fast = fast.next;
+                count--;
+            }
+            if (count > 0) {
+                break;
+            }
+            ListNode nextGroupStart = fast;
+            // 1 2 3 4
+            // s
+            // f
+            ListNode last = null;
+            ListNode node = slow;
+            while (node != nextGroupStart) {
+                ListNode next = node.next;
+                node.next = last;
+                last = node;
+                node = next;
+            }
+            groupStart.next = nextGroupStart;
+            prevGroupEnd.next = last;
+            prevGroupEnd = groupStart;
+            groupStart = nextGroupStart;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * K个一组反转链表
+     */
+    public ListNode reverseKGroup(ListNode head, int k) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode groupStart = head;
+        ListNode prevGroupEnd = dummy;
+        while (groupStart != null) {
+            ListNode fast = groupStart;
+            ListNode slow = groupStart;
+            int count = k;
+            while (count > 0 && fast != null) {
+                fast = fast.next;
+                count--;
+            }
+            if (count > 0) {
+                break;
+            }
+            ListNode nextGroupStart = fast;
+            // 1 2 3 4
+            // s
+            // f
+            ListNode last = null;
+            ListNode node = slow;
+            while (node != nextGroupStart) {
+                ListNode next = node.next;
+                node.next = last;
+                last = node;
+                node = next;
+            }
+            groupStart.next = nextGroupStart;
+            prevGroupEnd.next = last;
+            prevGroupEnd = groupStart;
+            groupStart = nextGroupStart;
+        }
+        return dummy.next;
+    }
+
+    class Node {
+        int val;
+        Node next;
+        Node random;
+
+        public Node(int val) {
+            this.val = val;
+            this.next = null;
+            this.random = null;
+        }
+    }
+
+    /**
+     * 随机链表的复制
+     */
+    public Node copyRandomList(Node head) {
+        Map<Node, Node> map = new HashMap<>();
+        Node node = head;
+        Node dummy = new Node(0);
+        Node last = dummy;
+        while (node != null) {
+            Node newNode = new Node(node.val);
+            last.next = newNode;
+            last = newNode;
+            map.put(node, newNode);
+            node = node.next;
+        }
+        node = head;
+        while (node != null) {
+            Node newNode = map.get(node);
+            newNode.random = map.get(node.random);
+            node = node.next;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 排序链表
+     */
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode[] twoPartHeads = spilt(head);
+        ListNode ltPart = sortList(twoPartHeads[0]);
+        ListNode rtPart = sortList(twoPartHeads[1]);
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (ltPart != null && rtPart != null) {
+            if (ltPart.val < rtPart.val) {
+                last.next = ltPart;
+                last = ltPart;
+                ltPart = ltPart.next;
+            } else {
+                last.next = rtPart;
+                last = rtPart;
+                rtPart = rtPart.next;
+            }
+        }
+        last.next = rtPart == null ? ltPart : rtPart;
+        return dummy.next;
+    }
+
+    private ListNode[] spilt(ListNode head) {
+        // 1 4 4 1
+        // s
+        // f
+        // 1 2 3
+        // s
+        // f
+        ListNode slow = head, fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode nextHead = slow.next;
+        slow.next = null;
+        return new ListNode[] { head, nextHead };
+    }
+
+    /**
+     * 合并K个升序链表
+     */
+    public ListNode mergeKLists(ListNode[] lists) {
+        MyPriorityQueue priorityQueue = new MyPriorityQueue();
+        for (ListNode node : lists) {
+            if (node != null) {
+                priorityQueue.offer(node);
+            }
+        }
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (!priorityQueue.isEmpty()) {
+            ListNode node = priorityQueue.poll();
+            if (node.next != null) {
+                priorityQueue.offer(node.next);
+            }
+            last.next = node;
+            last = last.next;
+        }
+        return dummy.next;
+    }
+
+    public class MyPriorityQueue {
+        List<ListNode> list = new ArrayList<>();
+
+        public void offer(ListNode node) {
+            if (node == null) {
+                return;
+            }
+            list.add(node);
+            upCheck(list.size() - 1);
+        }
+
+        private void upCheck(int index) {
+            // 0 1 2 3 4
+            int parent = (index - 1) / 2;
+            if (list.get(parent).val > list.get(index).val) {
+                swap(parent, index);
+                upCheck(parent);
+            }
+        }
+
+        private void downCheck(int index) {
+            int lt = 2 * index + 1;
+            int rt = 2 * index + 2;
+            int min = index;
+            if (lt < list.size() && list.get(min).val > list.get(lt).val) {
+                min = lt;
+            }
+            if (rt < list.size() && list.get(min).val > list.get(rt).val) {
+                min = rt;
+            }
+            if (min != index) {
+                swap(min, index);
+                downCheck(min);
+            }
+        }
+
+        public ListNode poll() {
+            swap(0, list.size() - 1);
+            ListNode res = list.remove(list.size() - 1);
+            downCheck(0);
+            return res;
+        }
+
+        private void swap(int idx1, int idx2) {
+            ListNode t = list.get(idx1);
+            list.set(idx1, list.get(idx2));
+            list.set(idx2, t);
+        }
+
+        public boolean isEmpty() {
+            return list.isEmpty();
+        }
+    }
+
+    /**
+     * LRU缓存
+     */
+    public class LRUCache {
+
+        public class Node {
+            int key;
+            int val;
+            Node prev;
+            Node next;
+
+            public Node(int key, int val) {
+                this.key = key;
+                this.val = val;
+                this.prev = null;
+                this.next = null;
+            }
+
+            public Node() {
+
+            }
+        }
+
+        private Node head;
+
+        private Node tail;
+
+        private Map<Integer, Node> map;
+
+        private int capacity;
+
+        public LRUCache(int capacity) {
+            this.capacity = capacity;
+            this.head = new Node();
+            this.tail = new Node();
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
+            this.map = new HashMap<>();
+        }
+
+        public int get(int key) {
+            if (!map.containsKey(key)) {
+                return -1;
+            }
+            Node node = map.get(key);
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+            node.next = head.next;
+            head.next.prev = node;
+            head.next = node;
+            node.prev = head;
+            return node.val;
+        }
+
+        public void put(int key, int val) {
+            Node node = map.get(key);
+            if (node == null) {
+                if (map.size() >= capacity) {
+                    Node removedNode = tail.prev;
+                    tail.prev = removedNode.prev;
+                    removedNode.prev.next = tail;
+                    removedNode.prev = null;
+                    removedNode.next = null;
+                    map.remove(removedNode.key);
+                }
+                node = new Node(key, val);
+                node.prev = head;
+                node.next = head.next;
+                head.next.prev = node;
+                head.next = node;
+                map.put(key, node);
+            } else {
+                if (node.val != val) {
+                    node.val = val;
+                }
+                get(key);
+            }
+        }
+    }
+
+    /**
+     * 二叉树的中序遍历
+     */
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        inorder(list, root);
+        return list;
+    }
+
+    private void inorder(List<Integer> list, TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        inorder(list, node.left);
+        list.add(node.val);
+        inorder(list, node.right);
+    }
+
+    /**
+     * 二叉树的最大深度
+     */
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+    }
+
+    /**
+     * 翻转二叉树
+     */
+    public TreeNode invertTree(TreeNode root) {
+        invert(root);
+        return root;
+    }
+
+    private void invert(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        TreeNode rt = node.right;
+        node.right = node.left;
+        node.left = rt;
+        invert(node.right);
+        invert(node.left);
+    }
+
+    /**
+     * 对称二叉树
+     */
+    public boolean isSymmetric(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return check(root.left, root.right);
+    }
+
+    private boolean check(TreeNode lt, TreeNode rt) {
+        if (rt == null || lt == null) {
+            return rt == null && lt == null;
+        }
+        if (rt.val != lt.val) {
+            return false;
+        }
+        return check(lt.left, rt.right) && check(lt.right, rt.left);
+    }
+
+    /**
+     * 二叉树的直径
+     */
+    public int diameterOfBinaryTree(TreeNode root) {
+        height(root);
+        return maxPath;
+    }
+
+    private int maxPath = Integer.MIN_VALUE;
+
+    private int height(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = height(node.left);
+        int rt = height(node.right);
+        maxPath = Math.max(maxPath, lt + rt);
+        return Math.max(lt, rt) + 1;
+    }
+
+    /**
+     * 二叉树的层序遍历
+     */
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                list.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 将有序数组转换为二叉树
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return build(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode build(int[] nums, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int mid = (start + end) >> 1;
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = build(nums, start, mid - 1);
+        root.right = build(nums, mid + 1, end);
+        return root;
+    }
+
+    /**
+     * 验证二叉搜索树
+     */
+    public boolean isValidBST(TreeNode root) {
+
+    }
+
+    private boolean valid(TreeNode node) {
+        if (node == null) {
+            return true;
+        }
+    }
+
+    /**
+     * 三个数的最大乘积
+     */
+    public int maximumProduct(int[] nums) {
+        int k = 3;
+        Arrays.sort(nums);
+        int len = nums.length;
+        boolean[] exist = new boolean[len];
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            if (!exist[i]) {
+                list.add(nums[i]);
+                exist[i] = true;
+            }
+            if (!exist[len - 1 - i]) {
+                list.add(nums[len - i - 1]);
+                exist[len - i - 1] = true;
+            }
+        }
+        dfs(list, k, 0, 0, 1);
+        return maxProd;
+    }
+
+    private int maxProd = Integer.MIN_VALUE;
+
+    private void dfs(List<Integer> list, int k, int count, int index, int prod) {
+        if (index >= list.size() || count >= k) {
+            if (count == k) {
+                maxProd = Math.max(maxProd, prod);
+            }
+            return;
+        }
+        dfs(list, k, count, index + 1, prod);
+        int num = list.get(index);
+        int prev = prod;
+        prod *= num;
+        dfs(list, k, count + 1, index + 1, prod);
+        prod = prev;
     }
 }
