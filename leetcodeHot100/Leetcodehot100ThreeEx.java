@@ -1253,13 +1253,28 @@ public class Leetcodehot100ThreeEx {
      * 验证二叉搜索树
      */
     public boolean isValidBST(TreeNode root) {
-
+        return valid(root);
     }
 
     private boolean valid(TreeNode node) {
         if (node == null) {
             return true;
         }
+        TreeNode lt = node.left;
+        while (lt != null && lt.right != null) {
+            lt = lt.right;
+        }
+        if (lt != null && node.val <= lt.val) {
+            return false;
+        }
+        TreeNode rt = node.right;
+        while (rt != null && rt.left != null) {
+            rt = rt.left;
+        }
+        if (rt != null && node.val >= rt.val) {
+            return false;
+        }
+        return valid(node.left) && valid(node.right);
     }
 
     /**
@@ -1300,5 +1315,82 @@ public class Leetcodehot100ThreeEx {
         prod *= num;
         dfs(list, k, count + 1, index + 1, prod);
         prod = prev;
+    }
+
+    /**
+     * 二叉搜索树中第K小的元素
+     */
+    public int kthSmallest(TreeNode root, int k) {
+        this.k = k;
+        inorder(root);
+        return res;
+    }
+
+    private int count = 0;
+
+    private int k;
+
+    private int res;
+
+    private void inorder(TreeNode node) {
+        if (node == null || count > k) {
+            return;
+        }
+        inorder(node.left);
+        count++;
+        if (count == k) {
+            res = node.val;
+        }
+        inorder(node.right);
+    }
+
+    /**
+     * 二叉树的右视图
+     */
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (i == size - 1) {
+                    res.add(node.val);
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 二叉树展开为链表
+     */
+    public void flatten(TreeNode root) {
+        TreeNode node = root;
+        while (node != null) {
+            if (node.left != null) {
+                TreeNode lt = node.left;
+                node.left = null;
+                TreeNode rt = node.right;
+                TreeNode t = lt;
+                while (t != null && t.right != null) {
+                    t = t.right;
+                }
+                t.right = rt;
+                node.right = lt;
+                t.right = rt;
+            }
+            node = node.right;
+        }
     }
 }
