@@ -277,7 +277,7 @@ public class Leetcodehot100ThreeEx {
      * 没做出来
      * 操，但好像是我把这题和最小覆盖子串那题记混了
      * 不过都是用滑动窗口来做的，之前我的做法十分的混乱
-     * 而实际上是有方法论的
+     * 而实际上是有方法论的（其中rt和lt更新的逻辑顺序，需要根据实际情况而定）
      * 扩大后的效果 -> 判断是否加入结果集 -> rt++ -> 缩小后的效果 -> lt++
      */
     public List<Integer> findAnagrams(String s, String p) {
@@ -318,6 +318,378 @@ public class Leetcodehot100ThreeEx {
     }
 
     /**
-     * 
+     * 滑动窗口的最大值
      */
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        // 1,3,-1,-3,5,3,6,7
+        // 3 -1 -3 5
+        Deque<Integer> queue = new ArrayDeque<>();
+        int len = nums.length;
+        int[] res = new int[len - k + 1];
+        for (int i = 0; i < len; i++) {
+            while (!queue.isEmpty() && nums[queue.peekLast()] < nums[i]) {
+                queue.pollLast();
+            }
+            queue.offerLast(i);
+            if (i >= k - 1) {
+                while (queue.peekFirst() < i - k + 1) {
+                    queue.pollFirst();
+                }
+                res[i - k + 1] = nums[queue.peekFirst()];
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 最小覆盖子串
+     */
+    public String minWindow(String s, String t) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> contain = new HashMap<>();
+        for (char c : t.toCharArray()) {
+            need.putIfAbsent(c, 0);
+            need.put(c, need.get(c) + 1);
+        }
+        int lt = 0;
+        int rt = 0;
+        int valid = 0;
+        int minLen = s.length() + 1;
+        int start = -1;
+        while (rt < s.length()) {
+            char rc = s.charAt(rt);
+            if (need.containsKey(rc)) {
+                contain.put(rc, contain.getOrDefault(rc, 0) + 1);
+                if (need.get(rc).equals(contain.get(rc))) {
+                    valid++;
+                }
+            }
+            while (valid >= need.size()) {
+                if (minLen >= rt - lt + 1) {
+                    minLen = rt - lt + 1;
+                    start = lt;
+                }
+                char lc = s.charAt(lt);
+                if (need.containsKey(lc)) {
+                    if (need.get(lc).equals(contain.get(lc))) {
+                        valid--;
+                    }
+                    contain.put(lc, contain.get(lc) - 1);
+                }
+                lt++;
+            }
+            rt++;
+        }
+        return start == -1 ? "" : s.substring(start, Math.min(s.length(), start + minLen));
+    }
+
+    /**
+     * 最大子数组和
+     */
+    public int maxSubArray(int[] nums) {
+        int sum = 0;
+        int res = nums[0];
+        // -2,1,-3,4,-1,2,1,-5,4
+        for (int i = 0; i < nums.length; i++) {
+            if (sum < 0) {
+                sum = 0;
+            }
+            sum += nums[i];
+            res = Math.max(res, sum);
+        }
+        return res;
+    }
+
+    /**
+     * 合并区间
+     */
+    public int[][] merge(int[][] intervals) {
+        // [1,3],[2,6],[8,10],[15,18]
+        Arrays.sort(intervals, (a, b) -> {
+            return Integer.compare(a[0], b[0]) == 0 ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
+        });
+        Deque<int[]> stack = new ArrayDeque<>();
+        for (int[] interval : intervals) {
+            if (stack.isEmpty()) {
+                stack.push(interval);
+                continue;
+            }
+            int[] last = stack.peek();
+            if (interval[0] <= last[1]) {
+                stack.pop();
+                stack.push(new int[] { last[0], Math.max(interval[1], last[1]) });
+            } else {
+                stack.push(interval);
+            }
+        }
+        int[][] res = new int[stack.size()][2];
+        int size = stack.size();
+        for (int i = 0; i < size; i++) {
+            res[i] = stack.pop();
+        }
+        return res;
+    }
+
+    /**
+     * 轮转数组
+     */
+    public void rotate(int[] nums, int k) {
+        k %= nums.length;
+        // 1,2,3,4,5,6,7，k=3
+        // 5,6,7,1,2,3,4
+        reverse(nums, 0, nums.length - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, nums.length - 1);
+    }
+
+    private void reverse(int[] nums, int start, int end) {
+        int lt = start;
+        int rt = end;
+        while (rt > lt) {
+            swap(nums, lt, rt);
+            lt++;
+            rt--;
+        }
+    }
+
+    /**
+     * 除自身以外数组的乘积
+     */
+    public int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] res = new int[len];
+        Arrays.fill(res, 1);
+        int prefixProd = 1;
+        for (int i = 1; i < len; i++) {
+            prefixProd *= nums[i - 1];
+            res[i] = prefixProd;
+        }
+        int suffixProd = 1;
+        for (int i = len - 2; i >= 0; i--) {
+            suffixProd *= nums[i + 1];
+            res[i] *= suffixProd;
+        }
+        return res;
+    }
+
+    /**
+     * 缺失的第一个正数
+     */
+    public int firstMissingPositive(int[] nums) {
+        boolean[] exist = new boolean[nums.length + 2];
+        for (int num : nums) {
+            if (num > 0 && num <= nums.length) {
+                exist[num] = true;
+            }
+        }
+        for (int i = 1; i < nums.length + 2; i++) {
+            if (!exist[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 矩阵置零
+     */
+    public void setZeroes(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        boolean[] rowSetZero = new boolean[row];
+        boolean[] colSetZero = new boolean[col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    rowSetZero[i] = true;
+                    colSetZero[j] = true;
+                }
+            }
+        }
+        for (int i = 0; i < row; i++) {
+            if (rowSetZero[i]) {
+                for (int j = 0; j < col; j++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        for (int j = 0; j < col; j++) {
+            if (colSetZero[j]) {
+                for (int i = 0; i < row; i++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * 螺旋矩阵
+     * 差点没做出来
+     * 第一次采用简化的做法写出来了，
+     * 要注意的是list.size() < row * col要在四个方向的for上都作为条件
+     */
+    public List<Integer> spiralOrder(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int rowIndex = 0;
+        int colIndex = 0;
+        int colUpperBound = col - 1;
+        int rowUpperBound = row - 1;
+        int rowLowerBound = 0;
+        int colLowerBound = 0;
+        List<Integer> list = new ArrayList<>();
+        while (list.size() < row * col) {
+            for (int i = colLowerBound; i <= colUpperBound && list.size() < row * col; i++) {
+                list.add(matrix[rowIndex][i]);
+                colIndex = i;
+            }
+            rowLowerBound++;
+            for (int i = rowLowerBound; i <= rowUpperBound && list.size() < row * col; i++) {
+                list.add(matrix[i][colIndex]);
+                rowIndex = i;
+            }
+            colUpperBound--;
+            for (int i = colUpperBound; i >= colLowerBound && list.size() < row * col; i--) {
+                list.add(matrix[rowIndex][i]);
+                colIndex = i;
+            }
+            rowUpperBound--;
+            for (int i = rowUpperBound; i >= rowLowerBound && list.size() < row * col; i--) {
+                list.add(matrix[i][colIndex]);
+                rowIndex = i;
+            }
+            colLowerBound++;
+        }
+        return list;
+    }
+
+    /**
+     * 旋转图像
+     */
+    public void rotate(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        // 先上下翻转
+        for (int j = 0; j < col; j++) {
+            for (int i = 0; i < row / 2; i++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[row - 1 - i][j];
+                matrix[row - 1 - i][j] = t;
+            }
+        }
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j <= i; j++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = t;
+            }
+        }
+    }
+
+    /**
+     * 搜索二维矩阵II
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int i = 0, j = col - 1;
+        while (i >= 0 && i < row && j >= 0 && j < col) {
+            int num = matrix[i][j];
+            if (num < target) {
+                i++;
+            } else if (num > target) {
+                j--;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 相交链表
+     */
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        int l1 = 0;
+        int l2 = 0;
+        ListNode aNode = headA;
+        ListNode bNode = headB;
+        while (aNode != null) {
+            aNode = aNode.next;
+            l1++;
+        }
+        while (bNode != null) {
+            bNode = bNode.next;
+            l2++;
+        }
+        aNode = headA;
+        bNode = headB;
+        if (l2 > l1) {
+            int diff = l2 - l1;
+            for (int i = 0; i < diff; i++) {
+                bNode = bNode.next;
+            }
+            while (bNode != null && aNode != null) {
+                if (aNode == bNode) {
+                    return aNode;
+                }
+                bNode = bNode.next;
+                aNode = aNode.next;
+            }
+        } else {
+            int diff = l1 - l2;
+            for (int i = 0; i < diff; i++) {
+                aNode = aNode.next;
+            }
+            while (bNode != null && aNode != null) {
+                if (aNode == bNode) {
+                    return aNode;
+                }
+                bNode = bNode.next;
+                aNode = aNode.next;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 反转链表
+     */
+    public ListNode reverseList(ListNode head) {
+        ListNode node = head;
+        ListNode last = null;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return last;
+    }
+
+    /**
+     * 回文链表
+     * 做出来了，但还不是最快的解法，之前的做法更快，就是反转链表
+     */
+    public boolean isPalindrome(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        // 1 2 2 1
+        // s
+        // f
+        Deque<Integer> stack = new ArrayDeque<>();
+        while (fast != null && fast.next != null) {
+            stack.push(slow.val);
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode node = fast == null ? slow : slow.next;
+        while (node != null) {
+            if (!stack.isEmpty() && node.val != stack.pop()) {
+                return false;
+            }
+            node = node.next;
+        }
+        return stack.isEmpty() && node == null;
+    }
 }
