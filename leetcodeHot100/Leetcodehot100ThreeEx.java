@@ -672,7 +672,7 @@ public class Leetcodehot100ThreeEx {
 
     /**
      * 回文链表
-     * 做出来了，但还不是最快的解法，之前的做法更快，就是反转链表
+     * 做出来了，但还不是最优的解法，之前的做法更快，就是反转链表
      */
     public boolean isPalindrome(ListNode head) {
         ListNode slow = head;
@@ -1392,5 +1392,105 @@ public class Leetcodehot100ThreeEx {
             }
             node = node.right;
         }
+    }
+
+    /**
+     * 从前序和中序遍历构造二叉树
+     */
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            map.put(inorder[i], i);
+        }
+        return build(preorder, inorder, map, 0, inorder.length - 1);
+    }
+
+    private int preorderIndex = 0;
+
+    private TreeNode build(int[] preorder, int[] inorder, Map<Integer, Integer> map, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int val = preorder[preorderIndex++];
+        int idx = map.get(val);
+        TreeNode node = new TreeNode(val);
+        node.left = build(preorder, inorder, map, start, idx - 1);
+        node.right = build(preorder, inorder, map, idx + 1, end);
+        return node;
+    }
+
+    /**
+     * 路径总和III
+     * 做出来了，但不是最优的解法，最优的解法是前缀和
+     */
+    public int pathSum(TreeNode root, long targetSum) {
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                dfs(node, targetSum);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return pathNum;
+    }
+
+    private int pathNum = 0;
+
+    private void dfs(TreeNode node, long target) {
+        if (node == null) {
+            return;
+        }
+        if (target == node.val) {
+            pathNum++;
+        }
+        dfs(node.left, target - node.val);
+        dfs(node.right, target - node.val);
+    }
+
+    /**
+     * 路径总和III
+     * 核心是用Map记录
+     * 前缀和为i的路径数量j
+     * 没做出来，没搞清楚最后一步的回溯的实际意义
+     * 这个回溯是说，如果没有选择这个节点，那么其对应的前缀和路径就不应该加上
+     * 比如[1,-2,-3]这个用例，如果不回溯就会在计算右子树的时候加上了左子树的路径
+     */
+    public int pathSumWithPrefixSumBacktracking(TreeNode root, long targetSum) {
+        Map<Long, Integer> prefixSumCountMap = new HashMap<>();
+        prefixSumCountMap.put(0l, 1);
+        dfs(root, prefixSumCountMap, 0, targetSum);
+        return pathNum;
+    }
+
+    private void dfs(TreeNode node, Map<Long, Integer> prefixSumCountMap, long prefixSum, long target) {
+        if (node == null) {
+            return;
+        }
+        prefixSum += node.val;
+        if (prefixSumCountMap.containsKey(prefixSum - target)) {
+            pathNum += prefixSumCountMap.get(prefixSum - target);
+        }
+        prefixSumCountMap.put(prefixSum, prefixSumCountMap.getOrDefault(prefixSum, 0) + 1);
+        dfs(node.left, prefixSumCountMap, prefixSum, target);
+        dfs(node.right, prefixSumCountMap, prefixSum, target);
+        prefixSumCountMap.put(prefixSum, prefixSumCountMap.get(prefixSum) - 1);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        
     }
 }
