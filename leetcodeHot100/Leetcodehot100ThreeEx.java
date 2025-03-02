@@ -1645,6 +1645,99 @@ public class Leetcodehot100ThreeEx {
      * 课程表
      */
     public boolean canFinish(int numCourses, int[][] prerequisites) {
-        
+        Map<Integer, List<Integer>> dependMap = new HashMap<>();
+        int[] inDegree = new int[numCourses];
+        for (int[] prerequisity : prerequisites) {
+            dependMap.putIfAbsent(prerequisity[1], new ArrayList<>());
+            dependMap.get(prerequisity[1]).add(prerequisity[0]);
+            inDegree[prerequisity[0]]++;
+        }
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int course = 0; course < numCourses; course++) {
+            if (inDegree[course] == 0) {
+                queue.offer(course);
+            }
+        }
+        int count = 0;
+        while (!queue.isEmpty()) {
+            int course = queue.poll();
+            for (int post : dependMap.getOrDefault(course, new ArrayList<>())) {
+                inDegree[post]--;
+                if (inDegree[post] == 0) {
+                    queue.offer(post);
+                }
+            }
+            count++;
+        }
+        return count == numCourses;
+    }
+
+    /**
+     * 实现Trie（前缀树）
+     */
+    class Trie {
+
+        public class Node {
+            char ch;
+            boolean isEnd;
+            Map<Character, Node> next;
+
+            public Node(char ch, boolean isEnd) {
+                this.ch = ch;
+                this.isEnd = isEnd;
+                this.next = new HashMap<>();
+            }
+        }
+
+        private Map<String, Boolean> map;
+
+        private Node root;
+
+        public Trie() {
+            this.root = new Node('0', false);
+            this.map = new HashMap<>();
+        }
+
+        public void insert(String word) {
+            map.put(word, true);
+            char[] chs = word.toCharArray();
+            Node last = root;
+            for (int i = 0; i < chs.length; i++) {
+                char c = chs[i];
+                Node node = last.next.get(c);
+                if (node != null) {
+                    node.isEnd = i == chs.length - 1 || node.isEnd;
+                } else {
+                    node = new Node(c, i == chs.length - 1);
+                    last.next.put(c, node);
+                }
+                last = node;
+            }
+        }
+
+        public boolean search(String word) {
+            return map.containsKey(word);
+        }
+
+        public boolean startsWith(String prefix) {
+            Node node = root;
+            int len = prefix.length();
+            for (int i = 0; i < len; i++) {
+                char c = prefix.charAt(i);
+                Node nextNode = node.next.get(c);
+                if (nextNode == null) {
+                    return false;
+                }
+                node = nextNode;
+            }
+            return true;
+        }
+    }
+
+    /**
+     * 全排列
+     */
+    public List<List<Integer>> permute(int[] nums) {
+
     }
 }
