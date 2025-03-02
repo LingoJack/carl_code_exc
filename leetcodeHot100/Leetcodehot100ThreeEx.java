@@ -1491,6 +1491,160 @@ public class Leetcodehot100ThreeEx {
      * 二叉树的最近公共祖先
      */
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (dfs(p, q)) {
+            return p;
+        }
+        if (dfs(q, p)) {
+            return q;
+        }
+        TreeNode res = null;
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (dfs(node, p) && dfs(node, q)) {
+                    res = node;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return res;
+    }
+
+    private boolean dfs(TreeNode node, TreeNode target) {
+        if (node == null) {
+            return false;
+        }
+        if (node == target) {
+            return true;
+        }
+        return dfs(node.left, target) || dfs(node.right, target);
+    }
+
+    /**
+     * 二叉树中的最大路径和
+     */
+    public int maxPathSum(TreeNode root) {
+        dfs(root);
+        return maxPathSum;
+    }
+
+    private int maxPathSum = Integer.MIN_VALUE;
+
+    private int dfs(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = dfs(node.left);
+        int rt = dfs(node.right);
+        maxPathSum = Math.max(Math.max(0, lt) + Math.max(0, rt) + node.val, maxPathSum);
+        return Math.max(0, Math.max(lt, rt)) + node.val;
+    }
+
+    /**
+     * 岛屿数量
+     */
+    public int numIslands(char[][] grid) {
+        int row = grid.length;
+        int col = grid[0].length;
+        boolean[][] visited = new boolean[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if ((!visited[i][j]) && grid[i][j] == '1') {
+                    islandCount++;
+                    dfs(grid, visited, i, j);
+                }
+            }
+        }
+        return islandCount;
+    }
+
+    private int islandCount = 0;
+
+    private void dfs(char[][] grid, boolean[][] visited, int i, int j) {
+        int row = grid.length;
+        int col = grid[0].length;
+        if (!(i >= 0 && i < row && j >= 0 && j < col)) {
+            return;
+        }
+        if (!visited[i][j] && grid[i][j] == '1') {
+            visited[i][j] = true;
+            dfs(grid, visited, i + 1, j);
+            dfs(grid, visited, i, j + 1);
+            dfs(grid, visited, i, j - 1);
+            dfs(grid, visited, i - 1, j);
+        }
+    }
+
+    /**
+     * 腐烂的橘子
+     */
+    public int orangesRotting(int[][] grid) {
+        Deque<int[]> queue = new ArrayDeque<>();
+        int fresh = 0;
+        int row = grid.length, col = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (grid[i][j] == 1) {
+                    fresh++;
+                } else if (grid[i][j] == 2) {
+                    queue.offer(new int[] { i, j });
+                }
+            }
+        }
+        if (fresh == 0) {
+            return 0;
+        }
+        int minute = 1;
+        while (!queue.isEmpty() && fresh > 0) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int[] index = queue.poll();
+                int rowIndex = index[0], colIndex = index[1];
+                if (valid(row, col, rowIndex - 1, colIndex) && grid[rowIndex - 1][colIndex] == 1) {
+                    fresh--;
+                    grid[rowIndex - 1][colIndex] = 2;
+                    queue.offer(new int[] { rowIndex - 1, colIndex });
+                }
+                if (valid(row, col, rowIndex + 1, colIndex) && grid[rowIndex + 1][colIndex] == 1) {
+                    fresh--;
+                    grid[rowIndex + 1][colIndex] = 2;
+                    queue.offer(new int[] { rowIndex + 1, colIndex });
+                }
+                if (valid(row, col, rowIndex, colIndex - 1) && grid[rowIndex][colIndex - 1] == 1) {
+                    fresh--;
+                    grid[rowIndex][colIndex - 1] = 2;
+                    queue.offer(new int[] { rowIndex, colIndex - 1 });
+                }
+                if (valid(row, col, rowIndex, colIndex + 1) && grid[rowIndex][colIndex + 1] == 1) {
+                    fresh--;
+                    grid[rowIndex][colIndex + 1] = 2;
+                    queue.offer(new int[] { rowIndex, colIndex + 1 });
+                }
+            }
+            minute++;
+        }
+        return fresh == 0 ? minute : -1;
+    }
+
+    private boolean valid(int row, int col, int i, int j) {
+        return (i >= 0 && i < row && j >= 0 && j < col);
+    }
+
+    /**
+     * 课程表
+     */
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
         
     }
 }
