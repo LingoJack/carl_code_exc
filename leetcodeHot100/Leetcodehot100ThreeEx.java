@@ -1738,6 +1738,140 @@ public class Leetcodehot100ThreeEx {
      * 全排列
      */
     public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), new boolean[nums.length], nums);
+        return res;
+    }
 
+    private void dfs(List<List<Integer>> res, List<Integer> list, boolean[] used, int[] nums) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(nums[i]);
+            dfs(res, list, used, nums);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    /**
+     * 子集
+     */
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), nums, 0);
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> res, List<Integer> list, int[] nums, int start) {
+        if (start == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        dfs(res, list, nums, start + 1);
+        list.add(nums[start]);
+        dfs(res, list, nums, start + 1);
+        list.remove(list.size() - 1);
+    }
+
+    /**
+     * 电话号码的字母组合
+     */
+    public List<String> letterCombinations(String digits) {
+        char[][] map = new char[][] {
+                {},
+                {},
+                { 'a', 'b', 'c' },
+                { 'd', 'e', 'f' },
+                { 'g', 'h', 'i' },
+                { 'j', 'k', 'l' },
+                { 'm', 'n', 'o' },
+                { 'p', 'q', 'r', 's' },
+                { 't', 'u', 'v' },
+                { 'w', 'x', 'y', 'z' }
+        };
+        List<String> res = new ArrayList<>();
+        dfs(res, new StringBuilder(), map, digits, 0);
+        return res;
+    }
+
+    private void dfs(List<String> res, StringBuilder sb, char[][] map, String digits, int start) {
+        if (start == digits.length()) {
+            if (!sb.isEmpty()) {
+                res.add(sb.toString());
+            }
+            return;
+        }
+        char[] chs = map[digits.charAt(start) - '0'];
+        for (int i = 0; i < chs.length; i++) {
+            sb.append(chs[i]);
+            dfs(res, sb, map, digits, start + 1);
+            sb.setLength(sb.length() - 1);
+        }
+    }
+
+    /**
+     * 组合总和
+     */
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), candidates, target, 0);
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> res, List<Integer> list, int[] candidates, int target, int start) {
+        if (start == candidates.length || target <= 0) {
+            if (target == 0) {
+                res.add(new ArrayList<>(list));
+            }
+            return;
+        }
+        if (target >= candidates[start]) {
+            list.add(candidates[start]);
+            dfs(res, list, candidates, target - candidates[start], start);
+            list.remove(list.size() - 1);
+        }
+        dfs(res, list, candidates, target, start + 1);
+    }
+
+    /**
+     * 括号生成
+     */
+    public List<String> generateParenthesis(int n) {
+        List<String> list = new ArrayList<>();
+        dfs(list, new StringBuilder(), n, 0, 0);
+        return list;
+    }
+
+    private void dfs(List<String> res, StringBuilder sb, int n, int ltCount, int rtCount) {
+        if (ltCount < rtCount || n == rtCount) {
+            if (n == rtCount && rtCount == ltCount) {
+                res.add(sb.toString());
+            }
+            return;
+        }
+        if (ltCount < n) {
+            sb.append('(');
+            dfs(res, sb, n, ltCount + 1, rtCount);
+            sb.setLength(sb.length() - 1);
+        }
+        if (rtCount < n) {
+            sb.append(')');
+            dfs(res, sb, n, ltCount, rtCount + 1);
+            sb.setLength(sb.length() - 1);
+        }
+    }
+
+    /**
+     * 单词搜索
+     */
+    public boolean exist(char[][] board, String word) {
+        
     }
 }
