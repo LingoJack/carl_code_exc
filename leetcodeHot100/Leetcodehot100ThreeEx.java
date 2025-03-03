@@ -592,7 +592,7 @@ public class Leetcodehot100ThreeEx {
     /**
      * 搜索二维矩阵II
      */
-    public boolean searchMatrix(int[][] matrix, int target) {
+    public boolean searchMatrixII(int[][] matrix, int target) {
         int row = matrix.length;
         int col = matrix[0].length;
         int i = 0, j = col - 1;
@@ -1872,6 +1872,267 @@ public class Leetcodehot100ThreeEx {
      * 单词搜索
      */
     public boolean exist(char[][] board, String word) {
+        int row = board.length;
+        int col = board[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (dfs(board, word, 0, i, j, new boolean[row][col])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(char[][] board, String word, int index, int i, int j, boolean[][] used) {
+        if (index == word.length()) {
+            return true;
+        }
+        int row = board.length;
+        int col = board[0].length;
+        if (!(i >= 0 && i < row && j >= 0 && j < col)) {
+            return false;
+        }
+        if (board[i][j] != word.charAt(index) || used[i][j]) {
+            return false;
+        }
+        used[i][j] = true;
+        boolean res = dfs(board, word, index + 1, i - 1, j, used) ||
+                dfs(board, word, index + 1, i + 1, j, used) ||
+                dfs(board, word, index + 1, i, j - 1, used) ||
+                dfs(board, word, index + 1, i, j + 1, used);
+        used[i][j] = false;
+        return res;
+    }
+
+    /**
+     * 分割回文串
+     */
+    public List<List<String>> partition(String s) {
+        List<List<String>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), s, 0);
+        return res;
+    }
+
+    private void dfs(List<List<String>> res, List<String> list, String s, int start) {
+        if (start == s.length()) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = start; i < s.length(); i++) {
+            if (valid(s, start, i)) {
+                list.add(s.substring(start, i + 1));
+                dfs(res, list, s, i + 1);
+                list.remove(list.size() - 1);
+            }
+        }
+    }
+
+    private boolean valid(String s, int start, int end) {
+        if (end < start) {
+            return false;
+        }
+        while (end > start) {
+            if (s.charAt(end) != s.charAt(start)) {
+                return false;
+            }
+            end--;
+            start++;
+        }
+        return true;
+    }
+
+    /**
+     * N皇后
+     */
+    public List<List<String>> solveNQueens(int n) {
+        char[][] board = new char[n][n];
+        for (char[] line : board) {
+            Arrays.fill(line, '.');
+        }
+        List<List<String>> res = new ArrayList<>();
+        dfs(board, res, 0);
+        return res;
+    }
+
+    private void dfs(char[][] board, List<List<String>> res, int rowIndex) {
+        int row = board.length;
+        int col = board[0].length;
+        if (rowIndex == row) {
+            List<String> list = new ArrayList<>();
+            for (char[] line : board) {
+                list.add(new String(line));
+            }
+            res.add(list);
+            return;
+        }
+        for (int i = 0; i < col; i++) {
+            if (!valid(board, rowIndex, i)) {
+                continue;
+            }
+            board[rowIndex][i] = 'Q';
+            dfs(board, res, rowIndex + 1);
+            board[rowIndex][i] = '.';
+        }
+    }
+
+    private boolean valid(char[][] board, int row, int col) {
+        int rowNum = board.length;
+        int colNum = board[0].length;
+        if (!(row >= 0 && row < rowNum && col >= 0 && col < colNum)) {
+            return false;
+        }
+        int i = row;
+        while (i >= 0) {
+            if (board[i--][col] == 'Q') {
+                return false;
+            }
+        }
+        int j = col;
+        i = row;
+        while (i >= 0 && j >= 0) {
+            if (board[i--][j--] == 'Q') {
+                return false;
+            }
+        }
+        i = row;
+        j = col;
+        while (i >= 0 && j < colNum) {
+            if (board[i--][j++] == 'Q') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 搜索插入位置
+     */
+    public int searchInsert(int[] nums, int target) {
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] > target) {
+                rt = mid - 1;
+            } else if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 搜索二维矩阵
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int i = 0, j = col - 1;
+        while (j >= 0 && i < row) {
+            int num = matrix[i][j];
+            if (num > target) {
+                j--;
+            } else if (num < target) {
+                i++;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 在排序数组中查找元素的第一个和最后一个位置
+     */
+    public int[] searchRange(int[] nums, int target) {
+        int len = nums.length;
+        int l = 0, r = len - 1;
+        while (l <= r) {
+            int mid = (l + r) >> 1;
+            int num = nums[mid];
+            if (target < num) {
+                r = mid - 1;
+            } else if (target > num) {
+                l = mid + 1;
+            } else {
+                int first = mid, last = mid;
+                while (first >= 1 && nums[first] == nums[first - 1]) {
+                    first--;
+                }
+                while (last < len - 1 && nums[last] == nums[last + 1]) {
+                    last++;
+                }
+                return new int[] { first, last };
+            }
+        }
+        return new int[] { -1, -1 };
+    }
+
+    /**
+     * 搜索旋转排序数组
+     */
+    public int search(int[] nums, int target) {
+        // 4 5 6 7 0 1 2
+        int lower = findTurnPoint(nums);
+        int front = binarySearch(nums, target, 0, lower - 1);
+        int back = binarySearch(nums, target, lower, nums.length - 1);
+        return (front == -1 && back == -1) ? -1 : (front == -1 ? back : front);
+    }
+
+    private int findTurnPoint(int[] nums) {
+        int lt = 0, rt = nums.length - 1;
+        while (rt > lt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] > nums[lt]) {
+                lt = mid;
+            } else {
+                rt = mid;
+            }
+        }
+        return lt + 1;
+    }
+
+    private int binarySearch(int[] nums, int target, int start, int end) {
+        while (start <= end) {
+            int mid = (start + end) >> 1;
+            int num = nums[mid];
+            if (num < target) {
+                start = mid + 1;
+            } else if (num > target) {
+                end = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 寻找旋转排序数组的最小值
+     */
+    public int findMin(int[] nums) {
+        int lt = 0, rt = nums.length - 1;
+        while (rt > lt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] > nums[lt]) {
+                lt = mid;
+            } else {
+                rt = mid;
+            }
+        }
+        return lt + 1 < nums.length ? Math.min(nums[lt + 1], nums[0]) : nums[0];
+    }
+
+    /**
+     * 寻找两个正序数组的中位数
+     * 没做出来
+     * 这题自己把两种解法都做一遍
+     * 第一种解法肯定还是按照归并排序那样
+     * 第二种解法就是二分法，但是比较难掌握
+     */
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
         
     }
 }

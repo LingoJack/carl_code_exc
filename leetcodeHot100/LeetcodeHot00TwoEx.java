@@ -454,23 +454,36 @@ public class LeetcodeHot00TwoEx {
         // l1 <= l2
         // 1 3 5 8 9
         // 2 4 7
-        int take1Left = 0, take1Right = l1;
+        int lt = 0, rt = l1;
         // 前半部分（奇数则取较大部分）的数量: 0000111、000111
         int take = (l1 + l2 + 1) / 2;
-        while (take1Right > take1Left) {
-            int take1 = (take1Left + take1Right) / 2;
+        while (rt > lt) {
+            int take1 = (lt + rt) / 2;
             int take2 = take - take1;
             // 判断依据是nums1取的最后一个元素的下一个元素与nums2取的最后一个元素的大小关系
             if (nums1[(take1 - 1) + 1] > nums2[take2 - 1]) {
                 // 最多就取到这了
-                take1Right = take1;
+                rt = take1;
             } else if (nums1[(take1 - 1) + 1] <= nums2[take2 - 1]) {
                 // 取少了
-                take1Left = take1 + 1;
+                lt = take1 + 1;
             }
         }
-
-        return -1;
+        int count1 = lt, count2 = take - lt;
+        if ((l1 + l2) % 2 == 1) {
+            int leftVal = Math.max(
+                    (count1 == 0 ? Integer.MIN_VALUE : nums1[count1 - 1]),
+                    (count2 == 0 ? Integer.MIN_VALUE : nums2[count2 - 1]));
+            return leftVal;
+        } else {
+            int leftVal = Math.max(
+                    (count1 == 0 ? Integer.MIN_VALUE : nums1[count1 - 1]),
+                    (count2 == 0 ? Integer.MIN_VALUE : nums2[count2 - 1]));
+            int rightVal = Math.min(
+                    (count1 == l1 ? Integer.MAX_VALUE : nums1[count1]),
+                    (count2 == l2 ? Integer.MAX_VALUE : nums2[count2]));
+            return (leftVal + rightVal) / 2.0;
+        }
     }
 
     /**
