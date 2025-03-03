@@ -2142,24 +2142,22 @@ public class Leetcodehot100ThreeEx {
         // 3 4
         int target = (l1 + l2 + 1) / 2;
         int last = -1;
-        while(idx1 < l1 || idx2 < l2) {
+        while (idx1 < l1 || idx2 < l2) {
             int num1 = idx1 < l1 ? nums1[idx1] : Integer.MAX_VALUE;
             int num2 = idx2 < l2 ? nums2[idx2] : Integer.MAX_VALUE;
-            if(num1 < num2) {
+            if (num1 < num2) {
                 last = num1;
                 idx1++;
                 count++;
-            }
-            else {
+            } else {
                 last = num2;
                 idx2++;
                 count++;
             }
-            if(count == target) {
-                if((l1 + l2) % 2 == 1) {
+            if (count == target) {
+                if ((l1 + l2) % 2 == 1) {
                     return last;
-                }
-                else {
+                } else {
                     num1 = idx1 < l1 ? nums1[idx1] : Integer.MAX_VALUE;
                     num2 = idx2 < l2 ? nums2[idx2] : Integer.MAX_VALUE;
                     return (Math.min(num1, num2) + last) / 2.0;
