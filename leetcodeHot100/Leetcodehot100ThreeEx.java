@@ -2166,4 +2166,65 @@ public class Leetcodehot100ThreeEx {
         }
         return -1;
     }
+
+    /**
+     * 有效的括号
+     */
+    public boolean isValid(String s) {
+        Map<Character, Character> map = new HashMap<>();
+        map.put('}', '{');
+        map.put(']', '[');
+        map.put(')', '(');
+        Deque<Character> stack = new ArrayDeque<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '}' || c == ']' || c == ')') {
+                if (!stack.isEmpty() && stack.peek().equals(map.get(c))) {
+                    stack.pop();
+                } else {
+                    return false;
+                }
+            } else {
+                stack.push(c);
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    /**
+     * 最小栈
+     */
+    class MinStack {
+
+        private Deque<Integer> stack;
+
+        private Deque<Integer> monotonicStack;
+
+        public MinStack() {
+            this.stack = new ArrayDeque<>();
+            this.monotonicStack = new ArrayDeque<>();
+        }
+
+        public void push(int val) {
+            stack.push(val);
+            if (monotonicStack.isEmpty() || val <= monotonicStack.peek()) {
+                monotonicStack.push(val);
+            }
+        }
+
+        public void pop() {
+            int val = stack.pop();
+            if (!monotonicStack.isEmpty() && val == monotonicStack.peek()) {
+                monotonicStack.pop();
+            }
+        }
+
+        public int top() {
+            return !stack.isEmpty() ? stack.peek() : -1;
+        }
+
+        public int getMin() {
+            return monotonicStack.isEmpty() ? -1 : monotonicStack.peek();
+        }
+    }
 }
