@@ -2133,6 +2133,39 @@ public class Leetcodehot100ThreeEx {
      * 第二种解法就是二分法，但是比较难掌握
      */
     public double findMedianSortedArrays(int[] nums1, int[] nums2) {
-        
+        int l1 = nums1.length, l2 = nums2.length;
+        int count = 0;
+        int idx1 = 0, idx2 = 0;
+        // 1 3
+        // 2
+        // 1 2
+        // 3 4
+        int target = (l1 + l2 + 1) / 2;
+        int last = -1;
+        while(idx1 < l1 || idx2 < l2) {
+            int num1 = idx1 < l1 ? nums1[idx1] : Integer.MAX_VALUE;
+            int num2 = idx2 < l2 ? nums2[idx2] : Integer.MAX_VALUE;
+            if(num1 < num2) {
+                last = num1;
+                idx1++;
+                count++;
+            }
+            else {
+                last = num2;
+                idx2++;
+                count++;
+            }
+            if(count == target) {
+                if((l1 + l2) % 2 == 1) {
+                    return last;
+                }
+                else {
+                    num1 = idx1 < l1 ? nums1[idx1] : Integer.MAX_VALUE;
+                    num2 = idx2 < l2 ? nums2[idx2] : Integer.MAX_VALUE;
+                    return (Math.min(num1, num2) + last) / 2.0;
+                }
+            }
+        }
+        return -1;
     }
 }
