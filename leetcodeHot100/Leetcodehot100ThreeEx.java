@@ -2370,16 +2370,173 @@ public class Leetcodehot100ThreeEx {
      */
     class MedianFinder {
 
-        public MedianFinder() {
+        private PriorityQueue<Integer> minHeap;
 
+        private PriorityQueue<Integer> maxHeap;
+
+        public MedianFinder() {
+            this.minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+            this.maxHeap = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
         }
 
         public void addNum(int num) {
-
+            if (maxHeap.isEmpty() || num < maxHeap.peek()) {
+                maxHeap.offer(num);
+                if (maxHeap.size() > minHeap.size() + 1) {
+                    minHeap.offer(maxHeap.poll());
+                }
+            } else {
+                minHeap.offer(num);
+                if (minHeap.size() > maxHeap.size()) {
+                    maxHeap.offer(minHeap.poll());
+                }
+            }
         }
 
-        public double findMin() {
-            
+        public double findMedian() {
+            int size = minHeap.size() + maxHeap.size();
+            if (size % 2 == 1) {
+                return maxHeap.peek();
+            } else {
+                return (maxHeap.peek() + minHeap.peek()) / 2.0;
+            }
         }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     */
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+        int[][] dp = new int[len][2];
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < len; i++) {
+            dp[i][1] = Math.max(-prices[i], dp[i - 1][1]);
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 跳跃游戏
+     */
+    public boolean canJump(int[] nums) {
+        int max = 0;
+        for (int i = 0; i <= Math.min(max, nums.length); i++) {
+            max = Math.max(max, i + nums[i]);
+            if (max >= nums.length - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 跳跃游戏II
+     * 没做出来，不小心看了一眼之前的答案才意识到要用DP做
+     * 这题有更好的做法是记录每一个位置的最远可达范围
+     */
+    public int jump(int[] nums) {
+        int len = nums.length;
+        int[] dp = new int[len];
+        Arrays.fill(dp, nums.length + 1);
+        dp[0] = 0;
+        for (int i = 0; i < nums.length; i++) {
+            int scope = i + nums[i];
+            for (int j = i + 1; j <= Math.min(scope, len - 1); j++) {
+                dp[j] = Math.min(dp[i] + 1, dp[j]);
+            }
+        }
+        return dp[len - 1];
+    }
+
+    /**
+     * 跳跃游戏II
+     * 最远可达范围解法
+     */
+    public int jumpWithFarestScope(int[] nums) {
+        // 到位置i为止可以抵达的最远位置
+        int[] farthest = new int[nums.length];
+        int max = 0;
+        for (int i = 0; i < nums.length; i++) {
+            max = Math.max(max, i + nums[i]);
+            farthest[i] = max;
+        }
+        int step = 0;
+        int scope = 0;
+        while (scope < nums.length - 1) {
+            step++;
+            scope = farthest[scope];
+        }
+        return step;
+    }
+
+    /**
+     * 划分字母区间
+     */
+    public List<Integer> partitionLabels(String s) {
+        Map<Character, Integer> lastIndex = new HashMap<>();
+        int idx = 0;
+        for (char c : s.toCharArray()) {
+            lastIndex.put(c, idx++);
+        }
+        int scope = 0;
+        int start = 0;
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            scope = Math.max(scope, lastIndex.get(c));
+            if (i >= scope) {
+                list.add(i - start + 1);
+                start = i + 1;
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 爬楼梯
+     */
+    public int climbStairs(int n) {
+        int[] dp = new int[n + 1];
+        dp[0] = 0;
+        dp[1] = 1;
+        if (n < 2) {
+            return 1;
+        }
+        dp[2] = 2;
+        for (int i = 3; i < n + 1; i++) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+        return dp[n];
+    }
+
+    /**
+     * 杨辉三角
+     */
+    public List<List<Integer>> generate(int numRows) {
+        // 1
+        // 1 1
+        // 1 2 1
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> last = List.of(1);
+        res.add(List.of(1));
+        for (int i = 2; i < numRows + 1; i++) {
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j < i; j++) {
+                list.add(j - 1 >= 0 && j < last.size() ? last.get(j - 1) + last.get(j) : 1);
+            }
+            last = list;
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
+
     }
 }
