@@ -2329,6 +2329,57 @@ public class Leetcodehot100ThreeEx {
      * 数组中的最大元素
      */
     public int findKthLargest(int[] nums, int k) {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Integer::compare);
+        for (int num : nums) {
+            if (priorityQueue.size() < k) {
+                priorityQueue.offer(num);
+            } else {
+                if (num > priorityQueue.peek()) {
+                    priorityQueue.poll();
+                    priorityQueue.offer(num);
+                }
+            }
+        }
+        return priorityQueue.poll();
+    }
 
+    /**
+     * 前K个高频元素
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int num : nums) {
+            map.putIfAbsent(num, 0);
+            map.put(num, map.get(num) + 1);
+        }
+        PriorityQueue<Map.Entry<Integer, Integer>> priorityQueue = new PriorityQueue<>((a, b) -> {
+            return Integer.compare(b.getValue(), a.getValue());
+        });
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            priorityQueue.offer(entry);
+        }
+        int[] res = new int[k];
+        for (int i = 0; i < k; i++) {
+            res[i] = priorityQueue.poll().getKey();
+        }
+        return res;
+    }
+
+    /**
+     * 数据流的中位数
+     */
+    class MedianFinder {
+
+        public MedianFinder() {
+
+        }
+
+        public void addNum(int num) {
+
+        }
+
+        public double findMin() {
+            
+        }
     }
 }
