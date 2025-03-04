@@ -2227,4 +2227,108 @@ public class Leetcodehot100ThreeEx {
             return monotonicStack.isEmpty() ? -1 : monotonicStack.peek();
         }
     }
+
+    /**
+     * 字符串解码
+     */
+    public String decodeString(String s) {
+        Deque<Character> stack = new ArrayDeque<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '[') {
+                if (stack.isEmpty() || !(stack.peek() >= '0' && stack.peek() <= '9')) {
+                    stack.push('1');
+                }
+                stack.push(c);
+            } else if (c == ']') {
+                StringBuilder sb = new StringBuilder();
+                while (!stack.isEmpty() && stack.peek() != '[') {
+                    sb.append(stack.pop());
+                }
+                stack.pop();
+                String t = sb.reverse().toString();
+                sb.setLength(0);
+                while (!stack.isEmpty() && stack.peek() >= '0' && stack.peek() <= '9') {
+                    sb.append(stack.pop());
+                }
+                int time = Integer.parseInt(sb.reverse().toString());
+                sb.setLength(0);
+                for (int j = 0; j < time; j++) {
+                    sb.append(t);
+                }
+                int size = sb.length();
+                for (int j = 0; j < size; j++) {
+                    stack.push(sb.charAt(j));
+                }
+                sb.setLength(0);
+            } else {
+                stack.push(c);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        while (!stack.isEmpty()) {
+            sb.append(stack.pop());
+        }
+        return sb.reverse().toString();
+    }
+
+    /**
+     * 每日温度
+     */
+    public int[] dailyTemperatures(int[] temperatures) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int[] ans = new int[temperatures.length];
+        for (int i = 0; i < temperatures.length; i++) {
+            while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
+                int prev = stack.pop();
+                ans[prev] = i - prev;
+            }
+            stack.push(i);
+        }
+        return ans;
+    }
+
+    /**
+     * 柱状图中的最大矩形
+     */
+    public int largestRectangleArea(int[] heights) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int[] area = new int[heights.length];
+        for (int i = 0; i < heights.length; i++) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                area[j] = (i - j) * heights[j];
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int i = heights.length;
+            int j = stack.pop();
+            area[j] = (i - j) * heights[j];
+        }
+        for (int i = heights.length - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                area[j] += heights[j] * (j - i - 1);
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int i = -1;
+            int j = stack.pop();
+            area[j] += heights[j] * (j - i - 1);
+        }
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i < area.length; i++) {
+            max = Math.max(max, area[i]);
+        }
+        return max;
+    }
+
+    /**
+     * 数组中的最大元素
+     */
+    public int findKthLargest(int[] nums, int k) {
+
+    }
 }
