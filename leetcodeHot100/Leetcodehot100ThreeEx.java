@@ -2595,4 +2595,21 @@ public class Leetcodehot100ThreeEx {
         }
         return dp[len - 1][amount] > amount ? -1 : dp[len - 1][amount];
     }
+
+    /**
+     * 单词拆分
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int len = s.length();
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        for (int i = 1; i < len + 1; i++) {
+            for (String word : wordDict) {
+                if (i >= word.length() && s.substring(i - word.length(), i).equals(word)) {
+                    dp[i] = dp[i - word.length()] || dp[i];
+                }
+            }
+        }
+        return dp[len];
+    }
 }
