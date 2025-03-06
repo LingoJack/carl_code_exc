@@ -2612,4 +2612,26 @@ public class Leetcodehot100ThreeEx {
         }
         return dp[len];
     }
+
+    /**
+     * 乘积最大子数组
+     */
+    public int maxProduct(int[] nums) {
+        // 考虑到i位置的乘积最大子数组乘积为dp[i]，且以i结尾
+        int[] maxDp = new int[nums.length];
+        int[] minDp = new int[nums.length];
+        maxDp[0] = nums[0];
+        minDp[0] = nums[0];
+        int max = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            maxDp[i] = Math.max(Math.max(maxDp[i - 1] * nums[i], minDp[i - 1] * nums[i]), nums[i]);
+            minDp[i] = Math.min(Math.min(minDp[i - 1] * nums[i], maxDp[i - 1] * nums[i]), nums[i]);
+            max = Math.max(max, maxDp[i]);
+        }
+        return max;
+    }
+
+    /**
+     * 
+     */
 }
