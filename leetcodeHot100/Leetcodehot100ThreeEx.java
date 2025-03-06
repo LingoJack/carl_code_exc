@@ -2631,7 +2631,152 @@ public class Leetcodehot100ThreeEx {
         return max;
     }
 
+    public static void main(String[] args) {
+        Leetcodehot100ThreeEx l = new Leetcodehot100ThreeEx();
+        int[] nums = new int[] { 2, 2, 2, 1, 1, 2 };
+        System.out.println(l.valid(nums));
+    }
+
     /**
-     * 
+     * 字节Tiktok一面
+     * 将数组分割成和相等的子数组，问可分割的子数组的个数最大是多少
      */
+    public int valid(int[] nums) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        for (int partNum = nums.length; partNum >= 2; partNum--) {
+            if (sum % partNum != 0) {
+                continue;
+            }
+            int target = sum / partNum;
+            if (dfs(nums, target, 0, 0, partNum)) {
+                return partNum;
+            }
+        }
+        return 1;
+    }
+
+    private boolean dfs(int[] nums, int target, int start, int count, int needPartNum) {
+        if (start == nums.length) {
+            return count == needPartNum;
+        }
+        for (int i = start; i < nums.length; i++) {
+            if (check(nums, start, i, target)) {
+                return dfs(nums, target, i + 1, count + 1, needPartNum);
+            }
+        }
+        return false;
+    }
+
+    private boolean check(int[] nums, int start, int end, int target) {
+        int sum = 0;
+        for (int i = start; i <= end; i++) {
+            sum += nums[i];
+        }
+        return sum == target;
+    }
+
+    /**
+     * 分割等和子集
+     */
+    public boolean canPartition(int[] nums) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        if (sum % 2 == 1) {
+            return false;
+        }
+        return canFoundTargetInNumsScope(nums, 0, nums.length - 1, sum / 2);
+    }
+
+    private static boolean canFoundTargetInNumsScope(int[] nums, int start, int end, int target) {
+        int len = end - start + 1;
+        boolean[][] dp = new boolean[len][target + 1];
+        // 初始化
+        for (int i = 0; i < len; i++) {
+            dp[i][0] = true;
+        }
+        if (nums[start] <= target) {
+            dp[0][nums[start]] = true;
+        }
+        for (int i = 1; i < len; i++) {
+            for (int j = 1; j < target + 1; j++) {
+                dp[i][j] = (j >= nums[start + i] && dp[i - 1][j - nums[start + i]]) || dp[i - 1][j];
+            }
+        }
+        return dp[len - 1][target];
+    }
+
+    /**
+     * 最长有效括号
+     */
+    public int longestValidParentheses(String s) {
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+        int len = s.length();
+        int max = 0;
+        // dp[i] 为以i字符结尾的最长有效括号
+        int[] dp = new int[len];
+        for (int i = 1; i < len; i++) {
+            char c = s.charAt(i);
+            if (c == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    dp[i] = (i - 2 >= 0 ? dp[i - 2] : 0) + 2;
+                } else {
+                    // (())
+                    int pair = i - dp[i - 1] - 1;
+                    if (pair >= 0 && s.charAt(pair) == '(') {
+                        dp[i] = dp[i - 1] + (pair - 1 >= 0 ? dp[pair - 1] : 0) + 2;
+                    }
+
+                }
+                max = Math.max(max, dp[i]);
+            }
+        }
+        return max;
+    }
+
+    /**
+     * 不同路径
+     */
+    public int uniquePaths(int m, int n) {
+        int[][] dp = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            dp[i][0] = 1;
+        }
+        for (int i = 0; i < n; i++) {
+            dp[0][i] = 1;
+        }
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+
+    /**
+     * 最小路径和
+     */
+    public int minPathSum(int[][] grid) {
+        int row = grid.length;
+        int col = grid[0].length;
+        int[][] dp = new int[row][col];
+        for (int i = 0; i < col; i++) {
+            dp[0][i] = i - 1 >= 0 ? dp[0][i - 1] + grid[0][i] : grid[0][i];
+        }
+        for (int i = 1; i < row; i++) {
+            dp[i][0] = dp[i - 1][0] + grid[i][0];
+        }
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
+            }
+        }
+        return dp[row - 1][col - 1];
+    }
 }
