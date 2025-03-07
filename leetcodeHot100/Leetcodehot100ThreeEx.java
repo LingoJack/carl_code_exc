@@ -2894,5 +2894,27 @@ public class Leetcodehot100ThreeEx {
         return res;
     }
 
-    
+    /**
+     * 多数元素
+     */
+    public int majorityElement(int[] nums) {
+        Integer winner = null;
+        int count = 1;
+        for (int i = 0; i < nums.length; i++) {
+            if (winner == null) {
+                count = 1;
+                winner = nums[i];
+            } else {
+                if (winner == nums[i]) {
+                    count++;
+                } else {
+                    count--;
+                    if (count == 0) {
+                        winner = null;
+                    }
+                }
+            }
+        }
+        return winner;
+    }
 }
