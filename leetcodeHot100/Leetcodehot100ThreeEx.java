@@ -2806,4 +2806,93 @@ public class Leetcodehot100ThreeEx {
         int nNum = lt + 1;
         return Math.max(pNum, nNum);
     }
+
+    /**
+     * 最长回文子串
+     */
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        boolean[][] dp = new boolean[len][len];
+        int maxLen = 1;
+        int offset = 0;
+        for (int i = 0; i < len; i++) {
+            dp[i][i] = true;
+        }
+        for (int size = 2; size <= len; size++) {
+            for (int start = 0; start < len - size + 1; start++) {
+                int end = start + size - 1;
+                if (size == 2) {
+                    dp[start][end] = s.charAt(start) == s.charAt(end);
+                } else {
+                    dp[start][end] = (s.charAt(start) == s.charAt(end)) && dp[start + 1][end - 1];
+                }
+                if (dp[start][end] && size >= maxLen) {
+                    maxLen = size;
+                    offset = start;
+                }
+            }
+        }
+        return s.substring(offset, offset + maxLen);
+    }
+
+    /**
+     * 最长公共子序列
+     */
+    public int longestCommonSubsequence(String text1, String text2) {
+        int l1 = text1.length();
+        int l2 = text2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 编辑距离
+     */
+    public int minDistance(String word1, String word2) {
+        int l1 = word1.length();
+        int l2 = word2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 0; i < l1 + 1; i++) {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i < l2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    private int min(int a, int b, int c) {
+        return Math.min(a, Math.min(c, b));
+    }
+
+    /**
+     * 只出现一次的数字
+     */
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for (int num : nums) {
+            res ^= num;
+        }
+        return res;
+    }
+
+    
 }
