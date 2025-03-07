@@ -2894,5 +2894,81 @@ public class Leetcodehot100ThreeEx {
         return res;
     }
 
-    
+    /**
+     * 删除无效的括号
+     * hard
+     * 关键是想到计算出最少需要删除的左右括号数量
+     */
+    public List<String> removeInvalidParentheses(String s) {
+        Set<String> res = new HashSet<>();
+        List<String> list = new ArrayList<>();
+        int lRemove = 0;
+        int rRemove = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                lRemove++;
+            } else if (c == ')') {
+                if (lRemove > 0) {
+                    lRemove--;
+                } else {
+                    rRemove++;
+                }
+            }
+        }
+        for (int delCount = 0; delCount < s.length(); delCount++) {
+            dfs(res, s, new StringBuilder(), lRemove, rRemove, 0);
+            if (!res.isEmpty()) {
+                list.addAll(res);
+                return list;
+            }
+        }
+        list.add("");
+        return list;
+    }
+
+    private void dfs(Set<String> res, String s, StringBuilder sb, int lRemove, int rRemove, int idx) {
+        if (idx == s.length()) {
+            if (lRemove == 0 && rRemove == 0 && valid(sb)) {
+                res.add(sb.toString());
+            }
+            return;
+        }
+        char c = s.charAt(idx);
+        if (c == ')' && rRemove > 0) {
+            dfs(res, s, sb, lRemove, rRemove - 1, idx + 1);
+        }
+        if (c == '(' && lRemove > 0) {
+            dfs(res, s, sb, lRemove - 1, rRemove, idx + 1);
+        }
+        int size = sb.length();
+        sb.append(c);
+        dfs(res, s, sb, lRemove, rRemove, idx + 1);
+        sb.setLength(size);
+    }
+
+    private boolean valid(StringBuilder sb) {
+        Deque<Character> stack = new ArrayDeque<>();
+        int size = sb.length();
+        for (int i = 0; i < size; i++) {
+            char c = sb.charAt(i);
+            if (c == ')') {
+                if (stack.isEmpty() || stack.peek() != '(') {
+                    return false;
+                } else {
+                    stack.pop();
+                }
+            } else if (c == '(') {
+                stack.push(c);
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    /**
+     * 用最少交换次数来组合所有的1
+     */
+    public int minSwaps(int[] nums) {
+
+    }
 }
