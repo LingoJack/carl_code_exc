@@ -2779,4 +2779,31 @@ public class Leetcodehot100ThreeEx {
         }
         return dp[row - 1][col - 1];
     }
+
+    /**
+     * 正整数和负整数的最大计数
+     */
+    public int maximumCount(int[] nums) {
+        // -2,-1,-1,1,2,3
+        // l
+        // r
+        int lt = 0, rt = nums.length - 1;
+        while (rt > lt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] <= 0) {
+                lt = mid + 1;
+            } else {
+                rt = mid;
+            }
+        }
+        while (rt < nums.length && nums[rt] <= 0) {
+            rt++;
+        }
+        int pNum = nums.length - 1 - rt + 1;
+        while (lt >= 0 && nums[lt] >= 0) {
+            lt--;
+        }
+        int nNum = lt + 1;
+        return Math.max(pNum, nNum);
+    }
 }
