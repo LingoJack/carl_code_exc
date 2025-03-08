@@ -13,12 +13,12 @@ public class Main {
     public static void main(String[] args) {
         int num = 6;
         int[][] pos = new int[][] {
-            {0, 0},
-            {0, 1},
-            {0, 3},
-            {1, 0},
-            {2, 0},
-            {3, 0}
+                { 0, 0 },
+                { 0, 1 },
+                { 0, 3 },
+                { 1, 0 },
+                { 2, 0 },
+                { 3, 0 }
         };
         Map<Integer, List<Integer>> rowIndexMap = new HashMap<>();
         Map<Integer, List<Integer>> colIndexMap = new HashMap<>();
@@ -46,7 +46,7 @@ public class Main {
         if (colPos - 1 > 0) {
             count++;
         }
-        if(colPos + 1 < rowList.size() - 1) {
+        if (colPos + 1 < rowList.size() - 1) {
             count++;
         }
         List<Integer> colList = colIndexMap.get(colIndex);
@@ -54,7 +54,7 @@ public class Main {
         if (rowPos - 1 > 0) {
             count++;
         }
-        if(rowPos + 1 < colList.size() - 1) {
+        if (rowPos + 1 < colList.size() - 1) {
             count++;
         }
         return count;
