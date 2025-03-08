@@ -3076,4 +3076,20 @@ public class Leetcodehot100ThreeEx {
         swap(nums, slow, end);
         return slow;
     }
+
+    /**
+     * 寻找重复数
+     */
+    public int findDuplicate(int[] nums) {
+        int len = nums.length;
+        boolean[] exist = new boolean[len];
+        for (int num : nums) {
+            if (!exist[num]) {
+                exist[num] = true;
+            } else {
+                return num;
+            }
+        }
+        return -1;
+    }
 }
