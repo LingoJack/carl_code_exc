@@ -3007,7 +3007,7 @@ public class Leetcodehot100ThreeEx {
             int rt = lt + windowSize - 1;
             int count = 0;
             for (int i = lt; i <= rt; i++) {
-                if (nums[i] == 0) {
+                if (nums[i] == 1) {
                     count++;
                 }
             }
@@ -3020,6 +3020,35 @@ public class Leetcodehot100ThreeEx {
      * LC2134.用最少交换次数来组合所有的1 II
      */
     public int minSwapsII(int[] nums) {
-        
+        int windowSize = 0;
+        for (int num : nums) {
+            if (num == 1) {
+                windowSize++;
+            }
+        }
+        int max = 0;
+        int count = 0;
+        for (int i = 0; i < windowSize; i++) {
+            if (nums[i % nums.length] == 1) {
+                count++;
+            }
+        }
+        max = Math.max(max, count);
+        for (int lt = 0; lt <= 2 * nums.length - windowSize - 2; lt++) {
+            int rt = lt + windowSize - 1;
+            if (nums[lt % nums.length] == 1) {
+                count--;
+            }
+            rt++;
+            if (nums[rt % nums.length] == 1) {
+                count++;
+            }
+            max = Math.max(max, count);
+        }
+        return windowSize - max;
     }
+
+    /**
+     * 
+     */
 }
