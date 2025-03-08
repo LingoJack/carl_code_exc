@@ -3048,4 +3048,32 @@ public class Leetcodehot100ThreeEx {
         return windowSize - max;
     }
 
+    /**
+     * 颜色分类
+     */
+    public void sortColors(int[] nums) {
+        quickSort(nums, 0, nums.length - 1);
+    }
+
+    public void quickSort(int[] nums, int start, int end) {
+        if (start >= end) {
+            return;
+        }
+        int idx = partition(nums, start, end);
+        quickSort(nums, start, idx - 1);
+        quickSort(nums, idx + 1, end);
+    }
+
+    private int partition(int[] nums, int start, int end) {
+        int slow = start, fast = start;
+        while (fast < end) {
+            if (nums[fast] < nums[end]) {
+                swap(nums, fast, slow);
+                slow++;
+            }
+            fast++;
+        }
+        swap(nums, slow, end);
+        return slow;
+    }
 }
