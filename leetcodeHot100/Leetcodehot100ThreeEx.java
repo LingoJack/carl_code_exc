@@ -2633,8 +2633,8 @@ public class Leetcodehot100ThreeEx {
 
     public static void main(String[] args) {
         Leetcodehot100ThreeEx l = new Leetcodehot100ThreeEx();
-        int[] nums = new int[] { 2, 2, 2, 1, 1, 2 };
-        System.out.println(l.valid(nums));
+        int[] nums = new int[] { 1, 0, 1, 0, 1 };
+        System.out.println(l.minSwaps(nums));
     }
 
     /**
@@ -2966,9 +2966,60 @@ public class Leetcodehot100ThreeEx {
     }
 
     /**
+     * 多数元素
+     */
+    public int majorityElement(int[] nums) {
+        Integer winner = null;
+        int count = 1;
+        for (int i = 0; i < nums.length; i++) {
+            if (winner == null) {
+                count = 1;
+                winner = nums[i];
+            } else {
+                if (winner == nums[i]) {
+                    count++;
+                } else {
+                    count--;
+                    if (count == 0) {
+                        winner = null;
+                    }
+                }
+            }
+        }
+        return winner;
+    }
+
+    /**
      * 用最少交换次数来组合所有的1
      */
     public int minSwaps(int[] nums) {
+        int windowSize = 0;
+        for (int num : nums) {
+            if (num == 1) {
+                windowSize++;
+            }
+        }
+        // 1 0 1 0 1
+        // l
+        // r
+        int max = 0;
+        for (int lt = 0; lt <= nums.length - windowSize - 1; lt++) {
+            int rt = lt + windowSize - 1;
+            int count = 0;
+            for (int i = lt; i <= rt; i++) {
+                if (nums[i] == 0) {
+                    count++;
+                }
+            }
+            max = Math.max(max, count);
+        }
+        return windowSize - max;
+    }
 
+    /**
+     * LC2134.用最少交换次数来组合所有的1 II
+     */
+    public int minSwapsII(int[] nums) {
+        
     }
 }
