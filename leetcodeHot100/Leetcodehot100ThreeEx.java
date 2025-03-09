@@ -3047,4 +3047,52 @@ public class Leetcodehot100ThreeEx {
         }
         return windowSize - max;
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * 颜色分类
+     */
+    public void sortColors(int[] nums) {
+        quickSort(nums, 0, nums.length - 1);
+    }
+
+    public void quickSort(int[] nums, int start, int end) {
+        if (start >= end) {
+            return;
+        }
+        int idx = partition(nums, start, end);
+        quickSort(nums, start, idx - 1);
+        quickSort(nums, idx + 1, end);
+    }
+
+    private int partition(int[] nums, int start, int end) {
+        int slow = start, fast = start;
+        while (fast < end) {
+            if (nums[fast] < nums[end]) {
+                swap(nums, fast, slow);
+                slow++;
+            }
+            fast++;
+        }
+        swap(nums, slow, end);
+        return slow;
+    }
+
+    /**
+     * 寻找重复数
+     */
+    public int findDuplicate(int[] nums) {
+        int len = nums.length;
+        boolean[] exist = new boolean[len];
+        for (int num : nums) {
+            if (!exist[num]) {
+                exist[num] = true;
+            } else {
+                return num;
+            }
+        }
+        return -1;
+    }
+>>>>>>> 63adc6b9c70142d9736fd19824ad1832906ad457
 }
