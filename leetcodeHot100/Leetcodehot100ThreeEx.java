@@ -3047,8 +3047,6 @@ public class Leetcodehot100ThreeEx {
         }
         return windowSize - max;
     }
-<<<<<<< HEAD
-=======
 
     /**
      * 颜色分类
@@ -3094,5 +3092,4 @@ public class Leetcodehot100ThreeEx {
         }
         return -1;
     }
->>>>>>> 63adc6b9c70142d9736fd19824ad1832906ad457
 }
