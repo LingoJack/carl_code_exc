@@ -3047,5 +3047,4 @@ public class Leetcodehot100ThreeEx {
         }
         return windowSize - max;
     }
-
 }
