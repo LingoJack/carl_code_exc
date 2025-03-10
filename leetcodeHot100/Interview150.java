@@ -465,10 +465,10 @@ public class Interview150 {
     public boolean isPalindrome(String s) {
         int len = s.length();
         int lt = 0, rt = len - 1;
-        while (lt < len && s.charAt(lt) == ' ') {
+        while (lt < len && !isChar(s.charAt(lt))) {
             lt++;
         }
-        while (rt >= 0 && s.charAt(rt) == ' ') {
+        while (rt >= 0 && !(isChar(s.charAt(rt)))) {
             rt--;
         }
         while (lt < rt) {
@@ -488,7 +488,7 @@ public class Interview150 {
     }
 
     private boolean isChar(char c) {
-        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9');
     }
 
     private boolean equalsIngnoreCase(char c1, char c2) {
