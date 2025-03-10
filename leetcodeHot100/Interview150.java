@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Interview150 {
 
@@ -329,5 +330,132 @@ public class Interview150 {
             int idx = random.nextInt(list.size());
             return list.get(idx);
         }
+    }
+
+    /**
+     * 蚂蚁笔试：
+     * 计算公式，最终只能过20%
+     */
+    public static int calcV3(int[] nums, int n) {
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++) {
+                res += nums[i] / nums[j];
+                if (i != j) {
+                    res += nums[j] / nums[i];
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 蚂蚁笔试
+     * 曼哈顿树
+     */
+    public void ansV1() {
+        Scanner sc = new Scanner(System.in);
+        int nodeNum = sc.nextInt();
+        int queryNum = sc.nextInt();
+        Map<Integer, TreeNode> map = new HashMap<>();
+        map.put(1, new TreeNode(1, 0, 0));
+        for (int i = 0; i < nodeNum - 1; i++) {
+            int parent = sc.nextInt();
+            int son = sc.nextInt();
+            TreeNode parentNode = map.get(parent);
+            TreeNode node = new TreeNode(son);
+            if (parentNode.lt == null) {
+                node.x = parentNode.x - 1;
+                node.y = parentNode.y - 1;
+                parentNode.lt = node;
+            } else {
+                node.x = parentNode.x + 1;
+                node.y = parentNode.y - 1;
+                parentNode.rt = node;
+            }
+            map.put(son, node);
+        }
+        for (int i = 0; i < queryNum; i++) {
+            int node1Id = sc.nextInt();
+            int node2Id = sc.nextInt();
+            TreeNode node1 = map.get(node1Id);
+            TreeNode node2 = map.get(node2Id);
+            int xVal = Math.abs(node1.x - node2.x);
+            int yVal = Math.abs(node1.y - node2.y);
+            // int xVal = node1.x > node2.x ? node1.x - node2.x : node2.x - node1.x;
+            // int yVal = node1.y > node2.y ? node1.y - node2.y : node2.y - node1.y;
+            System.out.println(xVal + yVal);
+        }
+    }
+
+    public class TreeNode {
+        int id;
+        int x;
+        int y;
+        TreeNode lt;
+        TreeNode rt;
+
+        public TreeNode(int id, int x, int y) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+        }
+
+        public TreeNode(int id) {
+            this.id = id;
+        }
+    }
+
+    /**
+     * 蚂蚁笔试
+     * 字符串比对
+     */
+    public static void printSByT(String s, String t, int len) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            char sChar = s.charAt(i);
+            char tChar = t.charAt(i);
+            if ('A' <= sChar && sChar <= 'Z') {
+                sb.append(toUpperCase(tChar));
+            } else if ('a' <= sChar && sChar <= 'z') {
+                sb.append(toLowerCase(tChar));
+            } else if ('0' <= sChar && sChar <= '9') {
+                sb.append("" + (int) tChar);
+            } else {
+                sb.append('_');
+            }
+        }
+        System.out.println(sb.toString());
+    }
+
+    private static char toUpperCase(char c) {
+        if ('a' <= c && c <= 'z') {
+            return (char) (c - 32);
+        }
+        return c;
+    }
+
+    private static char toLowerCase(char c) {
+        if ('A' <= c && c <= 'Z') {
+            return (char) (c + 32);
+        }
+        return c;
+    }
+
+    /**
+     * 存在重复元素II
+     */
+    public boolean containsNearbyDuplicate(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(nums[i])) {
+                int j = map.get(nums[i]);
+                if (Math.abs(i - j) <= k && i != j) {
+                    return true;
+                }
+            }
+            map.put(nums[i], i);
+        }
+        return false;
     }
 }
