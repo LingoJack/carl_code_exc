@@ -458,4 +458,45 @@ public class Interview150 {
         }
         return false;
     }
+
+    /**
+     * 验证回文串
+     */
+    public boolean isPalindrome(String s) {
+        int len = s.length();
+        int lt = 0, rt = len - 1;
+        while (lt < len && s.charAt(lt) == ' ') {
+            lt++;
+        }
+        while (rt >= 0 && s.charAt(rt) == ' ') {
+            rt--;
+        }
+        while (lt < rt) {
+            if (!(rt >= 0 && lt < len) || !equalsIngnoreCase(s.charAt(rt), s.charAt(lt))) {
+                return false;
+            }
+            lt++;
+            while (lt < len && !isChar(s.charAt(lt))) {
+                lt++;
+            }
+            rt--;
+            while (rt >= 0 && !(isChar(s.charAt(rt)))) {
+                rt--;
+            }
+        }
+        return true;
+    }
+
+    private boolean isChar(char c) {
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+    }
+
+    private boolean equalsIngnoreCase(char c1, char c2) {
+        if ('a' <= c1 && c1 <= 'z') {
+            return c1 == c2 || (char) (c1 - 32) == c2;
+        } else if ('A' <= c1 && c1 <= 'Z') {
+            return c1 == c2 || (char) (c1 + 32) == c2;
+        }
+        return c1 == c2;
+    }
 }
