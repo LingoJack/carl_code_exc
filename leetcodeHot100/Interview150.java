@@ -607,6 +607,7 @@ public class Interview150 {
 
     /**
      * 插入区间
+     * 没做出来
      * 暴露出来几个问题，之前的合并区间你的方法论不太合适
      * 而且你的二分又不熟悉了
      */
@@ -617,13 +618,14 @@ public class Interview150 {
             result.add(intervals[i]);
             i++;
         }
+        // 这部分的逻辑处理很巧妙
         int start = newInterval[0], end = newInterval[1];
         while (i < intervals.length && intervals[i][0] <= end) {
             start = Math.min(start, intervals[i][0]);
             end = Math.max(end, intervals[i][1]);
             i++;
         }
-        result.add(new int[]{start, end});
+        result.add(new int[] { start, end });
         while (i < intervals.length) {
             result.add(intervals[i]);
             i++;
