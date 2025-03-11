@@ -523,6 +523,54 @@ public class Interview150 {
     }
 
     /**
-     * Test
+     * 同构字符串
      */
+    public boolean isIsomorphic(String s, String t) {
+        Map<Character, List<Integer>> sCountMap = new HashMap<>();
+        Map<Character, List<Integer>> tCountMap = new HashMap<>();
+        char[] sChs = s.toCharArray();
+        char[] tChs = t.toCharArray();
+        for (int i = 0; i < sChs.length; i++) {
+            char c = sChs[i];
+            List<Integer> list = sCountMap.getOrDefault(c, new ArrayList<>());
+            list.add(i);
+            sCountMap.put(c, list);
+        }
+        for (int i = 0; i < tChs.length; i++) {
+            char c = tChs[i];
+            List<Integer> list = tCountMap.getOrDefault(c, new ArrayList<>());
+            list.add(i);
+            tCountMap.put(c, list);
+        }
+        int valid = 0;
+        int target = Math.max(sCountMap.size(), tCountMap.size());
+        int idx = 0;
+        Map<Character, Boolean> used = new HashMap<>();
+        while (idx < sChs.length && valid < target) {
+            List<Integer> list1 = sCountMap.get(sChs[idx]);
+            List<Integer> list2 = tCountMap.get(tChs[idx]);
+            if (!used.getOrDefault(sChs[idx], false)) {
+                if (!listEqual(list1, list2)) {
+                    return false;
+                }
+                valid++;
+                used.put(sChs[idx], true);
+            }
+            idx++;
+        }
+        return valid == target;
+    }
+
+    private boolean listEqual(List<Integer> list1, List<Integer> list2) {
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        int len = list1.size();
+        for (int i = 0; i < len; i++) {
+            if (!list1.get(i).equals(list2.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
