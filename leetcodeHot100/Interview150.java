@@ -499,4 +499,26 @@ public class Interview150 {
         }
         return c1 == c2;
     }
+
+    /**
+     * 和为K的子数组
+     */
+    public int subarraySum(int[] nums, int k) {
+        int len = nums.length;
+        int[] prefix = new int[len];
+        int sum = 0;
+        for (int i = 0; i < len; i++) {
+            sum += nums[i];
+            prefix[i] = sum;
+        }
+        // 1 2 3
+        int count = 0;
+        Map<Integer, Integer> sumCount = new HashMap<>();
+        sumCount.put(0, 1);
+        for (int i = 0; i < len; i++) {
+            count += sumCount.getOrDefault(prefix[i] - k, 0);
+            sumCount.put(prefix[i], sumCount.getOrDefault(prefix[i], 0) + 1);
+        }
+        return count;
+    }
 }
