@@ -573,4 +573,33 @@ public class Interview150 {
         }
         return true;
     }
+
+    /**
+     * 单词规律
+     */
+    public boolean wordPattern(String pattern, String s) {
+        // 一个字母对应到一个单词
+        String[] words = s.split(" ");
+        Map<Character, String> c2WordMap = new HashMap<>();
+        Map<String, Character> word2CharMap = new HashMap<>();
+        if (pattern.length() != words.length) {
+            return false;
+        }
+        int len = words.length;
+        for (int i = 0; i < len; i++) {
+            char c = pattern.charAt(i);
+            String word = words[i];
+            String mappedWord = c2WordMap.get(c);
+            Character mappedChar = word2CharMap.get(word);
+            if (mappedWord != null && !mappedWord.equals(word)) {
+                return false;
+            }
+            if (mappedChar != null && c != mappedChar) {
+                return false;
+            }
+            c2WordMap.put(c, word);
+            word2CharMap.put(word, c);
+        }
+        return true;
+    }
 }
