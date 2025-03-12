@@ -137,4 +137,43 @@ public class Main {
             used[i] = false;
         }
     }
+
+    /**
+     * 字节Tiktok二面：
+     * 一个字符串，可以从最前面或者最后面添加字符，使之成回文串，返回最小的回文串
+     */
+    public String shortestPalindrome(String s) {
+        boolean[][] dp = new boolean[s.length()][s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            dp[i][i] = true;
+        }
+        int maxLen = 1;
+        int minStartPoint = 0;
+        for (int len = 2; len <= s.length(); len++) {
+            // 0 1 2 3
+            for (int start = 0; start < s.length() - len + 1; start++) {
+                int end = start + len - 1;
+                if (len == 2) {
+                    dp[start][end] = s.charAt(start) == s.charAt(end);
+                } else {
+                    dp[start][end] = s.charAt(start) == s.charAt(end) && dp[start + 1][end - 1];
+                }
+                if (dp[start][end] && len > maxLen) {
+                    maxLen = len;
+                    minStartPoint = start;
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder(s);
+        if (minStartPoint == 0) {
+            for (int i = maxLen; i < s.length(); i++) {
+                sb.insert(0, s.charAt(i));
+            }
+        } else if (minStartPoint + maxLen - 1 == s.length() - 1) {
+            for (int i = minStartPoint - 1; i >= 0; i--) {
+                sb.append(s.charAt(i));
+            }
+        }
+        return sb.toString();
+    }
 }
