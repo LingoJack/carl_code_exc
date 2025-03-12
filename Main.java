@@ -10,6 +10,9 @@ import leetcodeHot100.stack;
 
 public class Main {
 
+    /**
+     * 蚂蚁笔试
+     */
     public static void main(String[] args) {
         int num = 6;
         int[][] pos = new int[][] {
@@ -106,5 +109,32 @@ public class Main {
 
     private static void reverse(StringBuilder sb) {
         reverse(sb, 0, sb.length() - 1);
+    }
+
+    /**
+     * 腾讯云一面：
+     * 全排列
+     */
+    public List<List<Integer>> all(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), nums, new boolean[nums.length]);
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> res, List<Integer> list, int[] nums, boolean[] used) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(nums[i]);
+            dfs(res, list, nums, used);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
     }
 }
