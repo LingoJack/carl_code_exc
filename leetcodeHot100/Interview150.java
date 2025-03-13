@@ -632,4 +632,122 @@ public class Interview150 {
         }
         return result.toArray(new int[result.size()][]);
     }
+
+    /**
+     * 最长递增子序列
+     */
+    public int lengthOfLIS(int[] nums) {
+        // 以第i个字符结尾的最长递增子序列长度
+        int[] dp = new int[nums.length];
+        int max = 1;
+        for (int i = 0; i < nums.length; i++) {
+            dp[i] = 1;
+            for (int j = 0; j <= i; j++) {
+                dp[i] = (nums[i] > nums[j]) ? Math.max(dp[j] + 1, dp[i]) : dp[i];
+            }
+            if (dp[i] > max) {
+                max = dp[i];
+            }
+        }
+        return max;
+    }
+
+    /**
+     * 最长递增子序列
+     * 快速解法
+     */
+    public int lengthOfLISTwoEx(int[] nums) {
+        List<Integer> list = new ArrayList<>();
+        for (int num : nums) {
+            if (list.isEmpty()) {
+                list.add(num);
+                continue;
+            }
+            if (list.get(list.size() - 1) < num) {
+                list.add(num);
+            } else {
+                list.set(findPos(list, num), num);
+            }
+        }
+        return list.size();
+    }
+
+    private int findPos(List<Integer> list, int num) {
+        int lt = 0;
+        int rt = list.size() - 1;
+        // 1 3 5
+        // 4
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            int val = list.get(mid);
+            if (val > num) {
+                rt = mid - 1;
+            } else if (val < num) {
+                lt = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 下一个最大元素III
+     * 这题感觉是hot100: 下一个排列的变种
+     */
+    public int nextGreaterElement(int n) {
+        List<Integer> digits = new ArrayList<>();
+        int num = n;
+        while (num > 0) {
+            digits.add(0, num % 10);
+            num /= 10;
+        }
+
+        List<Integer> res = new ArrayList<>();
+        dfs(digits, new ArrayList<>(), res, new boolean[digits.size()], n);
+
+        return res.isEmpty() ? -1 : res.get(0);
+    }
+
+    private void dfs(List<Integer> digits, List<Integer> temp, List<Integer> res, boolean[] used, int originalNum) {
+        if (temp.size() == digits.size()) {
+            if (largerThan(temp, digits) > 0) { // 只考虑比原数大的情况
+                int num = toNumber(temp);
+                if (num > originalNum && (res.isEmpty() || num < res.get(0))) {
+                    res.clear();
+                    res.add(num); // 只存储最小的符合条件的数
+                }
+            }
+            return;
+        }
+
+        for (int i = 0; i < digits.size(); i++) {
+            if (used[i])
+                continue;
+            used[i] = true;
+            temp.add(digits.get(i));
+            dfs(digits, temp, res, used, originalNum);
+            temp.remove(temp.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    private int largerThan(List<Integer> num1, List<Integer> num2) {
+        for (int i = 0; i < num1.size(); i++) {
+            if (!num1.get(i).equals(num2.get(i))) {
+                return num1.get(i) - num2.get(i);
+            }
+        }
+        return 0;
+    }
+
+    private int toNumber(List<Integer> numList) {
+        long num = 0;
+        for (int digit : numList) {
+            num = num * 10 + digit;
+            if (num > Integer.MAX_VALUE)
+                return -1; // 防止溢出
+        }
+        return (int) num;
+    }
 }
