@@ -26,13 +26,19 @@ public class Interview150 {
             inorder(root);
         }
 
+        private class TreeNode {
+            TreeNode lt;
+            TreeNode rt;
+            int val;
+        }
+
         private void inorder(TreeNode node) {
             if (node == null) {
                 return;
             }
-            inorder(node.left);
+            inorder(node.lt);
             list.add(node.val);
-            inorder(node.right);
+            inorder(node.rt);
         }
 
         public int next() {
@@ -749,5 +755,39 @@ public class Interview150 {
                 return -1; // 防止溢出
         }
         return (int) num;
+    }
+
+    public static String toChinese(long number) {
+        String[] chineseNumber = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
+        String[] units = { "", "十", "百", "千", "万", "十万", "百万", "千万", "亿" };
+        if (number == 0) {
+            return chineseNumber[0];
+        }
+        StringBuilder result = new StringBuilder();
+        int unitPos = 0;
+        boolean needZero = false;
+        while (number != 0) {
+            int digit = (int) (number % 10);
+            if (digit == 0) {
+                if (!needZero) {
+                    needZero = true;
+                }
+            } else {
+                if (needZero) {
+                    result.insert(0, chineseNumber[0]);
+                    needZero = false;
+                }
+                result.insert(0, units[unitPos]);
+                result.insert(0, chineseNumber[digit]);
+            }
+            unitPos++;
+            number /= 10;
+        }
+        return result.toString();
+    }
+
+    public static void main(String[] args) {
+        int num = 1000_000_010;
+        System.out.println(toChinese(num));
     }
 }
