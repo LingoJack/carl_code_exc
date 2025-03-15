@@ -786,8 +786,5 @@ public class Interview150 {
         return result.toString();
     }
 
-    public static void main(String[] args) {
-        int num = 1000_000_010;
-        System.out.println(toChinese(num));
-    }
+    
 }

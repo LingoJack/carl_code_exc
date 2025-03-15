@@ -176,4 +176,76 @@ public class Main {
         }
         return sb.toString();
     }
+
+    public static String decode(String s, String t) {
+        StringBuilder sb = new StringBuilder(t);
+        int sLen = s.length(), tLen = t.length();
+        for (int i = 0; i < sLen; i++) {
+            char sc = s.charAt(i);
+            if (sc == 'Z') {
+                continue;
+            } else if (sc == 'R') {
+                if (i + 1 < sLen && s.charAt(i + 1) == 'Z') {
+                    continue;
+                }
+                sb.reverse();
+            } else {
+                if (i + 1 < sLen && s.charAt(i + 1) == 'Z') {
+                    continue;
+                }
+                sb.append(sc);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static int calc(int r1, int r2, int l1, int l2) {
+        int res = 0;
+        for (int i = l1; i <= r1; i++) {
+            for (int j = l2; j <= r2; j++) {
+                res += func(i, j);
+            }
+        }
+        return res;
+    }
+
+    public static int calcV2(int r1, int r2, int l1, int l2) {
+        int res = 0;
+        for (int j = l2; j <= r2; j++) {
+            for (int time = 1; time * j <= r1; time++) {
+                if (time * j >= l1) {
+                    res++;
+                }
+            }
+        }
+        return res;
+    }
+
+    private static int func(int i, int j) {
+        return i % j == 0 ? 1 : 0;
+    }
+
+    public static int[][] connect(int[] nums, int k) {
+        int[][] matrix = new int[nums.length][nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = 0; j < nums.length; j++) {
+                matrix[i][j] = getSolutionNum(nums[i], nums[j], k);
+            }
+        }
+        return matrix;
+    }
+
+    private static int getSolutionNum(int ai, int aj, int k) {
+        boolean[] map = new boolean[k + 1];
+        int num = 0;
+        for (int i = 1; ai * i <= k; i++) {
+            map[k - ai * i] = true;
+        }
+        for (int j = 1; aj * j <= k; j++) {
+            if (map[aj * j]) {
+                num++;
+            }
+        }
+        return num;
+    }
 }
