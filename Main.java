@@ -177,6 +177,9 @@ public class Main {
         return sb.toString();
     }
 
+    /**
+     * 美团笔试第二批
+     */
     public static String decode(String s, String t) {
         StringBuilder sb = new StringBuilder(t);
         int sLen = s.length(), tLen = t.length();
@@ -247,5 +250,126 @@ public class Main {
             }
         }
         return num;
+    }
+
+    /**
+     * 淘天笔试
+     */
+    public static int[][] process(char[][] grid) {
+        row = grid.length;
+        col = grid[0].length;
+        int[][] res = new int[row][col];
+        boolean[] exist = new boolean[26];
+        boolean[][] visited = new boolean[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (res[i][j] != 0) {
+                    continue;
+                }
+                List<int[]> list = new ArrayList<>();
+                list.add(new int[] { i, j });
+                dfs(grid, list, visited, 0, exist);
+                for (int[] idx : list) {
+                    int x = idx[0], y = idx[1];
+                    res[x][y] = count;
+                }
+                count = 0;
+                Arrays.fill(exist, false);
+                for (boolean[] line : visited) {
+                    Arrays.fill(line, false);
+                }
+            }
+        }
+        return res;
+    }
+
+    private static int count = 0;
+
+    private static int row;
+
+    private static int col;
+
+    private static int[][] dir = new int[][] { { -1, 0 }, { 0, 1 }, { 1, 0 }, { 0, -1 } };
+
+    private static void dfs(char[][] grid, List<int[]> list, boolean[][] visited,
+            int idx, boolean[] exist) {
+        if (idx == list.size() || count == 26) {
+            return;
+        }
+        int[] index = list.get(idx);
+        int i = index[0], j = index[1];
+        for (int d = 0; d < 4; d++) {
+            int row = i + dir[d][0];
+            int col = j + dir[d][1];
+            if (!valid(row, col) || visited[row][col]) {
+                continue;
+            }
+            visited[row][col] = true;
+            if (grid[row][col] == grid[i][j]) {
+                list.add(new int[] { row, col });
+            } else {
+                if (!exist[grid[row][col] - 'a']) {
+                    count++;
+                    exist[grid[row][col] - 'a'] = true;
+                }
+            }
+        }
+        dfs(grid, list, visited, idx + 1, exist);
+    }
+
+    private static boolean valid(int i, int j) {
+        return (i >= 0 && i < row) && (j >= 0 && j < col);
+    }
+
+    private static int calcSum(int[] nums) {
+        int sum = 0;
+        for (int len = 1; len <= nums.length; len++) {
+            int[] exist = new int[len + 1];
+            int start = 0;
+            int end = start + len - 1;
+            for (int i = start; i <= end; i++) {
+                if (nums[i] > len)
+                    continue;
+                exist[nums[i]]++;
+            }
+            for (int i = 0; i < exist.length; i++) {
+                if (exist[i] == 0) {
+                    sum += i;
+                    break;
+                }
+            }
+            for (start = 1; start <= nums.length - len; start++) {
+                end = start + len - 1;
+                if (nums[start - 1] <= len) {
+                    exist[nums[start - 1]]--;
+                }
+                if (nums[end] <= len) {
+                    exist[nums[end]]++;
+                }
+                for (int i = 0; i < exist.length; i++) {
+                    if (exist[i] == 0) {
+                        sum += i;
+                        break;
+                    }
+                }
+            }
+        }
+        return sum;
+    }
+
+    private static int getMex(int[] nums, int start, int end) {
+        int len = end - start + 1;
+        boolean[] exist = new boolean[len + 1];
+        for (int i = start; i <= end; i++) {
+            if (nums[i] > len)
+                continue;
+            exist[nums[i]] = true;
+        }
+        for (int i = 0; i < exist.length; i++) {
+            if (!exist[i]) {
+                return i;
+            }
+        }
+        return exist.length;
     }
 }
