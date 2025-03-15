@@ -6,8 +6,6 @@ public class Test {
     public static void main(String[] args) {
         
     }
-<<<<<<< HEAD
-=======
 
     // 1 3 2 4 6 5
     // 1 3 2 
@@ -19,6 +17,14 @@ public class Test {
     /**
      * 下一个排列
      */
->>>>>>> dc90354f98cc47139249fb2cbc971c09c1089738
     
+
+     /**
+      * 1. 约体检 1
+        2. 美团、淘天笔试
+        3. 力扣 
+        4. 面试复盘
+        5. 明天的实验
+        6. 体检
+      */
 }
