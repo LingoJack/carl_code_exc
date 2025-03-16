@@ -725,7 +725,6 @@ public class Interview150 {
             }
             return;
         }
-
         for (int i = 0; i < digits.size(); i++) {
             if (used[i])
                 continue;
@@ -797,7 +796,7 @@ public class Interview150 {
             idx--;
         }
         if (idx == 0) {
-            Arrays.sort(nums);
+            reverse(nums, 0, len - 1);
         } else {
             // 从后往前找到第一个降序对较小值大的
             int idx1 = idx - 1;
@@ -814,37 +813,15 @@ public class Interview150 {
             }
             swap(nums, idx1, lt);
             // 这里也可以直接reverse
-            Arrays.sort(nums, idx, len);
+            reverse(nums, idx, len - 1);
         }
     }
 
-    public static String toChinese(long number) {
-        String[] chineseNumber = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
-        String[] units = { "", "十", "百", "千", "万", "十万", "百万", "千万", "亿" };
-        if (number == 0) {
-            return chineseNumber[0];
+    private void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            swap(nums, start, end);
+            start++;
+            end--;
         }
-        StringBuilder result = new StringBuilder();
-        int unitPos = 0;
-        boolean needZero = false;
-        while (number != 0) {
-            int digit = (int) (number % 10);
-            if (digit == 0) {
-                if (!needZero) {
-                    needZero = true;
-                }
-            } else {
-                if (needZero) {
-                    result.insert(0, chineseNumber[0]);
-                    needZero = false;
-                }
-                result.insert(0, units[unitPos]);
-                result.insert(0, chineseNumber[digit]);
-            }
-            unitPos++;
-            number /= 10;
-        }
-        return result.toString();
     }
-
 }
