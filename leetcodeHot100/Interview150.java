@@ -3,6 +3,7 @@ package leetcodeHot100;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -823,5 +824,130 @@ public class Interview150 {
             start++;
             end--;
         }
+    }
+
+    /**
+     * 比较版本号
+     */
+    public int compareVersion(String version1, String version2) {
+        String[] v1 = version1.split("\\.");
+        String[] v2 = version2.split("\\.");
+        int idx = 0;
+        while (idx < v1.length || idx < v2.length) {
+            int s1 = idx < v1.length ? parse(v1[idx]) : 0;
+            int s2 = idx < v2.length ? parse(v2[idx]) : 0;
+            if (s1 != s2) {
+                return s1 > s2 ? 1 : -1;
+            }
+            idx++;
+        }
+        return 0;
+    }
+
+    private int parse(String s) {
+        int res = 0;
+        int pow = 1;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            char c = s.charAt(i);
+            if ((c >= '0' && c <= '9')) {
+                res += pow * (c - '0');
+                pow *= 10;
+            }
+        }
+        return res;
+    }
+
+    public static void main(String[] args) {
+        Interview150 interview150 = new Interview150();
+        System.out.println(interview150.numberToChinese(10_540_032_11));
+    }
+
+    private static final String[] DIGITS = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
+
+    private static final String[] UNITS = { "", "万", "亿", "兆" };
+
+    /**
+     * 阿拉伯数字 -> 中文数字
+     * 要意识到万、亿的特殊性
+     * 需要注意这里需要一个零标识位
+     */
+    public static String numberToChinese(long num) {
+        if (num == 0) {
+            return DIGITS[0];
+        }
+        String numStr = Long.toString(num);
+        int len = numStr.length();
+        List<Integer> sections = new ArrayList<>();
+        for (int i = len; i > 0; i -= 4) {
+            int start = Math.max(i - 4, 0);
+            String sectionStr = numStr.substring(start, i);
+            sections.add(Integer.parseInt(sectionStr));
+        }
+        Collections.reverse(sections);
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < sections.size(); i++) {
+            int sectionNum = sections.get(i);
+            String converted = convertSection(sectionNum);
+            if (!converted.isEmpty()) {
+                int unitIndex = sections.size() - 1 - i;
+                result.append(converted).append(UNITS[unitIndex]);
+
+                // 处理节间零
+                if (i < sections.size() - 1 && sections.get(i + 1) > 0 && sections.get(i + 1) < 1000) {
+                    result.append("零");
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private static String convertSection(int num) {
+        if (num == 0) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean needZero = false;
+        // 千位
+        int qian = num / 1000;
+        num %= 1000;
+        if (qian > 0) {
+            sb.append(DIGITS[qian]).append("千");
+            needZero = false;
+        } else {
+            needZero = sb.length() > 0;
+        }
+        // 百位
+        int bai = num / 100;
+        num %= 100;
+        if (bai > 0) {
+            if (needZero)
+                sb.append("零");
+            sb.append(DIGITS[bai]).append("百");
+            needZero = false;
+        } else {
+            needZero |= sb.length() > 0;
+        }
+        // 十位
+        int shi = num / 10;
+        num %= 10;
+        if (shi > 0) {
+            if (needZero)
+                sb.append("零");
+            if (shi == 1 && sb.length() == 0) {
+                sb.append("十");
+            } else {
+                sb.append(DIGITS[shi]).append("十");
+            }
+            needZero = false;
+        } else {
+            needZero |= sb.length() > 0;
+        }
+        // 个位
+        if (num > 0) {
+            if (needZero)
+                sb.append("零");
+            sb.append(DIGITS[num]);
+        }
+        return sb.toString();
     }
 }
