@@ -2,6 +2,7 @@ package leetcodeHot100;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -708,10 +709,8 @@ public class Interview150 {
             digits.add(0, num % 10);
             num /= 10;
         }
-
         List<Integer> res = new ArrayList<>();
         dfs(digits, new ArrayList<>(), res, new boolean[digits.size()], n);
-
         return res.isEmpty() ? -1 : res.get(0);
     }
 
@@ -738,6 +737,16 @@ public class Interview150 {
         }
     }
 
+    private int toNumber(List<Integer> numList) {
+        long num = 0;
+        for (int digit : numList) {
+            num = num * 10 + digit;
+            if (num > Integer.MAX_VALUE)
+                return -1; // 防止溢出
+        }
+        return (int) num;
+    }
+
     private int largerThan(List<Integer> num1, List<Integer> num2) {
         for (int i = 0; i < num1.size(); i++) {
             if (!num1.get(i).equals(num2.get(i))) {
@@ -747,14 +756,66 @@ public class Interview150 {
         return 0;
     }
 
-    private int toNumber(List<Integer> numList) {
-        long num = 0;
-        for (int digit : numList) {
-            num = num * 10 + digit;
-            if (num > Integer.MAX_VALUE)
-                return -1; // 防止溢出
+    /**
+     * 下一个排列
+     * 也是独立做出来了
+     */
+    public void nextPermutation(int[] nums) {
+        // 1 2 3
+        // i
+        // 1 3 2
+        // 从后往前找第一个降序对
+        int len = nums.length;
+        int idx = len - 1;
+        while (idx >= 1 && nums[idx] <= nums[idx - 1]) {
+            idx--;
         }
-        return (int) num;
+        if (idx == 0) {
+            Arrays.sort(nums);
+        } else {
+            // 从后往前找到第一个降序对较小值大的
+            // 此处可以优化为二分查找
+            int idx1 = idx - 1;
+            int idx2 = len - 1;
+            while (idx2 >= idx && nums[idx2] <= nums[idx1]) {
+                idx2--;
+            }
+            swap(nums, idx1, idx2);
+            // 这里也可以直接reverse
+            Arrays.sort(nums, idx, len);
+        }
+    }
+
+    public void nextPermutationBetter(int[] nums) {
+        // 1 2 3
+        // i
+        // 1 3 2
+        // 从后往前找第一个降序对
+        int len = nums.length;
+        int idx = len - 1;
+        while (idx >= 1 && nums[idx] <= nums[idx - 1]) {
+            idx--;
+        }
+        if (idx == 0) {
+            Arrays.sort(nums);
+        } else {
+            // 从后往前找到第一个降序对较小值大的
+            int idx1 = idx - 1;
+            int rt = len - 1, lt = idx;
+            // 1 3 2
+            //
+            while (lt < rt) {
+                int mid = (lt + rt) >> 1;
+                if (nums[mid] > nums[idx1]) {
+                    lt = mid + 1;
+                } else {
+                    rt = mid;
+                }
+            }
+            swap(nums, idx1, lt);
+            // 这里也可以直接reverse
+            Arrays.sort(nums, idx, len);
+        }
     }
 
     public static String toChinese(long number) {
@@ -786,5 +847,4 @@ public class Interview150 {
         return result.toString();
     }
 
-    
 }
