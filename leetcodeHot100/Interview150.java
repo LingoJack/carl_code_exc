@@ -859,7 +859,7 @@ public class Interview150 {
 
     public static void main(String[] args) {
         Interview150 interview150 = new Interview150();
-        System.out.println(interview150.numberToChinese(10_540_032_11));
+        System.out.println(interview150.numberToChinese(10_040_032_11));
     }
 
     private static final String[] DIGITS = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
@@ -870,6 +870,7 @@ public class Interview150 {
      * 阿拉伯数字 -> 中文数字
      * 要意识到万、亿的特殊性
      * 需要注意这里需要一个零标识位
+     * 核心就是几点：万亿兆为一组，用零到九处理一组以内的个十百千，注意needZero和节间零的处理
      */
     public static String numberToChinese(long num) {
         if (num == 0) {
@@ -891,7 +892,6 @@ public class Interview150 {
             if (!converted.isEmpty()) {
                 int unitIndex = sections.size() - 1 - i;
                 result.append(converted).append(UNITS[unitIndex]);
-
                 // 处理节间零
                 if (i < sections.size() - 1 && sections.get(i + 1) > 0 && sections.get(i + 1) < 1000) {
                     result.append("零");
@@ -913,15 +913,14 @@ public class Interview150 {
         if (qian > 0) {
             sb.append(DIGITS[qian]).append("千");
             needZero = false;
-        } else {
-            needZero = sb.length() > 0;
         }
         // 百位
         int bai = num / 100;
         num %= 100;
         if (bai > 0) {
-            if (needZero)
+            if (needZero) {
                 sb.append("零");
+            }
             sb.append(DIGITS[bai]).append("百");
             needZero = false;
         } else {
@@ -931,8 +930,9 @@ public class Interview150 {
         int shi = num / 10;
         num %= 10;
         if (shi > 0) {
-            if (needZero)
+            if (needZero) {
                 sb.append("零");
+            }
             if (shi == 1 && sb.length() == 0) {
                 sb.append("十");
             } else {
@@ -944,8 +944,9 @@ public class Interview150 {
         }
         // 个位
         if (num > 0) {
-            if (needZero)
+            if (needZero) {
                 sb.append("零");
+            }
             sb.append(DIGITS[num]);
         }
         return sb.toString();
