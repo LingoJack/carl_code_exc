@@ -951,4 +951,74 @@ public class Interview150 {
         }
         return sb.toString();
     }
+
+    /**
+     * 无重复字符的最长子串
+     */
+    public int lengthOfLongestSubstring(String s) {
+        Map<Character, Boolean> exist = new HashMap<>();
+        int lt = 0, rt = 0;
+        int len = s.length();
+        int max = 0;
+        while (rt < len) {
+            char rc = s.charAt(rt);
+            while (exist.getOrDefault(rc, false)) {
+                char lc = s.charAt(lt);
+                exist.put(lc, false);
+                lt++;
+            }
+            exist.put(rc, true);
+            if (max < rt - lt + 1) {
+                max = rt - lt + 1;
+            }
+            rt++;
+        }
+        return max;
+    }
+
+    /**
+     * 两个有序数组的中位数
+     */
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        // 1 3
+        // 2
+        int l1 = nums1.length, l2 = nums2.length;
+        if(l1 < l2) {
+            return findMedianSortedArrays(nums2, nums1);
+        }
+        // l1 >= l2
+        int total = l1 + l2;
+        // 011 0011
+        int frontNum = total / 2;
+        int lt = 0;
+        int rt = l2;
+        while(lt < rt) {
+            int mid = (lt + rt) / 2;
+            int idx2 = mid - 1;
+            int idx1 = frontNum - mid - 1;
+            if(nums2[idx2 + 1] < nums1[idx1]) {
+                lt = mid + 1;
+            } else {
+                rt = mid;
+            }
+        }
+        if(total % 2 == 1) {
+            int idx2 = lt - 1 + 1;
+            int idx1 = frontNum - lt - 1;
+            int num2 = idx2 >= l2 ? Integer.MAX_VALUE : nums2[idx2];
+            int num1 = idx1 + 1 >= l1 ? Integer.MAX_VALUE : nums1[idx1 + 1];
+            return num1 > num2 ? num2 : num1;
+        }
+        else {
+            int idx2 = lt - 1;
+            int idx1 = frontNum - lt - 1;
+            int num2 = idx2 < 0 ? Integer.MIN_VALUE : nums2[idx2];
+            int num1 = idx1 < 0 ? Integer.MIN_VALUE : nums1[idx1];
+            int num3 = Math.max(num2, num1);
+            int num4 = idx2 + 1 >= l2 ? Integer.MAX_VALUE : nums2[idx2 + 1];
+            int num5 = idx1 + 1 >= l1 ? Integer.MAX_VALUE : nums1[idx1 + 1];
+            int num6 = Math.min(num4, num5);
+            return (num3 + num6) / 2.0;
+        }
+    }
 }
