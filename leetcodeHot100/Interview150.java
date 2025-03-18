@@ -1021,4 +1021,14 @@ public class Interview150 {
             return (num3 + num6) / 2.0;
         }
     }
+
+    /**
+     * 最小覆盖子串 
+     */
+    public String minWindow(String s, String t) {
+        int sLen = s.length();
+        int tLen = t.length();
+        int offset = -1, minLen = 0;
+        
+    }
 }
