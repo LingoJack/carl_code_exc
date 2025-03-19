@@ -983,7 +983,7 @@ public class Interview150 {
         // 1 3
         // 2
         int l1 = nums1.length, l2 = nums2.length;
-        if(l1 < l2) {
+        if (l1 < l2) {
             return findMedianSortedArrays(nums2, nums1);
         }
         // l1 >= l2
@@ -992,24 +992,23 @@ public class Interview150 {
         int frontNum = total / 2;
         int lt = 0;
         int rt = l2;
-        while(lt < rt) {
+        while (lt < rt) {
             int mid = (lt + rt) / 2;
             int idx2 = mid - 1;
             int idx1 = frontNum - mid - 1;
-            if(nums2[idx2 + 1] < nums1[idx1]) {
+            if (nums2[idx2 + 1] < nums1[idx1]) {
                 lt = mid + 1;
             } else {
                 rt = mid;
             }
         }
-        if(total % 2 == 1) {
+        if (total % 2 == 1) {
             int idx2 = lt - 1 + 1;
             int idx1 = frontNum - lt - 1;
             int num2 = idx2 >= l2 ? Integer.MAX_VALUE : nums2[idx2];
             int num1 = idx1 + 1 >= l1 ? Integer.MAX_VALUE : nums1[idx1 + 1];
             return num1 > num2 ? num2 : num1;
-        }
-        else {
+        } else {
             int idx2 = lt - 1;
             int idx1 = frontNum - lt - 1;
             int num2 = idx2 < 0 ? Integer.MIN_VALUE : nums2[idx2];
@@ -1023,12 +1022,45 @@ public class Interview150 {
     }
 
     /**
-     * 最小覆盖子串 
+     * 最小覆盖子串
      */
     public String minWindow(String s, String t) {
         int sLen = s.length();
         int tLen = t.length();
-        int offset = -1, minLen = 0;
-        
+        int offset = -1, minLen = Integer.MAX_VALUE;
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> have = new HashMap<>();
+        for (int i = 0; i < tLen; i++) {
+            char c = t.charAt(i);
+            need.put(c, need.getOrDefault(c, 0) + 1);
+        }
+        int fast = 0, slow = 0;
+        int valid = 0;
+        while (fast < sLen) {
+            char fc = s.charAt(fast);
+            if (need.containsKey(fc)) {
+                have.put(fc, have.getOrDefault(fc, 0) + 1);
+                if (have.get(fc).equals(need.get(fc))) {
+                    valid++;
+                }
+            }
+            while (valid >= need.size()) {
+                int len = fast - slow + 1;
+                if (len < minLen) {
+                    minLen = len;
+                    offset = slow;
+                }
+                char sc = s.charAt(slow);
+                if (need.containsKey(sc)) {
+                    if (have.get(sc).equals(need.get(sc))) {
+                        valid--;
+                    }
+                    have.put(sc, have.get(sc) - 1);
+                }
+                slow++;
+            }
+            fast++;
+        }
+        return offset == -1 ? "" : s.substring(offset, offset + minLen);
     }
 }
