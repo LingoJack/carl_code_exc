@@ -3092,4 +3092,46 @@ public class Leetcodehot100ThreeEx {
         }
         return -1;
     }
+
+    /**
+     * 判断一棵树是另一棵的子树
+     */
+    public boolean isSubtree(TreeNode root, TreeNode subRoot) {
+        if (root == null) {
+            return false;
+        }
+        if (subRoot == null) {
+            return true;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (isEqualTree(node, subRoot)) {
+                    return true;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isEqualTree(TreeNode root1, TreeNode root2) {
+        if (root1 == null && root2 == null) {
+            return true;
+        } else if (root1 != null && root2 != null) {
+            if (root1.val != root2.val) {
+                return false;
+            }
+            return isEqualTree(root1.left, root2.left) && isEqualTree(root1.right, root2.right);
+        }
+        return false;
+    }
 }

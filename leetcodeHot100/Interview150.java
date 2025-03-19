@@ -1063,4 +1063,90 @@ public class Interview150 {
         }
         return offset == -1 ? "" : s.substring(offset, offset + minLen);
     }
+
+    /**
+     * 两数之和II - 输入有序数组
+     */
+    public int[] twoSum(int[] numbers, int target) {
+        int lt = 0, rt = numbers.length - 1;
+        while (lt < rt) {
+            int sum = numbers[lt] + numbers[rt];
+            if (sum > target) {
+                rt--;
+            } else if (sum < target) {
+                lt++;
+            } else {
+                return new int[] { lt + 1, rt + 1 };
+            }
+        }
+        return new int[] { -1, -1 };
+    }
+
+    /**
+     * 判断子序列
+     */
+    public boolean isSubsequence(String s, String t) {
+        int sLen = s.length();
+        if (sLen == 0) {
+            return true;
+        }
+        int matchIdx = -1;
+        for (char c : t.toCharArray()) {
+            if (s.charAt(matchIdx + 1) == c) {
+                matchIdx++;
+                if (matchIdx == sLen - 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 基本计算器
+     * 没做出来
+     */
+    public int calculate(String s) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int operand = 0, res = 0;
+        int sign = 1; // 表示当前数值的正负
+        for (char c : s.toCharArray()) {
+            if (Character.isDigit(c)) {
+                // 如果是数字，则构建完整的数字
+                operand = 10 * operand + (c - '0');
+            } else if (c == '+') {
+                // 遇到+，将当前数字加入结果，并重置符号为+
+                res += sign * operand;
+                sign = 1;
+                operand = 0;
+            } else if (c == '-') {
+                // 遇到-，将当前数字加入结果，并重置符号为-
+                res += sign * operand;
+                sign = -1;
+                operand = 0;
+            } else if (c == '(') {
+                // 将目前为止的结果和符号压入栈，然后重置result和sign
+                stack.push(res);
+                stack.push(sign);
+                res = 0;
+                sign = 1;
+            } else if (c == ')') {
+                // 结束子表达式，先将当前子表达式的结果加入总结果
+                res += sign * operand;
+                // 弹出之前保存的符号并应用
+                res *= stack.pop();
+                // 弹出之前保存的结果并加上
+                res += stack.pop();
+                operand = 0;
+            }
+        }
+        return res + (sign * operand); // 加上最后一个数字
+    }
+
+    /**
+     * 简化路径
+     */
+    public String simplifyPath(String path) {
+
+    }
 }
