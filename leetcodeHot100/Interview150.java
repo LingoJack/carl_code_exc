@@ -1147,6 +1147,27 @@ public class Interview150 {
      * 简化路径
      */
     public String simplifyPath(String path) {
-
+        Deque<String> stack = new ArrayDeque<>();
+        String[] paths = path.split("/");
+        for (String dir : paths) {
+            if (dir.equals(".") || dir.equals("")) {
+                continue;
+            }
+            if (dir.equals("..")) {
+                if (!stack.isEmpty()) {
+                    stack.pop();
+                }
+            } else {
+                stack.push(dir);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        if (stack.isEmpty()) {
+            return "/";
+        }
+        while (!stack.isEmpty()) {
+            sb.insert(0, "/" + stack.pop());
+        }
+        return sb.toString();
     }
 }
