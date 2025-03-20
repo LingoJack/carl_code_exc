@@ -1174,7 +1174,7 @@ public class Interview150 {
     }
 
     /**
-     * ip二进制转十进制
+     * CSIG一面：ip二进制转十进制
      * 核心是想到这其实是个移位置（base256）的操作
      * 或者用boolean[32]模拟也行
      */
@@ -1212,7 +1212,7 @@ public class Interview150 {
     }
 
     /**
-     * 判断一个串是否是另一个串的出入栈的结果
+     * CSIG一面：判断一个串是否是另一个串的出入栈的结果
      * 核心是维护一个s串的当前匹配位置，用一个栈把t串放入匹配
      */
     public boolean isStackOperationResult(String s, String t) {
