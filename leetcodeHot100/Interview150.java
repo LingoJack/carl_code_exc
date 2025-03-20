@@ -857,11 +857,6 @@ public class Interview150 {
         return res;
     }
 
-    public static void main(String[] args) {
-        Interview150 interview150 = new Interview150();
-        System.out.println(interview150.numberToChinese(10_040_032_11));
-    }
-
     private static final String[] DIGITS = { "零", "一", "二", "三", "四", "五", "六", "七", "八", "九" };
 
     private static final String[] UNITS = { "", "万", "亿", "兆" };
@@ -1145,6 +1140,7 @@ public class Interview150 {
 
     /**
      * 简化路径
+     * 这题主要是被split有可能产生""给信息差了
      */
     public String simplifyPath(String path) {
         Deque<String> stack = new ArrayDeque<>();
@@ -1171,18 +1167,73 @@ public class Interview150 {
         return sb.toString();
     }
 
+    public static void main(String[] args) {
+        String ip = "0.0.1.0";
+        Interview150 interview150 = new Interview150();
+        System.out.println(interview150.convertIpToIntWithBooleanArray(ip));
+    }
+
     /**
      * ip二进制转十进制
      * 核心是想到这其实是个移位置（base256）的操作
      * 或者用boolean[32]模拟也行
      */
+    public int convertIpToIntBestSolution(String ip) {
+        String[] segaments = ip.split("\\.");
+        int base = 1;
+        int res = 0;
+        for (int i = segaments.length - 1; i >= 0; i--) {
+            res += base * Integer.parseInt(segaments[i]);
+            base *= 256;
+        }
+        return res;
+    }
+
+    public int convertIpToIntWithBooleanArray(String ip) {
+        boolean[] digits = new boolean[32];
+        String[] segaments = ip.split("\\.");
+        for (int i = 0; i < segaments.length; i++) {
+            int base = 128;
+            int num = Integer.parseInt(segaments[i]);
+            for (int j = i * 8; j < (i + 1) * 8; j++) {
+                if (num >= base) {
+                    digits[j] = num >= base;
+                    num -= base;
+                }
+                base /= 2;
+            }
+        }
+        int res = 0, base = 1;
+        for (int i = 31; i >= 0; i--) {
+            res += digits[i] ? base : 0;
+            base *= 2;
+        }
+        return res;
+    }
 
     /**
      * 判断一个串是否是另一个串的出入栈的结果
      * 核心是维护一个s串的当前匹配位置，用一个栈把t串放入匹配
      */
+    public boolean isStackOperationResult(String s, String t) {
+        int sLen = s.length(), tLen = t.length();
+        if (sLen != tLen) {
+            return false;
+        }
+        int matchIdx = 0;
+        Deque<Character> stack = new ArrayDeque<>();
+        for (int i = 0; i < tLen; i++) {
+            char c = t.charAt(i);
+            stack.push(c);
+            while (s.charAt(matchIdx) == stack.peek()) {
+                stack.pop();
+                matchIdx++;
+            }
+        }
+        return matchIdx == sLen;
+    }
 
-     /**
-      * 高精度乘法
-      */
+    /**
+     * 高精度乘法
+     */
 }
