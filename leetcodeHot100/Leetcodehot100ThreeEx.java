@@ -3134,4 +3134,69 @@ public class Leetcodehot100ThreeEx {
         }
         return false;
     }
+
+    /**
+     * 求根节点到叶子节点数字之和
+     */
+    public int sumNumbers(TreeNode root) {
+        dfs(root, new ArrayList<>());
+        return total;
+    }
+
+    private int total = 0;
+
+    private void dfs(TreeNode node, List<Integer> sum) {
+        if (node.left == null && node.right == null) {
+            sum.add(node.val);
+            int tempSum = 0;
+            int base = 1;
+            for (int i = sum.size() - 1; i >= 0; i--) {
+                tempSum += sum.get(i) * base;
+                base *= 10;
+            }
+            total += tempSum;
+            sum.remove(sum.size() - 1);
+            return;
+        }
+        sum.add(node.val);
+        if (node.left != null) {
+            dfs(node.left, sum);
+        }
+        if (node.right != null) {
+            dfs(node.right, sum);
+        }
+        sum.remove(sum.size() - 1);
+    }
+
+    /**
+     * 求根节点到叶子节点数字之和
+     * BFS做法，没有想到
+     */
+    public int sumNumbersWithBFS(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int res = 0;
+        Deque<TreeNode> nodeQueue = new ArrayDeque<>();
+        Deque<Integer> numQueue = new ArrayDeque<>();
+        nodeQueue.offer(root);
+        numQueue.offer(root.val);
+        while (!nodeQueue.isEmpty()) {
+            TreeNode node = nodeQueue.poll();
+            int val = numQueue.poll();
+            if (node.left == null && node.right == null) {
+                res += val;
+            } else {
+                if (node.left != null) {
+                    nodeQueue.offer(node.left);
+                    numQueue.offer(val * 10 + node.left.val);
+                }
+                if (node.right != null) {
+                    nodeQueue.offer(node.right);
+                    numQueue.offer(val * 10 + node.right.val);
+                }
+            }
+        }
+        return res;
+    }
 }
