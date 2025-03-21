@@ -1497,12 +1497,10 @@ public class dynamic_program {
         int len = s.length();
         // dp[i][j] 表示 s[i...j] 之间的最长回文子序列长度
         int[][] dp = new int[len][len];
-
         // 初始化 dp[i][i] 为 1，因为单个字符一定是回文
         for (int i = 0; i < len; i++) {
             dp[i][i] = 1;
         }
-
         // 从后往前遍历，每次考虑 i 到 j 之间的回文子序列
         for (int i = len - 2; i >= 0; i--) {
             for (int j = i + 1; j < len; j++) {
@@ -1513,7 +1511,6 @@ public class dynamic_program {
                 }
             }
         }
-
         return dp[0][len - 1];
     }
 }

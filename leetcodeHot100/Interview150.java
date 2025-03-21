@@ -1232,4 +1232,63 @@ public class Interview150 {
         }
         return matchIdx == sLen;
     }
+
+    /**
+     * 生命游戏
+     */
+    public void gameOfLife(int[][] board) {
+        int row = board.length;
+        int col = board[0].length;
+        int[][] alive = new int[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (valid(board, i - 1, j)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i - 1, j + 1)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i - 1, j - 1)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i, j + 1)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i, j - 1)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i + 1, j)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i + 1, j + 1)) {
+                    alive[i][j]++;
+                }
+                if (valid(board, i + 1, j - 1)) {
+                    alive[i][j]++;
+                }
+            }
+        }
+        // 1 -> 2 ~ 3
+        // 0 -> 3
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (board[i][j] == 1) {
+                    if (alive[i][j] < 2 || alive[i][j] > 3) {
+                        board[i][j] = 0;
+                    }
+                } else {
+                    if (alive[i][j] == 3) {
+                        board[i][j] = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean valid(int[][] board, int rowIdx, int colIdx) {
+        int row = board.length;
+        int col = board[0].length;
+        return (rowIdx >= 0 && rowIdx < row) && (colIdx >= 0 && colIdx < col) && (board[rowIdx][colIdx] == 1);
+    }
+
 }
