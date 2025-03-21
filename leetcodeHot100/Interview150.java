@@ -300,6 +300,11 @@ public class Interview150 {
         return sb.toString();
     }
 
+    /**
+     * O(1)时间插入、删除和获取随机元素
+     * 这题的核心是想到一个方法利用随机函数生成下表获取一个元素
+     * 所以不仅仅需要map，还需要list
+     */
     class RandomizedSet {
 
         List<Integer> list;
@@ -1285,15 +1290,6 @@ public class Interview150 {
         return (rowIdx >= 0 && rowIdx < row) && (colIdx >= 0 && colIdx < col) && (board[rowIdx][colIdx] == 1);
     }
 
-    public static void main(String[] args) {
-        Interview150 interview150 = new Interview150();
-        int[] inorder = new int[] { 4, 2, 5, 1, 6, 3, 7 };
-        int[] preorder = new int[] { 1, 2, 4, 5, 3, 6, 7 };
-        for (int num : interview150.getPostTravsal(preorder, inorder)) {
-            System.out.print(num + " ");
-        }
-    }
-
     /**
      * 根据二叉树的中序遍历和先序遍历直接输出后序遍历
      */
@@ -1327,5 +1323,72 @@ public class Interview150 {
         getRoot(preorder, inorderIdxMap, postorder, start, rootIdx - 1);
         getRoot(preorder, inorderIdxMap, postorder, rootIdx + 1, end);
         postorder[postorderIdx++] = root;
+    }
+
+    public static void main(String[] args) {
+        Interview150 interview150 = new Interview150();
+        int[] inorder = new int[] { 3, 4, 9 };
+        System.out.println(interview150.maxNumLessThanN(30121, inorder));
+    }
+
+    /**
+     * 小于n的最大数
+     * 给定一个数n,如23121;
+     * 给定一组数字A如{2,4,9}求由A中元素组成的、小于n的最大数,
+     * 如小于23121的最大数为22999
+     */
+    public int maxNumLessThanN(int n, int[] nums) {
+        boolean hasLess = false;
+        if (nums[0] > 0) {
+            int[] newNums = new int[nums.length + 1];
+            for (int i = 1; i < newNums.length; i++) {
+                newNums[i] = nums[i - 1];
+            }
+            nums = newNums;
+        }
+        int res = 0;
+        List<Integer> list = new ArrayList<>();
+        String num = String.valueOf(n);
+        for (int i = 0; i < num.length(); i++) {
+            if (hasLess) {
+                list.add(nums[nums.length - 1]);
+                continue;
+            }
+            int digit = num.charAt(i) - '0';
+            int idx = binarySearch(nums, digit);
+            // nums[idx] >= digit
+            if (nums[idx] > digit) {
+                list.add(nums[idx - 1]);
+                hasLess = true;
+            } else {
+                list.add(nums[idx]);
+                if (idx == 0 && digit > 0) {
+                    hasLess = true;
+                }
+            }
+        }
+        int base = 1;
+        for (int i = list.size() - 1; i >= 0; i--) {
+            res += base * list.get(i);
+            base *= 10;
+        }
+        return res;
+    }
+
+    private int binarySearch(int[] nums, int target) {
+        // 0 1 4 5 9
+        // 0
+        int lt = 0, rt = nums.length - 1;
+        while (lt < rt) {
+            int mid = (lt + rt) / 2;
+            if (nums[mid] > target) {
+                rt = mid - 1;
+            } else if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                return mid;
+            }
+        }
+        return lt;
     }
 }
