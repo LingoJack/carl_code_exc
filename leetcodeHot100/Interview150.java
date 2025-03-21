@@ -1167,12 +1167,6 @@ public class Interview150 {
         return sb.toString();
     }
 
-    public static void main(String[] args) {
-        String ip = "0.0.1.0";
-        Interview150 interview150 = new Interview150();
-        System.out.println(interview150.convertIpToIntWithBooleanArray(ip));
-    }
-
     /**
      * CSIG一面：ip二进制转十进制
      * 核心是想到这其实是个移位置（base256）的操作
@@ -1291,4 +1285,47 @@ public class Interview150 {
         return (rowIdx >= 0 && rowIdx < row) && (colIdx >= 0 && colIdx < col) && (board[rowIdx][colIdx] == 1);
     }
 
+    public static void main(String[] args) {
+        Interview150 interview150 = new Interview150();
+        int[] inorder = new int[] { 4, 2, 5, 1, 6, 3, 7 };
+        int[] preorder = new int[] { 1, 2, 4, 5, 3, 6, 7 };
+        for (int num : interview150.getPostTravsal(preorder, inorder)) {
+            System.out.print(num + " ");
+        }
+    }
+
+    /**
+     * 根据二叉树的中序遍历和先序遍历直接输出后序遍历
+     */
+    public int[] getPostTravsal(int[] preorder, int[] inorder) {
+        int len = preorder.length;
+        int[] postorder = new int[len];
+        // 1
+        // 2 3
+        // 4 5 6 7
+        // in: 4 2 5 1 6 3 7
+        // pre:1 2 4 5 3 6 7
+        // post: 4 5 2 6 7 3 1
+        Map<Integer, Integer> inorderIdxMap = new HashMap<>();
+        for (int i = 0; i < len; i++) {
+            inorderIdxMap.put(inorder[i], i);
+        }
+        getRoot(preorder, inorderIdxMap, postorder, 0, len - 1);
+        return postorder;
+    }
+
+    private int preorderIdx = 0;
+
+    private int postorderIdx = 0;
+
+    private void getRoot(int[] preorder, Map<Integer, Integer> inorderIdxMap, int[] postorder, int start, int end) {
+        if (preorderIdx == preorder.length || end < start) {
+            return;
+        }
+        int root = preorder[preorderIdx++];
+        int rootIdx = inorderIdxMap.get(root);
+        getRoot(preorder, inorderIdxMap, postorder, start, rootIdx - 1);
+        getRoot(preorder, inorderIdxMap, postorder, rootIdx + 1, end);
+        postorder[postorderIdx++] = root;
+    }
 }
