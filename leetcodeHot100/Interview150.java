@@ -1232,8 +1232,4 @@ public class Interview150 {
         }
         return matchIdx == sLen;
     }
-
-    /**
-     * 高精度乘法
-     */
 }
