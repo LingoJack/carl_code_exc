@@ -366,63 +366,6 @@ public class Interview150 {
 
     /**
      * 蚂蚁笔试
-     * 曼哈顿树
-     */
-    public void ansV1() {
-        Scanner sc = new Scanner(System.in);
-        int nodeNum = sc.nextInt();
-        int queryNum = sc.nextInt();
-        Map<Integer, TreeNode> map = new HashMap<>();
-        map.put(1, new TreeNode(1, 0, 0));
-        for (int i = 0; i < nodeNum - 1; i++) {
-            int parent = sc.nextInt();
-            int son = sc.nextInt();
-            TreeNode parentNode = map.get(parent);
-            TreeNode node = new TreeNode(son);
-            if (parentNode.lt == null) {
-                node.x = parentNode.x - 1;
-                node.y = parentNode.y - 1;
-                parentNode.lt = node;
-            } else {
-                node.x = parentNode.x + 1;
-                node.y = parentNode.y - 1;
-                parentNode.rt = node;
-            }
-            map.put(son, node);
-        }
-        for (int i = 0; i < queryNum; i++) {
-            int node1Id = sc.nextInt();
-            int node2Id = sc.nextInt();
-            TreeNode node1 = map.get(node1Id);
-            TreeNode node2 = map.get(node2Id);
-            int xVal = Math.abs(node1.x - node2.x);
-            int yVal = Math.abs(node1.y - node2.y);
-            // int xVal = node1.x > node2.x ? node1.x - node2.x : node2.x - node1.x;
-            // int yVal = node1.y > node2.y ? node1.y - node2.y : node2.y - node1.y;
-            System.out.println(xVal + yVal);
-        }
-    }
-
-    public class TreeNode {
-        int id;
-        int x;
-        int y;
-        TreeNode lt;
-        TreeNode rt;
-
-        public TreeNode(int id, int x, int y) {
-            this.id = id;
-            this.x = x;
-            this.y = y;
-        }
-
-        public TreeNode(int id) {
-            this.id = id;
-        }
-    }
-
-    /**
-     * 蚂蚁笔试
      * 字符串比对
      */
     public static void printSByT(String s, String t, int len) {
@@ -1390,5 +1333,125 @@ public class Interview150 {
             }
         }
         return lt;
+    }
+
+    /**
+     * 旋转链表
+     */
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null) {
+            return head;
+        }
+        int len = 0;
+        ListNode node = head;
+        while (node != null) {
+            node = node.next;
+            len++;
+        }
+        k %= len;
+        if (k == 0) {
+            return head;
+        }
+        head = reverse(head)[0];
+        ListNode dummy = new ListNode(0, head);
+        node = head;
+        int count = 0;
+        ListNode last = dummy;
+        while (count < k) {
+            count++;
+            last = node;
+            node = node.next;
+        }
+        last.next = null;
+        ListNode[] frontPart = reverse(head);
+        ListNode[] backPart = reverse(node);
+        frontPart[1].next = backPart[0];
+        return frontPart[0];
+    }
+
+    private ListNode[] reverse(ListNode head) {
+        ListNode last = null;
+        ListNode node = head;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return new ListNode[] { last, head };
+    }
+
+    /**
+     * 分割链表
+     */
+    public ListNode partition(ListNode head, int x) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode fast = head;
+        ListNode slow = dummy;
+        ListNode last = dummy;
+        while (fast != null) {
+            ListNode fastNext = fast.next;
+            if (fast.val < x) {
+                last.next = fast.next;
+                ListNode slowNext = slow.next;
+                slow.next = fast;
+                fast.next = slowNext;
+                slow = fast;
+            }
+            fast = fastNext;
+            last = dummy.next;
+            while (last.next != fast) {
+                last = last.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 字符串转换整数（atoi）
+     */
+    public int myAtoi(String s) {
+        int len = s.length();
+        long res = 0;
+        int sign = 1;
+        boolean digitMatched = false, signMatched = false;
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            if (c == ' ') {
+                if (digitMatched || signMatched) {
+                    return (int) res * sign;
+                }
+                continue;
+            }
+            if (c == '+' || c == '-') {
+                if (digitMatched || signMatched) {
+                    return (int) res * sign;
+                }
+                signMatched = true;
+                sign = c == '-' ? -1 : 1;
+            } else if (Character.isDigit(c)) {
+                digitMatched = true;
+                res = res * 10 + (c - '0');
+                if (res * sign >= Integer.MAX_VALUE || res * sign <= Integer.MIN_VALUE) {
+                    return sign == 1 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+                }
+            } else {
+                return (int) res * sign;
+            }
+        }
+        return (int) res * sign;
+    }
+
+    /**
+     * 相同的树
+     */
+    public boolean isSameTree(TreeNode n1, TreeNode n2) {
+        if (n1 == null && n2 == null) {
+            return true;
+        } else if (n1 != null && n2 != null && n1.val == n2.val) {
+            return isSameTree(n1.left, n2.left) && isSameTree(n1.right, n2.right);
+        } else {
+            return false;
+        }
     }
 }

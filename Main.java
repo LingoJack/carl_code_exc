@@ -372,4 +372,61 @@ public class Main {
         }
         return exist.length;
     }
+
+    /**
+     * 蚂蚁笔试
+     * 曼哈顿树
+     */
+    public void ansV1() {
+        Scanner sc = new Scanner(System.in);
+        int nodeNum = sc.nextInt();
+        int queryNum = sc.nextInt();
+        Map<Integer, TreeNode> map = new HashMap<>();
+        map.put(1, new TreeNode(1, 0, 0));
+        for (int i = 0; i < nodeNum - 1; i++) {
+            int parent = sc.nextInt();
+            int son = sc.nextInt();
+            TreeNode parentNode = map.get(parent);
+            TreeNode node = new TreeNode(son);
+            if (parentNode.lt == null) {
+                node.x = parentNode.x - 1;
+                node.y = parentNode.y - 1;
+                parentNode.lt = node;
+            } else {
+                node.x = parentNode.x + 1;
+                node.y = parentNode.y - 1;
+                parentNode.rt = node;
+            }
+            map.put(son, node);
+        }
+        for (int i = 0; i < queryNum; i++) {
+            int node1Id = sc.nextInt();
+            int node2Id = sc.nextInt();
+            TreeNode node1 = map.get(node1Id);
+            TreeNode node2 = map.get(node2Id);
+            int xVal = Math.abs(node1.x - node2.x);
+            int yVal = Math.abs(node1.y - node2.y);
+            // int xVal = node1.x > node2.x ? node1.x - node2.x : node2.x - node1.x;
+            // int yVal = node1.y > node2.y ? node1.y - node2.y : node2.y - node1.y;
+            System.out.println(xVal + yVal);
+        }
+    }
+
+    public class TreeNode {
+        int id;
+        int x;
+        int y;
+        TreeNode lt;
+        TreeNode rt;
+
+        public TreeNode(int id, int x, int y) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+        }
+
+        public TreeNode(int id) {
+            this.id = id;
+        }
+    }
 }
