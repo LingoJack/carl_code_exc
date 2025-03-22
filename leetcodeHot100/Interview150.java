@@ -1268,12 +1268,6 @@ public class Interview150 {
         postorder[postorderIdx++] = root;
     }
 
-    public static void main(String[] args) {
-        Interview150 interview150 = new Interview150();
-        int[] inorder = new int[] { 3, 4, 9 };
-        System.out.println(interview150.maxNumLessThanN(30121, inorder));
-    }
-
     /**
      * 小于n的最大数
      * 给定一个数n,如23121;
@@ -1490,13 +1484,41 @@ public class Interview150 {
      * 不能建立树结构的，不能先排序的原地修改方式，双向链表的prev和next分别就指向左右子树
      */
     public DListNode buildBSTByDLinkList(DListNode head) {
-        if(head == null || head.next == null) {
+        if (head == null || head.next == null) {
             return head;
         }
-
+        DListNode node = head.next;
+        head.next.prev = null;
+        head.next = null;
+        while (node != null) {
+            DListNode next = node.next;
+            insert(head, node);
+            node = next;
+        }
+        return head;
     }
 
-    private DListNode[] findMidAndSpilt(DListNode head) {
-        
+    private void insert(DListNode root, DListNode node) {
+        if (node.next != null) {
+            node.next.prev = null;
+        }
+        node.next = null;
+        DListNode insertPos = root;
+        DListNode last = root;
+        while (insertPos != null) {
+            last = insertPos;
+            if (insertPos.val > node.val) {
+                insertPos = insertPos.prev;
+            } else {
+                insertPos = insertPos.next;
+            }
+        }
+        if (last.val > node.val) {
+            last.prev = node;
+        } else {
+            last.next = node;
+        }
     }
+
+    
 }
