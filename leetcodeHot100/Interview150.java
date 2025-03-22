@@ -1484,4 +1484,19 @@ public class Interview150 {
         }
         return true;
     }
+
+    /**
+     * 整型无序双向链表转BST
+     * 不能建立树结构的，不能先排序的原地修改方式，双向链表的prev和next分别就指向左右子树
+     */
+    public DListNode buildBSTByDLinkList(DListNode head) {
+        if(head == null || head.next == null) {
+            return head;
+        }
+
+    }
+
+    private DListNode[] findMidAndSpilt(DListNode head) {
+        
+    }
 }
