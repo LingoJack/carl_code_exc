@@ -1454,4 +1454,34 @@ public class Interview150 {
             return false;
         }
     }
+
+    /**
+     * 判断完全二叉树
+     * 完全二叉树定义：除了最后一层外，其他层的节点都是满的，并且最后一层的节点都靠左排列。
+     */
+    public boolean isCompleteBinaryTree(TreeNode root) {
+        if (root == null) {
+            return true; // 空树被认为是完全二叉树
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        // 标志位，表示是否遇到了空节点
+        boolean hasNull = false;
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            // 如果已经遇到过空节点，但当前节点不为空，则不是完全二叉树
+            if (hasNull && node != null) {
+                return false;
+            }
+            // 如果当前节点为空，设置标志位
+            if (node == null) {
+                hasNull = true;
+            } else {
+                // 否则将左右子节点加入队列（即使为空也加入）
+                queue.offer(node.left);
+                queue.offer(node.right);
+            }
+        }
+        return true;
+    }
 }
