@@ -429,4 +429,110 @@ public class Main {
             this.id = id;
         }
     }
+
+    private int[][] transcation;
+
+    /**
+     * 网易互娱笔试：股神小易
+     */
+    public double maxProfit(double[][] prices, double money) {
+        int ticketNum = prices[0].length;
+        int dayNum = prices.length;
+        // 卖出、买入
+        int[][] record = new int[dayNum][2];
+        for (int i = 0; i < dayNum; i++) {
+            Arrays.fill(record[i], -1);
+        }
+        double res = money;
+        int lastSelectedTicket = -1;
+        for (int day = 0; day < dayNum; day++) {
+            double[] curPrices = prices[day];
+            double[] tomorrowPrices = day + 1 < dayNum ? prices[day + 1] : new double[ticketNum];
+            int selectedTicket = -1;
+            double maxProfit = 0;
+            for (int ticket = 0; ticket < ticketNum; ticket++) {
+                double profit = (res / curPrices[ticket]) * (tomorrowPrices[ticket] - curPrices[ticket]);
+                if (profit > maxProfit) {
+                    selectedTicket = ticket;
+                    maxProfit = profit;
+                }
+            }
+            record[day][0] = lastSelectedTicket;
+            record[day][1] = selectedTicket;
+            lastSelectedTicket = selectedTicket;
+            res += maxProfit;
+        }
+        transcation = record;
+        return res;
+    }
+
+    /**
+     * 网易互娱笔试：星际探险
+     * Ax + By + Cz + Dw = N
+     * 0 ~ 2500
+     * 返回满足条件的最小字典序四元组（x, y, z, w），且x，y，z，w互不相同，若无解，返回-1，-1，-1，-1
+     */
+    public int[] getSolution(int A, int B, int C, int D, int N) {
+        // 预处理Cz + Dw的所有可能值
+        Map<Integer, int[]> map = new HashMap<>();
+        for (int z = 0; z <= 2500; z++) {
+            for (int w = 0; w <= 2500; w++) {
+                if (w == z) {
+                    continue;
+                }
+                int value = C * z + D * w;
+                if (!map.containsKey(value)) {
+                    map.put(value, new int[] { z, w });
+                }
+            }
+        }
+        // 遍历x和y
+        for (int x = 0; x <= 2500; x++) {
+            for (int y = 0; y <= 2500; y++) {
+                if (y == x) {
+                    continue; // 确保y != x
+                }
+                // 计算剩余的值：Cz + Dw = N - Ax - By
+                int remaining = N - (A * x + B * y);
+                if (remaining < 0) {
+                    continue; // 如果剩余值为负，跳过
+                }
+                // 查找是否存在满足条件的z和w
+                if (map.containsKey(remaining)) {
+                    int[] zw = map.get(remaining);
+                    int z = zw[0], w = zw[1];
+                    if (z != x && z != y && w != x && w != y) {
+                        // 找到解，直接返回
+                        return new int[] { x, y, z, w };
+                    }
+                }
+            }
+        }
+        // 无解
+        return new int[] { -1, -1, -1, -1 };
+    }
+
+    private void main() {
+        Main main = new Main();
+        double[][] prices1 = new double[][] {
+                { 3, 1, 5, 7, 4 },
+                { 2, 4, 6, 4, 7 },
+                { 1, 3, 2, 2, 4 },
+                { 10, 4, 8, 6, 9 },
+                { 3, 8, 10, 5, 6 }
+        };
+        double[][] prices2 = new double[][] {
+                { 3, 1, 5, 7, 4 },
+                { 2, 4, 6, 4, 7 },
+                { 8, 3, 9, 3, 5 },
+                { 10, 4, 8, 6, 9 },
+                { 3, 8, 10, 5, 6 }
+        };
+        double money = 100;
+        // 保留四位小数
+        System.out.printf("%.4f\n", main.maxProfit(prices2, money));
+        for (int[] record : main.transcation) {
+            System.out.println(record[0] + " " + record[1]);
+        }
+    }
 }
