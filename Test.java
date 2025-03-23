@@ -33,6 +33,8 @@ public class Test {
 
     /**
      * 多多买彩票
+     * 关键是发现这个规律：
+     * 大于100的数字都满足存在子串位数和为3的倍数
      */
     public int getLuckyNumCount(long start, long end) {
         int count = 0;
