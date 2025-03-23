@@ -1482,6 +1482,7 @@ public class Interview150 {
     /**
      * 整型无序双向链表转BST
      * 不能建立树结构的，不能先排序的原地修改方式，双向链表的prev和next分别就指向左右子树
+     * 方法就是模拟二叉树的插入过程？
      */
     public DListNode buildBSTByDLinkList(DListNode head) {
         if (head == null || head.next == null) {
@@ -1520,5 +1521,20 @@ public class Interview150 {
         }
     }
 
-    
+    /**
+     * 单词搜索
+     */
+    public List<String> findWords(char[][] board, String[] words) {
+        Map<Character, List<int[]>> map = new HashMap<>();
+        int row = board.length;
+        int col = board[0].length;
+        for(int i = 0; i < row; i++) {
+            for(int j = 0; j < col; j++) {
+                int[] idx = new int[] {i, j};
+                List<int[]> list = map.getOrDefault(board[i][j], new ArrayList<>());
+                list.add(idx);
+                map.put(board[i][j], list);
+            }
+        }
+    }
 }

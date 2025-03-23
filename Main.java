@@ -535,4 +535,120 @@ public class Main {
             System.out.println(record[0] + " " + record[1]);
         }
     }
+
+    /**
+     * 灵犀互娱：数组元素平方后重排序
+     */
+    public ArrayList<Integer> sortedSquares(ArrayList<Integer> nums) {
+        ArrayList<Integer> list = new ArrayList<>();
+        int len = nums.size();
+        if (len == 1) {
+            list.add(nums.get(0) * nums.get(0));
+            return list;
+        }
+        if (nums.get(len - 1) < 0 || nums.get(0) >= 0) {
+            for (int i = 0; i < len; i++) {
+                int num = nums.get(i);
+                list.add(num * num);
+            }
+            return list;
+        }
+        // -4 -1 0 3 7
+        // s
+        // f
+        int slow = 0, fast = 1;
+        while (fast < len) {
+            if (nums.get(fast) >= 0 && nums.get(slow) < 0) {
+                break;
+            } else if (nums.get(slow) >= 0) {
+                break;
+            }
+            fast++;
+            slow++;
+        }
+        while (fast < len || slow >= 0) {
+            int fastNum = fast < len ? nums.get(fast) * nums.get(fast) : Integer.MAX_VALUE;
+            int slowNum = slow >= 0 ? nums.get(slow) * nums.get(slow) : Integer.MAX_VALUE;
+            if (fastNum > slowNum) {
+                list.add(slowNum);
+                slow--;
+            } else {
+                list.add(fastNum);
+                fast++;
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 灵犀互娱：最小因式分解
+     * 给一个正整数num，求最小正整数，且该最小正整数的各数位之积等于num
+     */
+    public int test(int a) {
+        return minFactorsConsturctNum(a);
+    }
+
+    public int minFactorsConsturctNum(int num) {
+        if (num == 1) {
+            return 1;
+        }
+        List<List<Integer>> factorsList = new ArrayList<>();
+        dfs(factorsList, new ArrayList<>(), num);
+        if (factorsList.isEmpty()) {
+            return 0;
+        }
+        List<Integer> minList = null;
+        long minSize = Long.MAX_VALUE;
+        for (List<Integer> list : factorsList) {
+            if (minSize > list.size()) {
+                minSize = list.size();
+                minList = list;
+            }
+        }
+        Collections.sort(minList);
+        long res = 0;
+        for (int i = 0; i < minSize; i++) {
+            res = res * 10 + minList.get(i);
+        }
+        return (res >= Integer.MAX_VALUE) ? -1 : (int) res;
+    }
+
+    private void dfs(List<List<Integer>> factorsList, List<Integer> factors, int num) {
+        if (num == 1) {
+            factorsList.add(new ArrayList<>(factors));
+            return;
+        }
+        for (int i = 2; i <= 9; i++) {
+            if (num % i == 0) {
+                factors.add(i);
+                dfs(factorsList, factors, num / i);
+                factors.remove(factors.size() - 1);
+            }
+        }
+    }
+
+    /**
+     * 游戏中有多少弱角色
+     */
+    public int numOfWeakRoles(int[][] properties) {
+        int roleNum = properties.length;
+        Arrays.sort(properties, (a, b) -> {
+            return a[0] == b[0] ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
+        });
+        int count = 0;
+        // [1,5],[10,4],[4,3],[2,3],[6,7]
+        // [1,5] [2,3] [4,3] [6,7] [10,4]
+        boolean[] isWeak = new boolean[roleNum];
+        for (int i = 0; i < roleNum; i++) {
+            int[] curRole = properties[i];
+            for (int j = i + 1; j < roleNum; j++) {
+                int[] nextRole = properties[j];
+                if (curRole[0] < nextRole[0] && curRole[1] < nextRole[1] && !isWeak[i]) {
+                    isWeak[i] = true;
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 }
