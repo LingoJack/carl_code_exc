@@ -4,9 +4,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
+
+import leetcodeHot100.link_list;
 
 public class Test {
 
@@ -513,7 +517,7 @@ public class Test {
     }
 
     private void main() {
-        Main main = new Main();
+        Test test = new Test();
         double[][] prices1 = new double[][] {
                 { 3, 1, 5, 7, 4 },
                 { 2, 4, 6, 4, 7 },
@@ -530,8 +534,8 @@ public class Test {
         };
         double money = 100;
         // 保留四位小数
-        System.out.printf("%.4f\n", main.maxProfit(prices2, money));
-        for (int[] record : main.transcation) {
+        System.out.printf("%.4f\n", test.maxProfit(prices2, money));
+        for (int[] record : test.transcation) {
             System.out.println(record[0] + " " + record[1]);
         }
     }
@@ -715,12 +719,6 @@ public class Test {
         return false;
     }
 
-    public static void main(String[] args) {
-        Test test = new Test();
-        long[] nums = new long[] {};
-        System.out.println(test.canSeePeopleNum(nums));
-    }
-
     /**
      * 多多的排队
      */
@@ -743,5 +741,119 @@ public class Test {
             res += (heights.length - 1 - j);
         }
         return res;
+    }
+
+    public static void main(String[] args) {
+        Test test = new Test();
+        System.out.println(test.countPairs(new int[] { 1, 1, 4, 5, 0, 4 }));
+    }
+
+    /**
+     * 求和谐数对
+     * |x - y| = |x| - |y|
+     * x 绝对值必须 大于等于 0
+     */
+    public List<int[]> getPair(int[] nums) {
+        // 1 1 4 5 0 4
+        // 0 1 1 4 4 5
+        // _ _ _ _ _ x
+        // y
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            List<Integer> list = map.getOrDefault(nums[i], new ArrayList<>());
+            list.add(i);
+            map.put(nums[i], list);
+        }
+        Arrays.sort(nums);
+        int lt = 0, rt = nums.length - 1;
+        List<int[]> res = new ArrayList<>();
+        while (rt >= 1) {
+            lt = 0;
+            int x = nums[rt];
+            while (lt < rt) {
+                int y = nums[lt];
+                int ltPart = x - y;
+                int rtPart = Math.abs(x) - Math.abs(y);
+                if (ltPart == rtPart) {
+                    List<Integer> idxXList = map.get(x);
+                    List<Integer> idxYList = map.get(y);
+                    for (int idxX = 0; idxX < idxXList.size(); idxX++) {
+                        int indexX = idxXList.get(idxX);
+                        for (int idxY = 0; idxY < idxYList.size(); idxY++) {
+                            int indexY = idxYList.get(idxY);
+                            if (indexX < indexY) {
+                                res.add(new int[] { x, y });
+                            }
+                        }
+                    }
+                }
+                lt++;
+                while (lt > 0 && nums[lt] == nums[lt - 1]) {
+                    lt++;
+                }
+            }
+            rt--;
+            while (rt < nums.length - 1 && nums[rt] == nums[rt + 1]) {
+                rt--;
+            }
+        }
+        return res;
+    }
+
+    public int countPairs(int[] nums) {
+        // 正数集合
+        List<Integer> positives = new ArrayList<>();
+        // 负数集合
+        List<Integer> negatives = new ArrayList<>();
+
+        int count = 0;
+
+        for (int num : nums) {
+            if (num >= 0) {
+                // 在正数集合中找到第一个不小于 num 的位置
+                int pos = binarySearch(positives, num);
+                // 答案加上该位置后面的数字个数
+                count += positives.size() - pos;
+                // 将 num 插入到正数集合中
+                positives.add(pos, num);
+            } else {
+                // 在负数集合中找到第一个小于 num 的位置
+                int pos = binarySearchNegatives(negatives, num);
+                // 答案加上该位置前面的数字个数
+                count += pos;
+                // 将 num 插入到负数集合中
+                negatives.add(pos, num);
+            }
+        }
+
+        return count;
+    }
+
+    // 二分查找：找到第一个不小于 target 的位置
+    private int binarySearch(List<Integer> list, int target) {
+        int left = 0, right = list.size();
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (list.get(mid) < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return left;
+    }
+
+    // 二分查找：找到第一个小于 target 的位置
+    private int binarySearchNegatives(List<Integer> list, int target) {
+        int left = 0, right = list.size();
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (list.get(mid) >= target) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return left;
     }
 }
