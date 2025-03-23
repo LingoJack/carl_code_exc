@@ -800,6 +800,11 @@ public class Test {
         return res;
     }
 
+    /**
+     * 蚂蚁
+     * @param nums
+     * @return
+     */
     public int countPairs(int[] nums) {
         // 正数集合
         List<Integer> positives = new ArrayList<>();
