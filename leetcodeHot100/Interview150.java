@@ -1521,20 +1521,149 @@ public class Interview150 {
         }
     }
 
+    private Node lastNode;
+
     /**
-     * 单词搜索
+     * 将二叉搜索树转化为排序的双向链表（排序的循环双向链表）
+     */
+    public Node treeToDoublyList(Node root) {
+        if (root == null) {
+            return null;
+        }
+        Node dummy = new Node();
+        lastNode = dummy;
+        dfs(root);
+        Node head = dummy.right;
+        Node tail = lastNode;
+        head.left = tail;
+        tail.right = head;
+        return dummy.right;
+    }
+
+    private void dfs(Node node) {
+        if (node == null) {
+            return;
+        }
+        Node left = node.left;
+        Node right = node.right;
+        dfs(left);
+        lastNode.right = node;
+        node.left = lastNode;
+        lastNode = node;
+        dfs(right);
+    }
+
+    /**
+     * 单词搜索II
+     * 核心是想到前缀树Trie（hot100），然后dfs扩散开去
+     * Trie需要自己实现
      */
     public List<String> findWords(char[][] board, String[] words) {
-        Map<Character, List<int[]>> map = new HashMap<>();
         int row = board.length;
         int col = board[0].length;
-        for(int i = 0; i < row; i++) {
-            for(int j = 0; j < col; j++) {
-                int[] idx = new int[] {i, j};
-                List<int[]> list = map.getOrDefault(board[i][j], new ArrayList<>());
-                list.add(idx);
-                map.put(board[i][j], list);
+        List<String> res = new ArrayList<>();
+        Map<String, Boolean> contained = new HashMap<>();
+        Trie trie = new Trie();
+        for (String word : words) {
+            trie.insert(word);
+        }
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                char c = board[i][j];
+                if (trie.root.nextMap.containsKey(c)) {
+                    // 开始扩散
+                    dfs(res, new boolean[row][col], contained, trie, board, i, j, trie.root);
+                }
             }
+        }
+        return res;
+    }
+
+    private void dfs(List<String> res, boolean[][] used, Map<String, Boolean> contained, Trie trie, char[][] board,
+            int rowIdx, int colIdx,
+            Trie.TrieNode last) {
+        int row = board.length;
+        int col = board[0].length;
+        if (!((rowIdx >= 0 && rowIdx < row) && (colIdx >= 0 && colIdx < col)) || used[rowIdx][colIdx]) {
+            return;
+        }
+        char ch = board[rowIdx][colIdx];
+        if (!last.nextMap.containsKey(ch)) {
+            return;
+        }
+        Trie.TrieNode node = last.nextMap.get(ch);
+        used[rowIdx][colIdx] = true;
+        if (node.isEnd && !contained.getOrDefault(node.word, false)) {
+            res.add(node.word);
+            contained.put(node.word, true);
+        }
+        dfs(res, used, contained, trie, board, rowIdx + 1, colIdx, node);
+        dfs(res, used, contained, trie, board, rowIdx - 1, colIdx, node);
+        dfs(res, used, contained, trie, board, rowIdx, colIdx + 1, node);
+        dfs(res, used, contained, trie, board, rowIdx, colIdx - 1, node);
+        used[rowIdx][colIdx] = false;
+    }
+
+    public class Trie {
+
+        public class TrieNode {
+            char ch;
+            Map<Character, TrieNode> nextMap;
+            boolean isEnd;
+            String word;
+
+            public TrieNode(char c) {
+                this.ch = c;
+                this.nextMap = new HashMap<>();
+                this.isEnd = false;
+            }
+        }
+
+        private TrieNode root;
+
+        private Map<String, Integer> map;
+
+        public Trie() {
+            this.root = new TrieNode('.');
+            this.map = new HashMap<>();
+        }
+
+        public void insert(String word) {
+            if (map.containsKey(word)) {
+                map.put(word, map.get(word) + 1);
+                return;
+            }
+            map.put(word, 1);
+            int len = word.length();
+            TrieNode node = root;
+            for (int i = 0; i < len; i++) {
+                char c = word.charAt(i);
+                if (!node.nextMap.containsKey(c)) {
+                    TrieNode newNode = new TrieNode(c);
+                    node.nextMap.put(c, newNode);
+                }
+                node = node.nextMap.get(c);
+            }
+            node.isEnd = true;
+            node.word = word;
+            return;
+        }
+
+        public boolean search(String word) {
+            return map.containsKey(word) && map.get(word) > 0;
+        }
+
+        public boolean startsWith(String prefix) {
+            int len = prefix.length();
+            TrieNode node = root;
+            for (int i = 0; i < len; i++) {
+                char c = prefix.charAt(i);
+                if (!node.nextMap.containsKey(c)) {
+                    return false;
+                }
+                node = node.nextMap.get(c);
+            }
+            return true;
         }
     }
 }
