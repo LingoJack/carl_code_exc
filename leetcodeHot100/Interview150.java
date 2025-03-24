@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
+import leetcodeHot100.Node;
+
 public class Interview150 {
 
     /**
