@@ -8,8 +8,12 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import leetcodeHot100.Node;
 
@@ -1667,6 +1671,99 @@ public class Interview150 {
                 node = node.nextMap.get(c);
             }
             return true;
+        }
+    }
+
+    /**
+     * 电梯调度
+     */
+    public class Elevator {
+
+        private volatile int curFloor;
+
+        private final int maxFloor;
+
+        private final int minFloor;
+
+        private volatile PriorityQueue<Integer> upQueue;
+
+        private volatile PriorityQueue<Integer> downQueue;
+
+        private boolean towardUp;
+
+        private Lock lock;
+
+        private Thread engine;
+
+        private Condition noSelected;
+
+        public Elevator(int maxFloor, int minFloor) {
+            this.curFloor = minFloor;
+            this.maxFloor = maxFloor;
+            this.minFloor = minFloor;
+            this.towardUp = true;
+            this.lock = new ReentrantLock();
+            this.noSelected = lock.newCondition();
+            this.upQueue = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+            this.downQueue = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+            this.engine = new Thread(() -> {
+                try {
+                    work();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            this.engine.start();
+        }
+
+        public void selectFloor(int floor) {
+            lock.lock();
+            try {
+                if (!(floor >= minFloor && floor <= maxFloor)) {
+                    return;
+                }
+                if (curFloor < floor) {
+                    upQueue.offer(floor);
+                } else if (curFloor > floor) {
+                    downQueue.offer(floor);
+                } else {
+                    arrival(floor);
+                }
+                if (!upQueue.isEmpty() || !downQueue.isEmpty()) {
+                    noSelected.signal();
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        private void work() throws InterruptedException {
+            while (true) {
+                lock.lock();
+                try {
+                    while (upQueue.isEmpty() && downQueue.isEmpty()) {
+                        // await是等待并释放锁，sleep是持有等待
+                        noSelected.await();
+                    }
+                    while (towardUp && !upQueue.isEmpty()) {
+                        int floor = upQueue.poll();
+                        arrival(floor);
+                    }
+                    towardUp = false;
+                    while (!towardUp && !downQueue.isEmpty()) {
+                        int floor = downQueue.poll();
+                        arrival(floor);
+                    }
+                    towardUp = true;
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
+
+        private void arrival(int floor) {
+            this.curFloor = floor;
+            System.out.println("arrival floor: " + floor);
         }
     }
 }
