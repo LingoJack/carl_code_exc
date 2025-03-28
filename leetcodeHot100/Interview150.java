@@ -1910,7 +1910,7 @@ public class Interview150 {
      * 这个做法十分巧妙
      * 排序预处理 + 大顶堆（类似层序遍历的思想）
      */
-    public int findMaximizedCapital(int maxTranscationNum, int initMoney, int[] profits, int[] capital) {
+    public int findMaximizedCapital(int maxTranscationNum, int money, int[] profits, int[] capital) {
         int projectNum = profits.length;
         int projectIdx = 0;
         int[][] capitalAndProfits = new int[projectNum][2];
@@ -1922,16 +1922,16 @@ public class Interview150 {
         // 大顶堆
         PriorityQueue<Integer> priorityQueue = new PriorityQueue<>((x, y) -> y - x);
         for (int i = 0; i < maxTranscationNum; ++i) {
-            while (projectIdx < projectNum && capitalAndProfits[projectIdx][0] <= initMoney) {
+            while (projectIdx < projectNum && capitalAndProfits[projectIdx][0] <= money) {
                 priorityQueue.add(capitalAndProfits[projectIdx][1]);
                 projectIdx++;
             }
             if (!priorityQueue.isEmpty()) {
-                initMoney += priorityQueue.poll();
+                money += priorityQueue.poll();
             } else {
                 break;
             }
         }
-        return initMoney;
+        return money;
     }
 }
