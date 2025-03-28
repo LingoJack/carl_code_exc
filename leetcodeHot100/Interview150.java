@@ -1878,4 +1878,60 @@ public class Interview150 {
     public interface RejectHandle {
         public void reject(Runnable rejectCommand, MyThreadPool threadPool);
     }
+
+    /**
+     * IPO
+     * 直接回溯是超时的
+     * 看起来得翻译成dp试试，但是我后来尝试翻译成dp就发现，是错的
+     */
+    public int findMaximizedCapitalWithTimeExceed(int k, int w, int[] profits, int[] capital) {
+        int money = w;
+        int maxTranscationNum = k;
+        dfs(0, maxTranscationNum, profits, capital, 0, money);
+        return max;
+    }
+
+    private int max = 0;
+
+    private void dfs(int transcationNum, int maxTranscationNum, int[] profits, int[] capital, int idx, int money) {
+        if (transcationNum == maxTranscationNum || idx == profits.length) {
+            max = Math.max(max, money);
+            return;
+        }
+        if (money >= capital[idx]) {
+            dfs(transcationNum + 1, maxTranscationNum, profits, capital, idx + 1, money + profits[idx]);
+        }
+        dfs(transcationNum, maxTranscationNum, profits, capital, idx + 1, money);
+    }
+
+    /**
+     * IPO
+     * 没做出来，这是正确的解法
+     * 这个做法十分巧妙
+     * 排序预处理 + 大顶堆（类似层序遍历的思想）
+     */
+    public int findMaximizedCapital(int maxTranscationNum, int initMoney, int[] profits, int[] capital) {
+        int projectNum = profits.length;
+        int projectIdx = 0;
+        int[][] capitalAndProfits = new int[projectNum][2];
+        for (int i = 0; i < projectNum; ++i) {
+            capitalAndProfits[i][0] = capital[i];
+            capitalAndProfits[i][1] = profits[i];
+        }
+        Arrays.sort(capitalAndProfits, (a, b) -> a[0] - b[0]);
+        // 大顶堆
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>((x, y) -> y - x);
+        for (int i = 0; i < maxTranscationNum; ++i) {
+            while (projectIdx < projectNum && capitalAndProfits[projectIdx][0] <= initMoney) {
+                priorityQueue.add(capitalAndProfits[projectIdx][1]);
+                projectIdx++;
+            }
+            if (!priorityQueue.isEmpty()) {
+                initMoney += priorityQueue.poll();
+            } else {
+                break;
+            }
+        }
+        return initMoney;
+    }
 }
