@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1765,5 +1766,12 @@ public class Interview150 {
             this.curFloor = floor;
             System.out.println("arrival floor: " + floor);
         }
+    }
+
+    /**
+     * 设计线程池
+     */
+    public class MyThreadPool {
+        
     }
 }
