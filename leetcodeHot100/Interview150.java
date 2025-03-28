@@ -6,12 +6,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1770,8 +1777,105 @@ public class Interview150 {
 
     /**
      * 设计线程池
+     * 设计一个支持任务队列和并发控制的线程池，给出关键数据结构、接口定义和使用示例
      */
     public class MyThreadPool {
-        
+
+        private final int corePoolSize;
+
+        private final int maxSize;
+
+        private final int timeout;
+
+        private final TimeUnit timeUnit;
+
+        public final BlockingQueue<Runnable> blockingQueue;
+
+        private final RejectHandle rejectHandle;
+
+        private List<Thread> coreList = new ArrayList<>();
+
+        private List<Thread> supportList = new ArrayList<>();
+
+        // 实际还应该有一个线程工厂的参数，此处不作实现
+        public MyThreadPool(int corePoolSize, int maxSize, int timeout, TimeUnit timeUnit,
+                BlockingQueue<Runnable> blockingQueue, RejectHandle rejectHandle) {
+            this.corePoolSize = corePoolSize;
+            this.maxSize = maxSize;
+            this.timeout = timeout;
+            this.timeUnit = timeUnit;
+            this.blockingQueue = blockingQueue;
+            this.rejectHandle = rejectHandle;
+        }
+
+        public void execute(Runnable command) {
+            if (coreList.size() < corePoolSize) {
+                Thread thread = new CoreThread(command);
+                thread.start();
+                return;
+            }
+            if (blockingQueue.offer(command)) {
+                return;
+            }
+            if (coreList.size() + supportList.size() < maxSize) {
+                Thread thread = new SupportThread(command);
+                thread.start();
+                return;
+            }
+            if (!blockingQueue.offer(command)) {
+                rejectHandle.reject(command, this);
+            }
+        }
+
+        private class CoreThread extends Thread {
+
+            private final Runnable firstTask;
+
+            public CoreThread(Runnable firstTask) {
+                this.firstTask = firstTask;
+            }
+
+            @Override
+            public void run() {
+                firstTask.run();
+                while (true) {
+                    try {
+                        Runnable command = blockingQueue.take();
+                        command.run();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+
+        private class SupportThread extends Thread {
+            private final Runnable firstTask;
+
+            public SupportThread(Runnable firstTask) {
+                this.firstTask = firstTask;
+            }
+
+            @Override
+            public void run() {
+                firstTask.run();
+                while (true) {
+                    try {
+                        // 十分巧妙，这样子就让支持线程在空闲时间过后自动销毁了
+                        Runnable command = blockingQueue.poll(timeout, timeUnit);
+                        if (command == null) {
+                            break;
+                        }
+                        command.run();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    public interface RejectHandle {
+        public void reject(Runnable rejectCommand, MyThreadPool threadPool);
     }
 }
