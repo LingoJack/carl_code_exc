@@ -2027,8 +2027,66 @@ public class Interview150 {
         dfs(board, i, j + 1);
     }
 
+    class Node {
+        public int val;
+        public List<Node> neighbors;
+
+        public Node() {
+            this.val = 0;
+            neighbors = new ArrayList<Node>();
+        }
+
+        public Node(int val) {
+            this.val = val;
+            neighbors = new ArrayList<Node>();
+        }
+
+        public Node(int val, ArrayList<Node> neighbors) {
+            this.val = val;
+            this.neighbors = neighbors;
+        }
+    }
+
     /**
      * 克隆图
      */
-    
+    public Node cloneGraph(Node node) {
+        Map<Node, Node> map = new HashMap<>();
+        Set<Node> set = new HashSet<>();
+        Deque<Node> queue = new ArrayDeque<>();
+        if (node == null) {
+            return null;
+        }
+        queue.offer(node);
+        while (!queue.isEmpty()) {
+            Node originNode = queue.poll();
+            if (!set.contains(originNode)) {
+                for (Node nextNode : originNode.neighbors) {
+                    if (!set.contains(nextNode)) {
+                        queue.offer(nextNode);
+                    }
+                }
+                Node newNode = new Node(originNode.val);
+                map.put(originNode, newNode);
+                set.add(originNode);
+            }
+        }
+        set.clear();
+        queue.offer(node);
+        while (!queue.isEmpty()) {
+            Node originNode = queue.poll();
+            if (!set.contains(originNode)) {
+                List<Node> list = new ArrayList<>();
+                for (Node nextNode : originNode.neighbors) {
+                    list.add(map.get(nextNode));
+                    if (!set.contains(nextNode)) {
+                        queue.offer(nextNode);
+                    }
+                }
+                map.get(originNode).neighbors = list;
+                set.add(originNode);
+            }
+        }
+        return map.get(node);
+    }
 }
