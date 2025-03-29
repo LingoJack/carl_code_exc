@@ -2233,6 +2233,39 @@ public class Interview150 {
      * 课程表II
      */
     public int[] findOrder(int numCourses, int[][] prerequisites) {
-        
+        int[] res = new int[numCourses];
+        Map<Integer, List<Integer>> precourseMap = new HashMap<>();
+        int[] inDegree = new int[numCourses];
+        for (int[] rel : prerequisites) {
+            inDegree[rel[0]]++;
+            List<Integer> list = precourseMap.getOrDefault(rel[1], new ArrayList<>());
+            list.add(rel[0]);
+            precourseMap.put(rel[1], list);
+        }
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        int idx = 0;
+        while (!queue.isEmpty()) {
+            int course = queue.poll();
+            res[idx++] = course;
+            for (int nextCourse : precourseMap.getOrDefault(course, new ArrayList<>())) {
+                inDegree[nextCourse]--;
+                if (inDegree[nextCourse] == 0) {
+                    queue.offer(nextCourse);
+                }
+            }
+        }
+        return idx == numCourses ? res : new int[0];
+    }
+
+    /**
+     * 蛇梯棋
+     */
+    public int snakesAndLadders(int[][] board) {
+
     }
 }
