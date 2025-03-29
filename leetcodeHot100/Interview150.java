@@ -2062,9 +2062,7 @@ public class Interview150 {
             Node originNode = queue.poll();
             if (!set.contains(originNode)) {
                 for (Node nextNode : originNode.neighbors) {
-                    if (!set.contains(nextNode)) {
-                        queue.offer(nextNode);
-                    }
+                    queue.offer(nextNode);
                 }
                 Node newNode = new Node(originNode.val);
                 map.put(originNode, newNode);
@@ -2079,9 +2077,7 @@ public class Interview150 {
                 List<Node> list = new ArrayList<>();
                 for (Node nextNode : originNode.neighbors) {
                     list.add(map.get(nextNode));
-                    if (!set.contains(nextNode)) {
-                        queue.offer(nextNode);
-                    }
+                    queue.offer(nextNode);
                 }
                 map.get(originNode).neighbors = list;
                 set.add(originNode);
@@ -2089,4 +2085,26 @@ public class Interview150 {
         }
         return map.get(node);
     }
+
+    public Node cloneGraphBFS(Node node) {
+        Map<Node, Node> map = new HashMap<>();
+        Deque<Node> queue = new ArrayDeque<>();
+        if (node == null) {
+            return null;
+        }
+        queue.offer(node);
+        map.put(node, new Node(node.val));
+        while (!queue.isEmpty()) {
+            Node originNode = queue.poll();
+            for (Node nextNode : originNode.neighbors) {
+                if (!map.containsKey(nextNode)) {
+                    map.put(nextNode, new Node(nextNode.val));
+                    queue.offer(nextNode);
+                }
+                map.get(originNode).neighbors.add(map.get(nextNode));
+            }
+        }
+        return map.get(node);
+    }
+
 }
