@@ -2027,21 +2027,21 @@ public class Interview150 {
         dfs(board, i, j + 1);
     }
 
-    class Node {
+    class GraphNode {
         public int val;
-        public List<Node> neighbors;
+        public List<GraphNode> neighbors;
 
-        public Node() {
+        public GraphNode() {
             this.val = 0;
-            neighbors = new ArrayList<Node>();
+            neighbors = new ArrayList<GraphNode>();
         }
 
-        public Node(int val) {
+        public GraphNode(int val) {
             this.val = val;
-            neighbors = new ArrayList<Node>();
+            neighbors = new ArrayList<GraphNode>();
         }
 
-        public Node(int val, ArrayList<Node> neighbors) {
+        public GraphNode(int val, ArrayList<GraphNode> neighbors) {
             this.val = val;
             this.neighbors = neighbors;
         }
@@ -2052,22 +2052,22 @@ public class Interview150 {
      * BFS写法
      * 思路是先完成map的初始化，再去完成克隆节点的邻接节点的处理
      */
-    public Node cloneGraph(Node node) {
-        Map<Node, Node> map = new HashMap<>();
-        Set<Node> set = new HashSet<>();
-        Deque<Node> queue = new ArrayDeque<>();
+    public GraphNode cloneGraph(GraphNode node) {
+        Map<GraphNode, GraphNode> map = new HashMap<>();
+        Set<GraphNode> set = new HashSet<>();
+        Deque<GraphNode> queue = new ArrayDeque<>();
         if (node == null) {
             return null;
         }
         // 完成map的初始化
         queue.offer(node);
         while (!queue.isEmpty()) {
-            Node originNode = queue.poll();
+            GraphNode originNode = queue.poll();
             if (!set.contains(originNode)) {
-                for (Node nextNode : originNode.neighbors) {
+                for (GraphNode nextNode : originNode.neighbors) {
                     queue.offer(nextNode);
                 }
-                Node newNode = new Node(originNode.val);
+                GraphNode newNode = new GraphNode(originNode.val);
                 map.put(originNode, newNode);
                 set.add(originNode);
             }
@@ -2075,10 +2075,10 @@ public class Interview150 {
         set.clear();
         queue.offer(node);
         while (!queue.isEmpty()) {
-            Node originNode = queue.poll();
+            GraphNode originNode = queue.poll();
             if (!set.contains(originNode)) {
-                List<Node> list = new ArrayList<>();
-                for (Node nextNode : originNode.neighbors) {
+                List<GraphNode> list = new ArrayList<>();
+                for (GraphNode nextNode : originNode.neighbors) {
                     list.add(map.get(nextNode));
                     queue.offer(nextNode);
                 }
@@ -2094,19 +2094,19 @@ public class Interview150 {
      * BFS解法
      * 这个写法更简洁，再一次遍历中处理克隆节点和克隆节点的邻接节点的处理
      */
-    public Node cloneGraphBFS(Node node) {
-        Map<Node, Node> map = new HashMap<>();
-        Deque<Node> queue = new ArrayDeque<>();
+    public GraphNode cloneGraphBFS(GraphNode node) {
+        Map<GraphNode, GraphNode> map = new HashMap<>();
+        Deque<GraphNode> queue = new ArrayDeque<>();
         if (node == null) {
             return null;
         }
         queue.offer(node);
         while (!queue.isEmpty()) {
-            Node originNode = queue.poll();
-            map.putIfAbsent(node, new Node(node.val));
-            for (Node nextNode : originNode.neighbors) {
+            GraphNode originNode = queue.poll();
+            map.putIfAbsent(node, new GraphNode(node.val));
+            for (GraphNode nextNode : originNode.neighbors) {
                 if (!map.containsKey(nextNode)) {
-                    map.put(nextNode, new Node(nextNode.val));
+                    map.put(nextNode, new GraphNode(nextNode.val));
                     queue.offer(nextNode);
                 }
                 map.get(originNode).neighbors.add(map.get(nextNode));
@@ -2119,21 +2119,21 @@ public class Interview150 {
      * 克隆图
      * DFS写法
      */
-    public Node cloneGraphDFS(Node node) {
-        Map<Node, Node> map = new HashMap<>();
+    public GraphNode cloneGraphDFS(GraphNode node) {
+        Map<GraphNode, GraphNode> map = new HashMap<>();
         return dfs(map, node);
     }
 
-    private Node dfs(Map<Node, Node> map, Node node) {
+    private GraphNode dfs(Map<GraphNode, GraphNode> map, GraphNode node) {
         if (node == null) {
             return null;
         }
         if (map.containsKey(node)) {
             return map.get(node);
         }
-        Node cloneNode = new Node(node.val);
+        GraphNode cloneNode = new GraphNode(node.val);
         map.put(node, cloneNode);
-        for (Node neighbor : node.neighbors) {
+        for (GraphNode neighbor : node.neighbors) {
             cloneNode.neighbors.add(dfs(map, neighbor));
         }
         return cloneNode;
@@ -2187,6 +2187,52 @@ public class Interview150 {
      * 除法求值
      */
     public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
+        Map<String, Map<String, Double>> map = new HashMap<>();
+        for (int i = 0; i < values.length; i++) {
+            double val = values[i];
+            List<String> equation = equations.get(i);
+            String start = equation.get(0);
+            String end = equation.get(1);
+            Map<String, Double> startToEndDIstanceMap = map.getOrDefault(start, new HashMap<>());
+            startToEndDIstanceMap.put(end, val);
+            map.put(start, startToEndDIstanceMap);
+            Map<String, Double> endToStartDistanceMap = map.getOrDefault(end, new HashMap<>());
+            endToStartDistanceMap.put(start, 1 / val);
+            map.put(end, endToStartDistanceMap);
+        }
+        double[] res = new double[queries.size()];
+        for (int i = 0; i < queries.size(); i++) {
+            List<String> list = queries.get(i);
+            String start = list.get(0);
+            String end = list.get(1);
+            res[i] = dfs(map, start, end, new HashSet<>());
+        }
+        return res;
+    }
+
+    private double dfs(Map<String, Map<String, Double>> map, String start, String end, Set<String> visited) {
+        if ((!map.containsKey(start)) || visited.contains(start)) {
+            return -1.0;
+        }
+        Map<String, Double> endToDistanceMap = map.get(start);
+        if (endToDistanceMap.containsKey(end)) {
+            return endToDistanceMap.get(end);
+        }
+        visited.add(start);
+        for (String mid : endToDistanceMap.keySet()) {
+            double distance = dfs(map, mid, end, visited);
+            if (distance != -1.0) {
+                return distance * endToDistanceMap.get(mid);
+            }
+        }
+        visited.remove(start);
+        return -1.0;
+    }
+
+    /**
+     * 课程表II
+     */
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
         
     }
 }
