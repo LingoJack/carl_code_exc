@@ -2057,6 +2057,7 @@ public class Interview150 {
         if (node == null) {
             return null;
         }
+        // 完成map的初始化
         queue.offer(node);
         while (!queue.isEmpty()) {
             Node originNode = queue.poll();
@@ -2093,9 +2094,9 @@ public class Interview150 {
             return null;
         }
         queue.offer(node);
-        map.put(node, new Node(node.val));
         while (!queue.isEmpty()) {
             Node originNode = queue.poll();
+            map.putIfAbsent(node, new Node(node.val));
             for (Node nextNode : originNode.neighbors) {
                 if (!map.containsKey(nextNode)) {
                     map.put(nextNode, new Node(nextNode.val));
