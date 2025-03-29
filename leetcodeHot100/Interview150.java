@@ -2049,6 +2049,8 @@ public class Interview150 {
 
     /**
      * 克隆图
+     * BFS写法
+     * 思路是先完成map的初始化，再去完成克隆节点的邻接节点的处理
      */
     public Node cloneGraph(Node node) {
         Map<Node, Node> map = new HashMap<>();
@@ -2087,6 +2089,11 @@ public class Interview150 {
         return map.get(node);
     }
 
+    /**
+     * 克隆图
+     * BFS解法
+     * 这个写法更简洁，再一次遍历中处理克隆节点和克隆节点的邻接节点的处理
+     */
     public Node cloneGraphBFS(Node node) {
         Map<Node, Node> map = new HashMap<>();
         Deque<Node> queue = new ArrayDeque<>();
@@ -2108,4 +2115,78 @@ public class Interview150 {
         return map.get(node);
     }
 
+    /**
+     * 克隆图
+     * DFS写法
+     */
+    public Node cloneGraphDFS(Node node) {
+        Map<Node, Node> map = new HashMap<>();
+        return dfs(map, node);
+    }
+
+    private Node dfs(Map<Node, Node> map, Node node) {
+        if (node == null) {
+            return null;
+        }
+        if (map.containsKey(node)) {
+            return map.get(node);
+        }
+        Node cloneNode = new Node(node.val);
+        map.put(node, cloneNode);
+        for (Node neighbor : node.neighbors) {
+            cloneNode.neighbors.add(dfs(map, neighbor));
+        }
+        return cloneNode;
+    }
+
+    /**
+     * 二叉树的锯齿形层序遍历
+     */
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        boolean reverse = false;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                list.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            if (reverse) {
+                reverse(list);
+            }
+            res.add(list);
+            reverse = !reverse;
+        }
+        return res;
+    }
+
+    private void reverse(List<Integer> list) {
+        int lt = 0, rt = list.size() - 1;
+        while (lt < rt) {
+            int t = list.get(rt);
+            list.set(rt, list.get(lt));
+            list.set(lt, t);
+            lt++;
+            rt--;
+        }
+    }
+
+    /**
+     * 除法求值
+     */
+    public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
+        
+    }
 }
