@@ -2266,6 +2266,24 @@ public class Interview150 {
      * 蛇梯棋
      */
     public int snakesAndLadders(int[][] board) {
+        int row = board.length;
+        int col = board[0].length;
+        int[] line = new int[row * col + 1];
+        boolean asc = true;
+        int idx = 1;
+        for (int i = 1; i <= row; i++) {
+            if (asc) {
+                for (int j = 1; j <= col; j++) {
+                    line[idx++] = board[i][j];
+                }
+                asc = false;
+            } else {
+                for (int j = col; j >= 1; j--) {
+                    line[idx++] = board[i][j];
+                }
+                asc = true;
+            }
+        }
 
     }
 }
