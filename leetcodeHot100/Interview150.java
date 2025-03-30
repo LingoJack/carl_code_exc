@@ -7,9 +7,11 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
@@ -2264,6 +2266,7 @@ public class Interview150 {
 
     /**
      * 蛇梯棋
+     * 没做出来
      */
     public int snakesAndLadders(int[][] board) {
         int row = board.length;
@@ -2271,19 +2274,59 @@ public class Interview150 {
         int[] line = new int[row * col + 1];
         boolean asc = true;
         int idx = 1;
-        for (int i = 1; i <= row; i++) {
+        for (int i = row - 1; i >= 0; i--) {
             if (asc) {
-                for (int j = 1; j <= col; j++) {
+                for (int j = 0; j < col; j++) {
                     line[idx++] = board[i][j];
                 }
                 asc = false;
             } else {
-                for (int j = col; j >= 1; j--) {
+                for (int j = col - 1; j >= 0; j--) {
                     line[idx++] = board[i][j];
                 }
                 asc = true;
             }
         }
+        // BFS 初始化
+        Deque<Integer> queue = new ArrayDeque<>();
+        Set<Integer> visited = new HashSet<>();
+        queue.offer(1); // 起点
+        visited.add(1);
+        int steps = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int position = queue.poll();
+                if (position == row * col) {
+                    return steps;
+                }
+                // 模拟掷骰子，尝试移动 1 到 6 步
+                for (int increment = 1; increment <= 6; increment++) {
+                    int next = position + increment;
+                    // 超过棋盘范围，跳过
+                    if (next > row * col) {
+                        continue;
+                    }
+                    // 如果有梯子或蛇，跳转到目标位置
+                    if (line[next] != -1) {
+                        next = line[next];
+                    }
+                    // 如果该位置未访问过，加入队列
+                    if (!visited.contains(next)) {
+                        queue.offer(next);
+                        visited.add(next);
+                    }
+                }
+            }
+            steps++; // 每一轮掷骰子算一步
+        }
+        return -1;
+    }
+
+    /**
+     * 文本左右对齐
+     */
+    public List<String> fullJustify(String[] words, int maxWidth) {
 
     }
 }
