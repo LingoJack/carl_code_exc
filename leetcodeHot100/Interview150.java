@@ -2327,52 +2327,47 @@ public class Interview150 {
      * 文本左右对齐
      * 没做出来，主要是单词间空格的均匀分配和最后一行考虑不周
      * 而且不知道String有方便的repeat API
+     * 参考了答案的空格分配思路以后也是做出来了
      */
     public List<String> fullJustify(String[] words, int maxWidth) {
         StringBuilder sb = new StringBuilder();
         Deque<String> wordQueue = new ArrayDeque<>();
         Deque<String> spaceQueue = new ArrayDeque<>();
         List<String> res = new ArrayList<>();
-        int count = 0;
+        int wordLength = 0;
         for (String word : words) {
-            if (count + wordQueue.size() + word.length() >= maxWidth) {
-                count = 0;
-                int size = wordQueue.size() - 1;
-                int space = maxWidth - count;
-                int spaceUnit = size == 0 ? 0 : space / size;
-                for (int i = 0; i < spaceUnit; i++) {
-                    sb.append(' ');
-                }
-                String spaceStr = sb.toString();
+            if (wordLength + wordQueue.size() + word.length() > maxWidth) {
+                int gapCount = wordQueue.size() == 1 ? 1 : wordQueue.size() - 1;
+                String spaceUnit = " ".repeat((maxWidth - wordLength) / gapCount);
+                int extraSpaceCount = (maxWidth - wordLength) % gapCount;
                 sb.setLength(0);
-                for (int i = 0; i < size - 1; i++) {
-                    spaceQueue.offer(spaceStr);
-                    space -= spaceUnit;
+                for (int i = 0; i < gapCount; i++) {
+                    sb.append(spaceUnit);
+                    if (i < extraSpaceCount) {
+                        sb.append(' ');
+                    }
+                    spaceQueue.offer(sb.toString());
+                    sb.setLength(0);
                 }
-                for (int i = 0; i < space; i++) {
-                    sb.append(' ');
-                }
-                spaceQueue.offer(sb.toString());
-                spaceQueue.offer("");
-                sb.setLength(0);
-                while (!wordQueue.isEmpty() && !spaceQueue.isEmpty()) {
-                    sb.append(wordQueue.poll()).append(spaceQueue.poll());
+                while (!wordQueue.isEmpty()) {
+                    sb.append(wordQueue.poll()).append(spaceQueue.isEmpty() ? "" : spaceQueue.poll());
                 }
                 res.add(sb.toString());
                 sb.setLength(0);
+                wordLength = 0;
             }
-            count += word.length();
+            wordLength += word.length();
             wordQueue.offer(word);
         }
+        sb.setLength(0);
         while (!wordQueue.isEmpty()) {
             String word = wordQueue.poll();
-            sb.setLength(0);
-            sb.append(word);
-            while (sb.length() < maxWidth) {
-                sb.append(' ');
-            }
-            res.add(sb.toString());
+            sb.append(word).append(wordQueue.isEmpty() ? "" : " ");
         }
+        while (sb.length() < maxWidth) {
+            sb.append(' ');
+        }
+        res.add(sb.toString());
         return res;
     }
 
