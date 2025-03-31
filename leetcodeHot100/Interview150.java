@@ -2371,6 +2371,10 @@ public class Interview150 {
         return res;
     }
 
+    /**
+     * 文本左右对齐
+     * 非常优雅的写法
+     */
     public List<String> fullJustifyCorrectAns(String[] words, int maxWidth) {
         List<String> result = new ArrayList<>();
         List<String> currentLine = new ArrayList<>();
@@ -2419,5 +2423,95 @@ public class Interview150 {
         lastLine.append(" ".repeat(maxWidth - lastLine.length()));
         result.add(lastLine.toString());
         return result;
+    }
+
+    /**
+     * 串联所有单词的子串
+     * 超时了，或许可以改变思路为活动窗口，窗口一次移动一个wordLen
+     * 经过我的修改，没有超时，击败68%
+     */
+    public List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        Map<String, Integer> need = new HashMap<>();
+        for (String word : words) {
+            need.put(word, need.getOrDefault(word, 0) + 1);
+        }
+        int wordCount = words.length;
+        int wordLen = words[0].length();
+        int totalLen = wordLen * wordCount;
+        for (int i = 0; i < wordLen; i++) {
+            int valid = 0;
+            Map<String, Integer> have = new HashMap<>();
+            for (int start = i, wordStart = start; wordStart + wordLen - 1 < Math.min(
+                    start + totalLen, s.length()); wordStart += wordLen) {
+                int wordEnd = wordStart + wordLen - 1;
+                String word = s.substring(wordStart, wordEnd + 1);
+                have.put(word, have.getOrDefault(word, 0) + 1);
+                if (need.containsKey(word) && have.get(word).equals(need.get(word))) {
+                    valid++;
+                }
+            }
+            if (valid == need.size()) {
+                res.add(i);
+            }
+            for (int start = i + wordLen; start + totalLen - 1 < s.length(); start += wordLen) {
+                String firstWord = s.substring(start - wordLen, start);
+                String lastWord = s.substring(start + totalLen - wordLen, start + totalLen);
+                if (need.containsKey(firstWord)) {
+                    if (have.get(firstWord).equals(need.get(firstWord))) {
+                        valid--;
+                    }
+                    have.put(firstWord, have.getOrDefault(firstWord, 0) - 1);
+                }
+                if (need.containsKey(lastWord)) {
+                    have.put(lastWord, have.getOrDefault(lastWord, 0) + 1);
+                    if (have.get(lastWord).equals(need.get(lastWord))) {
+                        valid++;
+                    }
+                }
+                if (valid == need.size()) {
+                    res.add(start);
+                }
+            }
+        }
+        return res;
+    }
+
+    public List<Integer> findSubstringTimeExceed(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        Map<String, Integer> need = new HashMap<>();
+        for (String word : words) {
+            need.put(word, need.getOrDefault(word, 0) + 1);
+        }
+        int wordCount = words.length;
+        int wordLen = words[0].length();
+        int totalLen = wordLen * wordCount;
+        Map<String, Integer> have = new HashMap<>();
+        for (int start = 0; start + totalLen - 1 < s.length(); start++) {
+            int valid = 0;
+            for (int wordStart = start; wordStart + wordLen - 1 < start + totalLen; wordStart += wordLen) {
+                int wordEnd = wordStart + wordLen - 1;
+                String word = s.substring(wordStart, wordEnd + 1);
+                if (!need.containsKey(word)) {
+                    break;
+                }
+                have.put(word, have.getOrDefault(word, 0) + 1);
+                if (have.get(word).equals(need.get(word))) {
+                    valid++;
+                }
+            }
+            have.clear();
+            if (valid == need.size()) {
+                res.add(start);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 有效的数独
+     */
+    public boolean isValidSudoku(char[][] board) {
+        
     }
 }
