@@ -2512,6 +2512,37 @@ public class Interview150 {
      * 有效的数独
      */
     public boolean isValidSudoku(char[][] board) {
+        int row = board.length, col = board[0].length;
+        boolean[][] groupExist = new boolean[9][10];
+        boolean[][] rowExist = new boolean[9][10];
+        boolean[][] colExist = new boolean[9][10];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (board[i][j] == '.') {
+                    continue;
+                }
+                int num = board[i][j] - '0';
+                int groupIdx = getGroupIdx(i, j);
+                if (rowExist[i][num] || colExist[j][num] || groupExist[groupIdx][num]) {
+                    return false;
+                }
+                rowExist[i][num] = true;
+                colExist[j][num] = true;
+                groupExist[groupIdx][num] = true;
+            }
+        }
+        return true;
+    }
+
+    private int getGroupIdx(int rowIdx, int colIdx) {
+        return (rowIdx / 3) * 3 + (colIdx / 3);
+    }
+
+    /**
+     * 汇总区间
+     */
+    public List<String> summaryRanges(int[] nums) {
+        StringBuilder sb = new StringBuilder();
         
     }
 }
