@@ -2543,6 +2543,39 @@ public class Interview150 {
      */
     public List<String> summaryRanges(int[] nums) {
         StringBuilder sb = new StringBuilder();
-        
+        List<String> res = new ArrayList<>();
+        Integer expected = null;
+        boolean continued = false;
+        for (int num : nums) {
+            if (expected == null) {
+                expected = num + 1;
+                sb.append(num);
+            } else if (expected == num) {
+                expected++;
+                if (!continued) {
+                    sb.append("->");
+                }
+                continued = true;
+            } else {
+                if (continued) {
+                    sb.append(expected - 1);
+                }
+                if (!sb.isEmpty()) {
+                    res.add(sb.toString());
+                    sb.setLength(0);
+                }
+                sb.append(num);
+                expected = num + 1;
+                continued = false;
+            }
+        }
+        if (!sb.isEmpty()) {
+            if (continued) {
+                sb.append(expected - 1);
+            }
+            res.add(sb.toString());
+            sb.setLength(0);
+        }
+        return res;
     }
 }
