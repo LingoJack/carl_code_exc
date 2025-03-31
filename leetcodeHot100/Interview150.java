@@ -2325,8 +2325,104 @@ public class Interview150 {
 
     /**
      * 文本左右对齐
+     * 没做出来，主要是单词间空格的均匀分配和最后一行考虑不周
+     * 而且不知道String有方便的repeat API
      */
     public List<String> fullJustify(String[] words, int maxWidth) {
+        StringBuilder sb = new StringBuilder();
+        Deque<String> wordQueue = new ArrayDeque<>();
+        Deque<String> spaceQueue = new ArrayDeque<>();
+        List<String> res = new ArrayList<>();
+        int count = 0;
+        for (String word : words) {
+            if (count + wordQueue.size() + word.length() >= maxWidth) {
+                count = 0;
+                int size = wordQueue.size() - 1;
+                int space = maxWidth - count;
+                int spaceUnit = size == 0 ? 0 : space / size;
+                for (int i = 0; i < spaceUnit; i++) {
+                    sb.append(' ');
+                }
+                String spaceStr = sb.toString();
+                sb.setLength(0);
+                for (int i = 0; i < size - 1; i++) {
+                    spaceQueue.offer(spaceStr);
+                    space -= spaceUnit;
+                }
+                for (int i = 0; i < space; i++) {
+                    sb.append(' ');
+                }
+                spaceQueue.offer(sb.toString());
+                spaceQueue.offer("");
+                sb.setLength(0);
+                while (!wordQueue.isEmpty() && !spaceQueue.isEmpty()) {
+                    sb.append(wordQueue.poll()).append(spaceQueue.poll());
+                }
+                res.add(sb.toString());
+                sb.setLength(0);
+            }
+            count += word.length();
+            wordQueue.offer(word);
+        }
+        while (!wordQueue.isEmpty()) {
+            String word = wordQueue.poll();
+            sb.setLength(0);
+            sb.append(word);
+            while (sb.length() < maxWidth) {
+                sb.append(' ');
+            }
+            res.add(sb.toString());
+        }
+        return res;
+    }
 
+    public List<String> fullJustifyCorrectAns(String[] words, int maxWidth) {
+        List<String> result = new ArrayList<>();
+        List<String> currentLine = new ArrayList<>();
+        int currentLength = 0;
+        for (String word : words) {
+            // 检查当前单词是否可以加入当前行
+            if (currentLength + word.length() + currentLine.size() > maxWidth) {
+                // 当前行已满，进行对齐处理
+                if (currentLine.size() == 1) {
+                    // 特殊情况：当前行只有一个单词，左对齐
+                    String line = currentLine.get(0);
+                    line += " ".repeat(maxWidth - line.length());
+                    result.add(line);
+                } else {
+                    // 计算空格总数和每个间隙的空格数
+                    int totalSpaces = maxWidth - currentLength;
+                    int spaceCount = currentLine.size() - 1;
+                    int spacePerGap = totalSpaces / spaceCount;
+                    int extraSpaces = totalSpaces % spaceCount;
+                    // 构造对齐后的行
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < currentLine.size(); i++) {
+                        sb.append(currentLine.get(i));
+                        if (i < currentLine.size() - 1) {
+                            sb.append(" ".repeat(spacePerGap + (i < extraSpaces ? 1 : 0)));
+                        }
+                    }
+                    result.add(sb.toString());
+                }
+                // 重置当前行
+                currentLine.clear();
+                currentLength = 0;
+            }
+            // 将当前单词加入当前行
+            currentLine.add(word);
+            currentLength += word.length();
+        }
+        // 处理最后一行（左对齐）
+        StringBuilder lastLine = new StringBuilder();
+        for (int i = 0; i < currentLine.size(); i++) {
+            lastLine.append(currentLine.get(i));
+            if (i < currentLine.size() - 1) {
+                lastLine.append(" ");
+            }
+        }
+        lastLine.append(" ".repeat(maxWidth - lastLine.length()));
+        result.add(lastLine.toString());
+        return result;
     }
 }
