@@ -2578,4 +2578,59 @@ public class Interview150 {
         }
         return res;
     }
+
+    /**
+     * 最小基因变化
+     * 我终于自己做出来了
+     * 核心就是想到计算两个字符串的差值，startGene每次只能到diff == 1的bankGene上，就这样走下去
+     * dfs可解
+     */
+    public int minMutation(String startGene, String endGene, String[] bank) {
+        return dfs(startGene, endGene, bank, new boolean[bank.length], 0);
+    }
+
+    private int dfs(String source, String target, String[] bank, boolean[] used, int count) {
+        if (source.equals(target)) {
+            return count;
+        }
+        boolean hasFound = false;
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i < bank.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            int diff = diff(source, bank[i]);
+            if (diff == 1) {
+                used[i] = true;
+                int res = dfs(bank[i], target, bank, used, count + 1);
+                if (res != -1) {
+                    min = Math.min(min, res);
+                    hasFound = true;
+                }
+                used[i] = false;
+            }
+        }
+        return hasFound ? min : -1;
+    }
+
+    private int diff(String s1, String s2) {
+        if (s1.length() != s2.length()) {
+            return -1;
+        }
+        int len = s1.length();
+        int count = 0;
+        for (int i = 0; i < len; i++) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 单词接龙
+     */
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+
+    }
 }
