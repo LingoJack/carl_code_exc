@@ -2828,16 +2828,74 @@ public class Interview150 {
      */
     class WordDictionary {
 
+        private Map<String, Boolean> map;
+
+        public class Node {
+            char ch;
+            Map<Character, Node> nextChars;
+            boolean isEndOfWord;
+            public Node() {
+                this.nextChars = new HashMap<>();
+                this.isEndOfWord = false;
+            }
+            public Node(char ch) {
+                this.ch = ch;
+                this.nextChars = new HashMap<>();
+                this.nextChars.put('*', new Node('*'));
+                this.isEndOfWord = false;
+            }
+            public Node(char ch, boolean isEndOfWord) {
+                this.ch = ch;
+                this.nextChars = new HashMap<>();
+                this.nextChars.put('*', new Node('*'));
+                this.isEndOfWord = isEndOfWord;
+            }
+        }
+        
+        private Node root;
+
         public WordDictionary() {
-            
+            this.root = new Node();
+            this.map = new HashMap<>();
         }
         
         public void addWord(String word) {
-            
+            if(map.containsKey(word)) {
+                return;
+            }
+            map.put(word, true);
+            Node node = root;
+            int len = word.length();
+            for(int i = 0; i < len; i++) {
+                char ch = word.charAt(i);
+                if(node.nextChars.containsKey(ch)) {
+                    node = node.nextChars.get(ch);
+                    continue;
+                }
+                Node newNode = new Node(ch);
+                if(i == len - 1) {
+                    newNode.isEndOfWord = true;
+                }
+                node.nextChars.put(ch, newNode);
+                node.nextChars.get('*').nextChars.put(ch, newNode);
+                node = newNode;
+            }
         }
         
         public boolean search(String word) {
-            
+            int len = word.length();
+            Node node = root;
+            for(int i = 0; i < len; i++) {
+                char c = word.charAt(i);
+                if(c == '*') {
+
+                } else {
+                    if(!node.nextChars.containsKey(c)) {
+                        return false;
+                    }
+                    node = node.nextChars.get(c);
+                }
+            }
         }
     }
 }
