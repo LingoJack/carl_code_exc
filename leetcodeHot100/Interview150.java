@@ -2266,6 +2266,6 @@ public class Interview150 {
      * 蛇梯棋
      */
     public int snakesAndLadders(int[][] board) {
-
+        
     }
 }
