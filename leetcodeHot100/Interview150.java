@@ -1570,7 +1570,7 @@ public class Interview150 {
     }
 
     /**
-     * 单词搜索II
+     * 单词搜索 II
      * 没做出来
      * 核心是想到前缀树Trie（hot100），然后dfs扩散开去
      * Trie需要自己实现
@@ -2825,77 +2825,170 @@ public class Interview150 {
 
     /**
      * 添加与搜索单词 - 数据结构设计
+     * 没做出来(基本做出来了)
+     * dfs的写法可以更简洁一点
      */
     class WordDictionary {
-
-        private Map<String, Boolean> map;
-
         public class Node {
             char ch;
             Map<Character, Node> nextChars;
             boolean isEndOfWord;
+
             public Node() {
                 this.nextChars = new HashMap<>();
                 this.isEndOfWord = false;
             }
+
             public Node(char ch) {
                 this.ch = ch;
                 this.nextChars = new HashMap<>();
-                this.nextChars.put('*', new Node('*'));
                 this.isEndOfWord = false;
             }
+
             public Node(char ch, boolean isEndOfWord) {
                 this.ch = ch;
                 this.nextChars = new HashMap<>();
-                this.nextChars.put('*', new Node('*'));
                 this.isEndOfWord = isEndOfWord;
             }
         }
-        
+
         private Node root;
 
         public WordDictionary() {
             this.root = new Node();
-            this.map = new HashMap<>();
+            root.nextChars.put('*', new Node());
         }
-        
+
         public void addWord(String word) {
-            if(map.containsKey(word)) {
-                return;
-            }
-            map.put(word, true);
             Node node = root;
             int len = word.length();
-            for(int i = 0; i < len; i++) {
+            for (int i = 0; i < len; i++) {
                 char ch = word.charAt(i);
-                if(node.nextChars.containsKey(ch)) {
+                if (node.nextChars.containsKey(ch)) {
                     node = node.nextChars.get(ch);
                     continue;
                 }
                 Node newNode = new Node(ch);
-                if(i == len - 1) {
-                    newNode.isEndOfWord = true;
-                }
                 node.nextChars.put(ch, newNode);
-                node.nextChars.get('*').nextChars.put(ch, newNode);
                 node = newNode;
             }
+            node.isEndOfWord = true;
         }
-        
-        public boolean search(String word) {
-            int len = word.length();
-            Node node = root;
-            for(int i = 0; i < len; i++) {
-                char c = word.charAt(i);
-                if(c == '*') {
 
-                } else {
-                    if(!node.nextChars.containsKey(c)) {
-                        return false;
+        public boolean search(String word) {
+            return search(word, 0, root);
+        }
+
+        private boolean search(String word, int start, Node startNode) {
+            int len = word.length();
+            Node node = startNode;
+            for (int i = start; i < len; i++) {
+                char c = word.charAt(i);
+                if (c == '.') {
+                    for (char ch = 'a'; ch <= 'z'; ch++) {
+                        if (!node.nextChars.containsKey(ch)) {
+                            continue;
+                        }
+                        if (search(word, i + 1, node.nextChars.get(ch))) {
+                            return true;
+                        }
                     }
-                    node = node.nextChars.get(c);
+                    return false;
                 }
+                if (!node.nextChars.containsKey(c)) {
+                    return false;
+                }
+                node = node.nextChars.get(c);
+            }
+            return node.isEndOfWord;
+        }
+    }
+
+    /**
+     * 添加与搜索单词 - 数据结构设计
+     * 简洁版 DFS
+     */
+    class WordDictionaryConciseDFS {
+        public class Node {
+            char ch;
+            Map<Character, Node> nextChars;
+            boolean isEndOfWord;
+
+            public Node() {
+                this.nextChars = new HashMap<>();
+                this.isEndOfWord = false;
+            }
+
+            public Node(char ch) {
+                this.ch = ch;
+                this.nextChars = new HashMap<>();
+                this.isEndOfWord = false;
+            }
+
+            public Node(char ch, boolean isEndOfWord) {
+                this.ch = ch;
+                this.nextChars = new HashMap<>();
+                this.isEndOfWord = isEndOfWord;
             }
         }
+
+        private Node root;
+
+        public WordDictionaryConciseDFS() {
+            this.root = new Node();
+            root.nextChars.put('*', new Node());
+        }
+
+        public void addWord(String word) {
+            Node node = root;
+            int len = word.length();
+            for (int i = 0; i < len; i++) {
+                char ch = word.charAt(i);
+                if (node.nextChars.containsKey(ch)) {
+                    node = node.nextChars.get(ch);
+                    continue;
+                }
+                Node newNode = new Node(ch);
+                node.nextChars.put(ch, newNode);
+                node = newNode;
+            }
+            node.isEndOfWord = true;
+        }
+
+        public boolean search(String word) {
+            return dfs(word, 0, root);
+        }
+
+        private boolean dfs(String word, int index, Node node) {
+            if (index == word.length()) {
+                return node.isEndOfWord;
+            }
+            char ch = word.charAt(index);
+            if (ch == '.') {
+                for (Node child : node.nextChars.values()) {
+                    if (dfs(word, index + 1, child)) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                if (!node.nextChars.containsKey(ch)) {
+                    return false;
+                }
+                return dfs(word, index + 1, node.nextChars.get(ch));
+            }
+        }
+    }
+
+    /**
+     * N皇后 II
+     * 直接把N皇后那题返回的list的size返回就可以了
+     */
+    public int totalNQueens(int n) {
+        return solveNQueens(n).size();
+    }
+
+    private List<List<String>> solveNQueens(int n) {
+        
     }
 }
