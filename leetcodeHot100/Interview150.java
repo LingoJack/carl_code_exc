@@ -3045,8 +3045,41 @@ public class Interview150 {
 
     /**
      * H指数
+     * 做出来了
+     * 但是也提醒了我二分的模板必须要尽快弄熟悉
      */
     public int hIndex(int[] citations) {
-        
+        int sum = 0;
+        int max = citations[0];
+        Arrays.sort(citations);
+        for (int citation : citations) {
+            sum += citation;
+            max = Math.max(max, citation);
+        }
+        while (max >= 0) {
+            if (max * max <= sum && max <= citations.length) {
+                int score = max;
+                if (citations.length - findInsertPosInAscOrderByBinarySearch(citations, score) >= max) {
+                    return max;
+                }
+            }
+            max--;
+        }
+        return 0;
+    }
+
+    private int findInsertPosInAscOrderByBinarySearch(int[] nums, int target) {
+        // 1 2 3 6 8
+        // 5
+        int lt = 0, rt = nums.length - 1;
+        while (lt < rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                rt = mid;
+            }
+        }
+        return lt;
     }
 }
