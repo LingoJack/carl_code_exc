@@ -7,9 +7,11 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
@@ -2264,8 +2266,578 @@ public class Interview150 {
 
     /**
      * 蛇梯棋
+     * 没做出来
      */
     public int snakesAndLadders(int[][] board) {
+        int row = board.length;
+        int col = board[0].length;
+        int[] line = new int[row * col + 1];
+        boolean asc = true;
+        int idx = 1;
+        for (int i = row - 1; i >= 0; i--) {
+            if (asc) {
+                for (int j = 0; j < col; j++) {
+                    line[idx++] = board[i][j];
+                }
+                asc = false;
+            } else {
+                for (int j = col - 1; j >= 0; j--) {
+                    line[idx++] = board[i][j];
+                }
+                asc = true;
+            }
+        }
+        // BFS 初始化
+        Deque<Integer> queue = new ArrayDeque<>();
+        Set<Integer> visited = new HashSet<>();
+        queue.offer(1); // 起点
+        visited.add(1);
+        int steps = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int position = queue.poll();
+                if (position == row * col) {
+                    return steps;
+                }
+                // 模拟掷骰子，尝试移动 1 到 6 步
+                for (int increment = 1; increment <= 6; increment++) {
+                    int next = position + increment;
+                    // 超过棋盘范围，跳过
+                    if (next > row * col) {
+                        continue;
+                    }
+                    // 如果有梯子或蛇，跳转到目标位置
+                    if (line[next] != -1) {
+                        next = line[next];
+                    }
+                    // 如果该位置未访问过，加入队列
+                    if (!visited.contains(next)) {
+                        queue.offer(next);
+                        visited.add(next);
+                    }
+                }
+            }
+            steps++; // 每一轮掷骰子算一步
+        }
+        return -1;
+    }
+
+    /**
+     * 文本左右对齐
+     * 没做出来，主要是单词间空格的均匀分配和最后一行考虑不周
+     * 而且不知道String有方便的repeat API
+     * 参考了答案的空格分配思路以后也是做出来了
+     * 空格分配的思路这里就是取余，然后一个一个多加一格
+     */
+    public List<String> fullJustify(String[] words, int maxWidth) {
+        StringBuilder sb = new StringBuilder();
+        Deque<String> wordQueue = new ArrayDeque<>();
+        Deque<String> spaceQueue = new ArrayDeque<>();
+        List<String> res = new ArrayList<>();
+        int wordLength = 0;
+        for (String word : words) {
+            if (wordLength + wordQueue.size() + word.length() > maxWidth) {
+                int gapCount = wordQueue.size() == 1 ? 1 : wordQueue.size() - 1;
+                String spaceUnit = " ".repeat((maxWidth - wordLength) / gapCount);
+                int extraSpaceCount = (maxWidth - wordLength) % gapCount;
+                sb.setLength(0);
+                for (int i = 0; i < gapCount; i++) {
+                    sb.append(spaceUnit);
+                    if (i < extraSpaceCount) {
+                        sb.append(' ');
+                    }
+                    spaceQueue.offer(sb.toString());
+                    sb.setLength(0);
+                }
+                while (!wordQueue.isEmpty()) {
+                    sb.append(wordQueue.poll()).append(spaceQueue.isEmpty() ? "" : spaceQueue.poll());
+                }
+                res.add(sb.toString());
+                sb.setLength(0);
+                wordLength = 0;
+            }
+            wordLength += word.length();
+            wordQueue.offer(word);
+        }
+        sb.setLength(0);
+        while (!wordQueue.isEmpty()) {
+            String word = wordQueue.poll();
+            sb.append(word).append(wordQueue.isEmpty() ? "" : " ");
+        }
+        while (sb.length() < maxWidth) {
+            sb.append(' ');
+        }
+        res.add(sb.toString());
+        return res;
+    }
+
+    /**
+     * 文本左右对齐
+     * 非常优雅的写法
+     */
+    public List<String> fullJustifyCorrectAns(String[] words, int maxWidth) {
+        List<String> result = new ArrayList<>();
+        List<String> currentLine = new ArrayList<>();
+        int currentLength = 0;
+        for (String word : words) {
+            // 检查当前单词是否可以加入当前行
+            if (currentLength + word.length() + currentLine.size() > maxWidth) {
+                // 当前行已满，进行对齐处理
+                if (currentLine.size() == 1) {
+                    // 特殊情况：当前行只有一个单词，左对齐
+                    String line = currentLine.get(0);
+                    line += " ".repeat(maxWidth - line.length());
+                    result.add(line);
+                } else {
+                    // 计算空格总数和每个间隙的空格数
+                    int totalSpaces = maxWidth - currentLength;
+                    int spaceCount = currentLine.size() - 1;
+                    int spacePerGap = totalSpaces / spaceCount;
+                    int extraSpaces = totalSpaces % spaceCount;
+                    // 构造对齐后的行
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < currentLine.size(); i++) {
+                        sb.append(currentLine.get(i));
+                        if (i < currentLine.size() - 1) {
+                            sb.append(" ".repeat(spacePerGap + (i < extraSpaces ? 1 : 0)));
+                        }
+                    }
+                    result.add(sb.toString());
+                }
+                // 重置当前行
+                currentLine.clear();
+                currentLength = 0;
+            }
+            // 将当前单词加入当前行
+            currentLine.add(word);
+            currentLength += word.length();
+        }
+        // 处理最后一行（左对齐）
+        StringBuilder lastLine = new StringBuilder();
+        for (int i = 0; i < currentLine.size(); i++) {
+            lastLine.append(currentLine.get(i));
+            if (i < currentLine.size() - 1) {
+                lastLine.append(" ");
+            }
+        }
+        lastLine.append(" ".repeat(maxWidth - lastLine.length()));
+        result.add(lastLine.toString());
+        return result;
+    }
+
+    /**
+     * 串联所有单词的子串
+     * 超时了，或许可以改变思路为活动窗口，窗口一次移动一个wordLen
+     * 经过我的修改，没有超时，击败68%
+     */
+    public List<Integer> findSubstring(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        Map<String, Integer> need = new HashMap<>();
+        for (String word : words) {
+            need.put(word, need.getOrDefault(word, 0) + 1);
+        }
+        int wordCount = words.length;
+        int wordLen = words[0].length();
+        int totalLen = wordLen * wordCount;
+        for (int i = 0; i < wordLen; i++) {
+            int valid = 0;
+            Map<String, Integer> have = new HashMap<>();
+            for (int start = i, wordStart = start; wordStart + wordLen - 1 < Math.min(
+                    start + totalLen, s.length()); wordStart += wordLen) {
+                int wordEnd = wordStart + wordLen - 1;
+                String word = s.substring(wordStart, wordEnd + 1);
+                have.put(word, have.getOrDefault(word, 0) + 1);
+                if (need.containsKey(word) && have.get(word).equals(need.get(word))) {
+                    valid++;
+                }
+            }
+            if (valid == need.size()) {
+                res.add(i);
+            }
+            for (int start = i + wordLen; start + totalLen - 1 < s.length(); start += wordLen) {
+                String firstWord = s.substring(start - wordLen, start);
+                String lastWord = s.substring(start + totalLen - wordLen, start + totalLen);
+                if (need.containsKey(firstWord)) {
+                    if (have.get(firstWord).equals(need.get(firstWord))) {
+                        valid--;
+                    }
+                    have.put(firstWord, have.getOrDefault(firstWord, 0) - 1);
+                }
+                if (need.containsKey(lastWord)) {
+                    have.put(lastWord, have.getOrDefault(lastWord, 0) + 1);
+                    if (have.get(lastWord).equals(need.get(lastWord))) {
+                        valid++;
+                    }
+                }
+                if (valid == need.size()) {
+                    res.add(start);
+                }
+            }
+        }
+        return res;
+    }
+
+    public List<Integer> findSubstringTimeExceed(String s, String[] words) {
+        List<Integer> res = new ArrayList<>();
+        Map<String, Integer> need = new HashMap<>();
+        for (String word : words) {
+            need.put(word, need.getOrDefault(word, 0) + 1);
+        }
+        int wordCount = words.length;
+        int wordLen = words[0].length();
+        int totalLen = wordLen * wordCount;
+        Map<String, Integer> have = new HashMap<>();
+        for (int start = 0; start + totalLen - 1 < s.length(); start++) {
+            int valid = 0;
+            for (int wordStart = start; wordStart + wordLen - 1 < start + totalLen; wordStart += wordLen) {
+                int wordEnd = wordStart + wordLen - 1;
+                String word = s.substring(wordStart, wordEnd + 1);
+                if (!need.containsKey(word)) {
+                    break;
+                }
+                have.put(word, have.getOrDefault(word, 0) + 1);
+                if (have.get(word).equals(need.get(word))) {
+                    valid++;
+                }
+            }
+            have.clear();
+            if (valid == need.size()) {
+                res.add(start);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 有效的数独
+     */
+    public boolean isValidSudoku(char[][] board) {
+        int row = board.length, col = board[0].length;
+        boolean[][] groupExist = new boolean[9][10];
+        boolean[][] rowExist = new boolean[9][10];
+        boolean[][] colExist = new boolean[9][10];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (board[i][j] == '.') {
+                    continue;
+                }
+                int num = board[i][j] - '0';
+                int groupIdx = getGroupIdx(i, j);
+                if (rowExist[i][num] || colExist[j][num] || groupExist[groupIdx][num]) {
+                    return false;
+                }
+                rowExist[i][num] = true;
+                colExist[j][num] = true;
+                groupExist[groupIdx][num] = true;
+            }
+        }
+        return true;
+    }
+
+    private int getGroupIdx(int rowIdx, int colIdx) {
+        return (rowIdx / 3) * 3 + (colIdx / 3);
+    }
+
+    /**
+     * 汇总区间
+     */
+    public List<String> summaryRanges(int[] nums) {
+        StringBuilder sb = new StringBuilder();
+        List<String> res = new ArrayList<>();
+        Integer expected = null;
+        boolean continued = false;
+        for (int num : nums) {
+            if (expected == null) {
+                expected = num + 1;
+                sb.append(num);
+            } else if (expected == num) {
+                expected++;
+                if (!continued) {
+                    sb.append("->");
+                }
+                continued = true;
+            } else {
+                if (continued) {
+                    sb.append(expected - 1);
+                }
+                if (!sb.isEmpty()) {
+                    res.add(sb.toString());
+                    sb.setLength(0);
+                }
+                sb.append(num);
+                expected = num + 1;
+                continued = false;
+            }
+        }
+        if (!sb.isEmpty()) {
+            if (continued) {
+                sb.append(expected - 1);
+            }
+            res.add(sb.toString());
+            sb.setLength(0);
+        }
+        return res;
+    }
+
+    /**
+     * 最小基因变化
+     * 我终于自己做出来了
+     * 核心就是想到计算两个字符串的差值，startGene每次只能到diff == 1的bankGene上，就这样走下去
+     * dfs可解
+     */
+    public int minMutation(String startGene, String endGene, String[] bank) {
+        return dfs(startGene, endGene, bank, new boolean[bank.length], 0);
+    }
+
+    private int dfs(String source, String target, String[] bank, boolean[] used, int count) {
+        if (source.equals(target)) {
+            return count;
+        }
+        boolean hasFound = false;
+        int min = Integer.MAX_VALUE;
+        for (int i = 0; i < bank.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            int diff = diff(source, bank[i]);
+            if (diff == 1) {
+                used[i] = true;
+                int res = dfs(bank[i], target, bank, used, count + 1);
+                if (res != -1) {
+                    min = Math.min(min, res);
+                    hasFound = true;
+                }
+                used[i] = false;
+            }
+        }
+        return hasFound ? min : -1;
+    }
+
+    private int diff(String s1, String s2) {
+        if (s1.length() != s2.length()) {
+            return -1;
+        }
+        int len = s1.length();
+        int count = 0;
+        for (int i = 0; i < len; i++) {
+            if (s1.charAt(i) != s2.charAt(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 单词接龙
+     * 和最小基因变化几乎是一样的代码
+     * 只是这里明确了建图，BFS解法
+     * 无论是这里的BFS还是下面的DFS，判断两个节点有连接的依据都是两个单词差异为一个字符
+     * 但是这么做的效率很低，可以考虑针对单词建图
+     */
+    public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        Map<String, List<String>> map = new HashMap<>();
+        int len = wordList.size();
+        for (int i = 0; i < len; i++) {
+            String word = wordList.get(i);
+            if (diff(beginWord, word) == 1) {
+                List<String> list = map.getOrDefault(beginWord, new ArrayList<>());
+                list.add(word);
+                map.put(beginWord, list);
+            }
+        }
+        for (int i = 0; i < len; i++) {
+            String word1 = wordList.get(i);
+            List<String> list = map.getOrDefault(word1, new ArrayList<>());
+            for (int j = 0; j < len; j++) {
+                if (i == j) {
+                    continue;
+                }
+                String word2 = wordList.get(j);
+                if (diff(word1, word2) == 1) {
+                    list.add(word2);
+                }
+            }
+            map.put(word1, list);
+        }
+        Deque<String> queue = new ArrayDeque<>();
+        queue.offer(beginWord);
+        Set<String> set = new HashSet<>();
+        int count = 1;
+        while (!queue.isEmpty()) {
+            count++;
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                String wordFrom = queue.poll();
+                List<String> list = map.getOrDefault(wordFrom, new ArrayList<>());
+                for (String wordTo : list) {
+                    if (wordTo.equals(endWord)) {
+                        return count;
+                    }
+                    if (!set.contains(wordTo)) {
+                        queue.offer(wordTo);
+                        set.add(wordTo);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    public int ladderLengthBFSFasterMaybe(String beginWord, String endWord, List<String> wordList) {
+        Map<String, List<Integer>> map = new HashMap<>();
+        wordList.add(0, beginWord);
+        int len = wordList.size();
+        for (int i = 0; i < len; i++) {
+            String word1 = wordList.get(i);
+            List<Integer> list = map.getOrDefault(word1, new ArrayList<>());
+            for (int j = 0; j < len; j++) {
+                if (i == j) {
+                    continue;
+                }
+                String word2 = wordList.get(j);
+                if (diff(word1, word2) == 1) {
+                    list.add(j);
+                }
+            }
+            map.put(word1, list);
+        }
+        Deque<Integer> queue = new ArrayDeque<>();
+        queue.offer(0);
+        boolean[] used = new boolean[len];
+        int count = 1;
+        while (!queue.isEmpty()) {
+            count++;
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                String wordFrom = wordList.get(queue.poll());
+                List<Integer> list = map.getOrDefault(wordFrom, new ArrayList<>());
+                for (Integer wordToIdx : list) {
+                    String wordTo = wordList.get(wordToIdx);
+                    if (wordTo.equals(endWord)) {
+                        return count;
+                    }
+                    if (!used[wordToIdx]) {
+                        queue.offer(wordToIdx);
+                        used[wordToIdx] = true;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    public int ladderLengthDFSTimeExceed(String beginWord, String endWord, List<String> wordList) {
+        Map<String, List<Integer>> map = new HashMap<>();
+        wordList.add(0, beginWord);
+        int len = wordList.size();
+        for (int i = 0; i < len; i++) {
+            String word1 = wordList.get(i);
+            List<Integer> list = map.getOrDefault(word1, new ArrayList<>());
+            for (int j = 0; j < len; j++) {
+                if (i == j) {
+                    continue;
+                }
+                String word2 = wordList.get(j);
+                if (diff(word1, word2) == 1) {
+                    list.add(j);
+                }
+            }
+            map.put(word1, list);
+        }
+        return dfs(beginWord, endWord, map, wordList, new boolean[len], 1);
+    }
+
+    private int dfs(String start, String end, Map<String, List<Integer>> map, List<String> wordList, boolean[] used,
+            int count) {
+        if (start.equals(end)) {
+            return count;
+        }
+        int min = Integer.MAX_VALUE;
+        boolean hasFound = false;
+        List<Integer> words = map.getOrDefault(start, new ArrayList<>());
+        for (Integer idx : words) {
+            String word = wordList.get(idx);
+            if (used[idx]) {
+                continue;
+            }
+            used[idx] = true;
+            int res = dfs(word, end, map, wordList, used, count + 1);
+            if (res != 0) {
+                hasFound = true;
+                min = Math.min(min, res);
+                System.out.println(String.format("%s -> %s, min = %s, hasFound = %s", word, end, min, hasFound));
+            }
+            used[idx] = false;
+        }
+        return hasFound ? min : 0;
+    }
+
+    /**
+     * 单词接龙，但是根据单词和虚拟模板节点来建图
+     * 如hit可以和模板*it，h*t，hi*虚拟节点建立连接，具体逻辑看addEdge方法
+     */
+    public int ladderLengthBetterSolution(String beginWord, String endWord, List<String> wordList) {
+        if (beginWord.equals(endWord)) {
+            return 1;
+        }
+        Map<String, List<String>> map = new HashMap<>();
+        for (String word : wordList) {
+            interconnectWithTemplate(word, map);
+        }
+        interconnectWithTemplate(beginWord, map);
+        Map<String, Integer> step = new HashMap<>();
+        Queue<String> queue = new LinkedList<>();
+        queue.offer(beginWord);
+        step.put(beginWord, 0);
+        while (!queue.isEmpty()) {
+            String word = queue.poll();
+            if (word.equals(endWord)) {
+                return step.get(word) / 2 + 1;
+            }
+            for (String template : map.get(word)) {
+                if (!step.containsKey(template)) {
+                    step.put(template, step.get(word) + 1);
+                    queue.offer(template);
+                }
+            }
+        }
+        return 0;
+    }
+
+    private void interconnectWithTemplate(String word, Map<String, List<String>> map) {
+        if (!map.containsKey(word)) {
+            map.put(word, new ArrayList<>());
+        }
+        char[] wordChars = word.toCharArray();
+        for (int i = 0; i < wordChars.length; i++) {
+            char replacedChar = wordChars[i];
+            wordChars[i] = '*';
+            String template = new String(wordChars);
+            map.get(word).add(template);
+            if (!map.containsKey(template)) {
+                map.put(template, new ArrayList<>());
+            }
+            map.get(template).add(word);
+            wordChars[i] = replacedChar;
+        }
+    }
+
+    /**
+     * 添加与搜索单词 - 数据结构设计
+     */
+    class WordDictionary {
+
+        public WordDictionary() {
+            
+        }
         
+        public void addWord(String word) {
+            
+        }
+        
+        public boolean search(String word) {
+            
+        }
     }
 }
