@@ -2989,6 +2989,64 @@ public class Interview150 {
     }
 
     private List<List<String>> solveNQueens(int n) {
+        boolean[][] grid = new boolean[n][n];
+        List<List<String>> res = new ArrayList<>();
+        dfs(res, grid, 0);
+        return res;
+    }
+
+    private void dfs(List<List<String>> res, boolean[][] grid, int rowIdx) {
+        int row = grid.length, col = grid[0].length;
+        if (rowIdx == row) {
+            StringBuilder sb = new StringBuilder();
+            List<String> list = new ArrayList<>();
+            for (boolean[] line : grid) {
+                sb.setLength(0);
+                for (boolean isQueen : line) {
+                    sb.append(isQueen ? 'Q' : '.');
+                }
+                list.add(sb.toString());
+            }
+            res.add(list);
+            return;
+        }
+        for (int colIdx = 0; colIdx < col; colIdx++) {
+            boolean shouldContinue = false;
+            for (int checkRow = rowIdx, checkCol = colIdx; valid(row, col, checkRow, checkCol)
+                    && !shouldContinue; checkRow--) {
+                if (grid[checkRow][checkCol]) {
+                    shouldContinue = true;
+                }
+            }
+            for (int checkRow = rowIdx, checkCol = colIdx; valid(row, col, checkRow,
+                    checkCol) && !shouldContinue; checkRow--, checkCol--) {
+                if (grid[checkRow][checkCol]) {
+                    shouldContinue = true;
+                }
+            }
+            for (int checkRow = rowIdx, checkCol = colIdx; valid(row, col, checkRow,
+                    checkCol) && !shouldContinue; checkRow--, checkCol++) {
+                if (grid[checkRow][checkCol]) {
+                    shouldContinue = true;
+                }
+            }
+            if (shouldContinue) {
+                continue;
+            }
+            grid[rowIdx][colIdx] = true;
+            dfs(res, grid, rowIdx + 1);
+            grid[rowIdx][colIdx] = false;
+        }
+    }
+
+    private boolean valid(int row, int col, int rowIdx, int colIdx) {
+        return (rowIdx >= 0 && rowIdx < row) && (colIdx >= 0 && colIdx < col);
+    }
+
+    /**
+     * H指数
+     */
+    public int hIndex(int[] citations) {
         
     }
 }
