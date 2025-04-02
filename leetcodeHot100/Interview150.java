@@ -3279,4 +3279,136 @@ public class Interview150 {
         // 注意这里返回的是lt - 1
         return lt - 1;
     }
+
+    /**
+     * 建立四叉树
+     */
+    public class Leetcode427Solution {
+        class Node {
+            public boolean val;
+            public boolean isLeaf;
+            public Node topLeft;
+            public Node topRight;
+            public Node bottomLeft;
+            public Node bottomRight;
+
+            public Node() {
+                this.val = false;
+                this.isLeaf = false;
+                this.topLeft = null;
+                this.topRight = null;
+                this.bottomLeft = null;
+                this.bottomRight = null;
+            }
+
+            public Node(boolean val, boolean isLeaf) {
+                this.val = val;
+                this.isLeaf = isLeaf;
+                this.topLeft = null;
+                this.topRight = null;
+                this.bottomLeft = null;
+                this.bottomRight = null;
+            }
+
+            public Node(boolean val, boolean isLeaf, Node topLeft, Node topRight, Node bottomLeft, Node bottomRight) {
+                this.val = val;
+                this.isLeaf = isLeaf;
+                this.topLeft = topLeft;
+                this.topRight = topRight;
+                this.bottomLeft = bottomLeft;
+                this.bottomRight = bottomRight;
+            }
+        }
+
+        public Node construct(int[][] grid) {
+            int n = grid.length;
+            return dfs(grid, 0, 0, n);
+        }
+
+        private Node dfs(int[][] grid, int rowIdx, int colIdx, int len) {
+            if (len == 0) {
+                return null;
+            }
+            for (int i = 0; i < len; i++) {
+                for (int j = 0; j < len; j++) {
+                    int x = rowIdx + i;
+                    int y = colIdx + j;
+                    if (grid[x][y] != grid[rowIdx][colIdx]) {
+                        int half = len >> 1;
+                        Node node = new Node(grid[rowIdx][colIdx] == 1, false);
+                        node.topLeft = dfs(grid, rowIdx, colIdx, half);
+                        node.topRight = dfs(grid, rowIdx, colIdx + half, half);
+                        node.bottomLeft = dfs(grid, rowIdx + half, colIdx, half);
+                        node.bottomRight = dfs(grid, rowIdx + half, colIdx + half, half);
+                        return node;
+                    }
+                }
+            }
+            Node node = new Node(grid[rowIdx][colIdx] == 1, true);
+            return node;
+        }
+    }
+
+    /**
+     * 环形子数组最大和
+     * Kadane算法是什么？
+     * 没做出来，这题的解法很多，也都很巧妙
+     * 关键是认识到，这个最大子数组要么是中间，要么是两侧，如果是两侧，就等价于sum - 最小子数组和
+     * 或者是转换为长度2n的数组，然后使用单调队列去找一个长度不超过n的最大子数组
+     */
+    public int maxSubarraySumCircular(int[] nums) {
+        int len = nums.length;
+        int sum = 0;
+        int maxSum = nums[0];
+        int minSum = nums[0];
+        int curMinSum = 0;
+        int curMaxSum = 0;
+        for (int i = 0; i < len; i++) {
+            sum += nums[i];
+            if (curMaxSum < 0) {
+                curMaxSum = 0;
+            }
+            curMaxSum += nums[i];
+            maxSum = Math.max(maxSum, curMaxSum);
+            if (curMinSum > 0) {
+                curMinSum = 0;
+            }
+            curMinSum += nums[i];
+            minSum = Math.min(minSum, curMinSum);
+        }
+        // 这里因为sum - minSum可能为0，但是要求必须要取一个元素，所以需要做校验
+        return sum == minSum ? maxSum : Math.max(maxSum, sum - minSum);
+    }
+
+    /**
+     * 环形子数组最大和
+     * 单调队列解法，十分巧妙，值得学习
+     * 和滑动窗口的最大值那题异曲同工
+     */
+    public int maxSubarraySumCircularWithMonotonicQueue(int[] nums) {
+        int len = nums.length;
+        Deque<int[]> queue = new ArrayDeque<int[]>();
+        int prefixSum = nums[0], res = nums[0];
+        queue.offerLast(new int[] { 0, prefixSum });
+        for (int i = 1; i < 2 * len; i++) {
+            while (!queue.isEmpty() && queue.peekFirst()[0] < i - len) {
+                queue.pollFirst();
+            }
+            prefixSum += nums[i % len];
+            res = Math.max(res, prefixSum - queue.peekFirst()[1]);
+            // 只允许放入更小的prefixSum
+            while (!queue.isEmpty() && queue.peekLast()[1] >= prefixSum) {
+                queue.pollLast();
+            }
+            queue.offerLast(new int[] { i, prefixSum });
+        }
+        return res;
+    }
+
+    /**
+     * 寻找峰值
+     */
+    public int findPeakElement(int[] nums) {
+
+    }
 }
