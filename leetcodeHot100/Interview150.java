@@ -3434,8 +3434,8 @@ public class Interview150 {
      */
     public int findPeakElementV2(int[] nums) {
         // lt左边的位于极大值点左边，rt右边的位于极大值及其右边
-        int lt = 0, rt = nums.length - 1;
-        while (lt + 1 <= rt) {
+        int lt = -1, rt = nums.length - 1;
+        while (lt + 1 < rt) {
             int mid = (lt + rt) >> 1;
             if (nums[mid] < nums[mid + 1]) {
                 lt = mid;
@@ -3445,6 +3445,6 @@ public class Interview150 {
                 rt = mid;
             }
         }
-        return rt + 1;
+        return rt;
     }
 }
