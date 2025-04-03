@@ -3111,6 +3111,9 @@ public class Interview150 {
      * 二分模板系列以及滑动窗口系列，可以参考：
      * https://labuladong.online/algo/essential-technique/binary-search-framework/
      * https://labuladong.online/algo/essential-technique/sliding-window-framework/
+     * while内部判断的条件是区间内是否包含数据
+     * 采用不同的闭区间、开区间、左闭右开区间的判断条件写法是不同的：
+     * lt <= rt、lt + 1 < rt、lt < rt
      */
     private int findTargetAsc(int[] nums, int target) {
         int lt = 0, rt = nums.length - 1;
@@ -3135,6 +3138,8 @@ public class Interview150 {
      * 如[1, 1], target = 2
      * 返回 idx = 2
      * 即，若target不存在于数组中，则返回的idx为插入target后target应在的索引
+     * 对于lt和rt的定义可以从红蓝染色法的角度去理解
+     * 另外，其实rightBound也可以通过target的转换来实现
      */
     private int leftBoundAsc(int[] nums, int target) {
         int lt = 0, rt = nums.length - 1;
@@ -3221,14 +3226,6 @@ public class Interview150 {
         }
         // 返回右指针
         return rt;
-    }
-
-    public static void main(String[] args) {
-        Interview150 i = new Interview150();
-        int[] nums = new int[] { 9, 3, 3, 3, 2, 0 };
-        int target = 3;
-        System.out.println(i.leftBoundDesc(nums, target));
-        System.out.println(i.rightBoundDesc(nums, target));
     }
 
     /**
@@ -3407,8 +3404,11 @@ public class Interview150 {
 
     /**
      * 寻找峰值
+     * 没做出来
+     * 需要用到红蓝染色法
+     * 红蓝染色的核心是循环不变量
      */
     public int findPeakElement(int[] nums) {
-
+        
     }
 }
