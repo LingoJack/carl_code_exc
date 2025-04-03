@@ -3407,8 +3407,44 @@ public class Interview150 {
      * 没做出来
      * 需要用到红蓝染色法
      * 红蓝染色的核心是循环不变量
+     * 满足题目要求的为蓝色，在rt
+     * 不满足的为红色，在lt
+     * 红蓝染色的一个核心是：
+     * 二分区间[lt, rt]内的是没有染色的，外的是染色的，所以这里才是mid + 1, mid - 1
      */
     public int findPeakElement(int[] nums) {
-        
+        // lt左边的位于极大值点左边，rt右边的位于极大值及其右边
+        int lt = 0, rt = nums.length - 2;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < nums[mid + 1]) {
+                lt = mid + 1;
+            } else if (nums[mid] > nums[mid + 1]) {
+                rt = mid - 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return rt + 1;
+    }
+
+    /**
+     * 寻找峰值
+     * 开区间的写法
+     */
+    public int findPeakElementV2(int[] nums) {
+        // lt左边的位于极大值点左边，rt右边的位于极大值及其右边
+        int lt = 0, rt = nums.length - 1;
+        while (lt + 1 <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < nums[mid + 1]) {
+                lt = mid;
+            } else if (nums[mid] > nums[mid + 1]) {
+                rt = mid;
+            } else {
+                rt = mid;
+            }
+        }
+        return rt + 1;
     }
 }
