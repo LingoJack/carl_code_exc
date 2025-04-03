@@ -1,5 +1,6 @@
 package leetcodeHot100;
 
+import java.security.InvalidKeyException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3446,5 +3447,71 @@ public class Interview150 {
             }
         }
         return rt;
+    }
+
+    /**
+     * 查找和最小的K对数字
+     * 超时了，后面想到了极端情况，分析可以得知只看nums1, nums2的前k个元素就可以得出答案
+     */
+    public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k) {
+        List<List<Integer>> res = new ArrayList<>();
+        PriorityQueue<int[]> priorityQueue = new PriorityQueue<>(
+                (a, b) -> Integer.compare(nums1[b[0]] + nums2[b[1]], nums1[a[0]] + nums2[a[1]]));
+        for (int i = 0; i < Math.min(nums1.length, k); i++) {
+            // 进行适当的剪枝
+            if (priorityQueue.size() == k
+                    && (nums1[priorityQueue.peek()[0]] + nums2[priorityQueue.peek()[1]]) < nums1[i] + nums2[0]) {
+                break;
+            }
+            for (int j = 0; j < Math.min(nums2.length, k); j++) {
+                int num = nums1[i] + nums2[j];
+                int[] pair = priorityQueue.peek();
+                int curMax = pair == null ? Integer.MIN_VALUE : nums1[pair[0]] + nums2[pair[1]];
+                if ((priorityQueue.size() < k)) {
+                    priorityQueue.offer(new int[] { i, j });
+                } else if (curMax > num) {
+                    priorityQueue.poll();
+                    priorityQueue.offer(new int[] { i, j });
+                } else if (curMax < num) {
+                    break;
+                }
+            }
+        }
+        for (int[] pair : priorityQueue) {
+            List<Integer> list = new ArrayList<>();
+            list.add(nums1[pair[0]]);
+            list.add(nums2[pair[1]]);
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 查找和最小的K对数字
+     * 更好的解法，但是有待研究
+     * TODO
+     */
+    public List<List<Integer>> kSmallestPairsBetterSolution(int[] nums1, int[] nums2, int k) {
+        PriorityQueue<int[]> priorityQueue = new PriorityQueue<>(k, (o1, o2) -> {
+            return nums1[o1[0]] + nums2[o1[1]] - nums1[o2[0]] - nums2[o2[1]];
+        });
+        List<List<Integer>> ans = new ArrayList<>();
+        int l1 = nums1.length;
+        int l2 = nums2.length;
+        for (int i = 0; i < Math.min(l1, k); i++) {
+            priorityQueue.offer(new int[] { i, 0 });
+        }
+        while (k > 0 && !priorityQueue.isEmpty()) {
+            int[] idxPair = priorityQueue.poll();
+            List<Integer> list = new ArrayList<>();
+            list.add(nums1[idxPair[0]]);
+            list.add(nums2[idxPair[1]]);
+            ans.add(list);
+            if (idxPair[1] + 1 < l2) {
+                priorityQueue.offer(new int[] { idxPair[0], idxPair[1] + 1 });
+            }
+            k--;
+        }
+        return ans;
     }
 }
