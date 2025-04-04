@@ -3488,30 +3488,85 @@ public class Interview150 {
 
     /**
      * 查找和最小的K对数字
-     * 更好的解法，但是有待研究
-     * TODO
+     * 这是更好的解法
+     * 思路十分巧妙，而且不好想
+     * 核心就是以nums1作为参考
+     * nums1[i], nums2[0]一定是nums1[i], nums2[j]中最小的
+     * 所以先把所有nums1[i], nums2[0]放入最小堆中，然后每次取一次堆顶的元素出来然后再把
+     * 对应的nums1[i]，下一个nums2的元素放进去
+     * 类似多路归并
      */
     public List<List<Integer>> kSmallestPairsBetterSolution(int[] nums1, int[] nums2, int k) {
         PriorityQueue<int[]> priorityQueue = new PriorityQueue<>(k, (o1, o2) -> {
             return nums1[o1[0]] + nums2[o1[1]] - nums1[o2[0]] - nums2[o2[1]];
         });
-        List<List<Integer>> ans = new ArrayList<>();
+        List<List<Integer>> res = new ArrayList<>();
         int l1 = nums1.length;
         int l2 = nums2.length;
         for (int i = 0; i < Math.min(l1, k); i++) {
             priorityQueue.offer(new int[] { i, 0 });
         }
-        while (k > 0 && !priorityQueue.isEmpty()) {
-            int[] idxPair = priorityQueue.poll();
+        while (res.size() < k && !priorityQueue.isEmpty()) {
+            int[] pair = priorityQueue.poll();
             List<Integer> list = new ArrayList<>();
-            list.add(nums1[idxPair[0]]);
-            list.add(nums2[idxPair[1]]);
-            ans.add(list);
-            if (idxPair[1] + 1 < l2) {
-                priorityQueue.offer(new int[] { idxPair[0], idxPair[1] + 1 });
+            list.add(nums1[pair[0]]);
+            list.add(nums2[pair[1]]);
+            res.add(list);
+            if (pair[1] + 1 < l2) {
+                priorityQueue.offer(new int[] { pair[0], pair[1] + 1 });
             }
-            k--;
         }
-        return ans;
+        return res;
+    }
+
+    /**
+     * 情侣牵手
+     * 应该使用并查集去做
+     */
+    public int minSwapsCouples(int[] row) {
+        int len = row.length;
+        int coupleNum = len >> 1;
+        UnionFindSet unionFindSet = new UnionFindSet(coupleNum);
+        for (int i = 0; i < len; i += 2) {
+            unionFindSet.union(row[i] / 2, row[i + 1] / 2);
+        }
+        return coupleNum - unionFindSet.getConnectedComponentNum();
+    }
+
+    public class UnionFindSet {
+
+        private int connectedComponentNum;
+
+        private int[] parent;
+
+        public UnionFindSet(int connectedComponentNum) {
+            this.connectedComponentNum = connectedComponentNum;
+            parent = new int[connectedComponentNum];
+            for (int i = 0; i < connectedComponentNum; i++) {
+                parent[i] = i;
+            }
+        }
+
+        public int getConnectedComponentNum() {
+            return connectedComponentNum;
+        }
+
+        private int findRoot(int node) {
+            while (node != parent[node]) {
+                parent[node] = parent[parent[node]];
+                node = parent[node];
+            }
+            return node;
+        }
+
+        public void union(int node1, int node2) {
+            int root1 = findRoot(node1);
+            int root2 = findRoot(node2);
+            if (root1 == root2) {
+                return;
+            }
+            parent[root1] = root2;
+            connectedComponentNum--;
+        }
     }
 }
