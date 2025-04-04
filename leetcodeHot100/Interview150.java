@@ -3569,4 +3569,12 @@ public class Interview150 {
             connectedComponentNum--;
         }
     }
+
+    /**
+     * 二进制求和
+     */
+    public String addBinary(String a, String b) {
+        int l1 = a.length();
+        int l2 = b.length();
+    }
 }
