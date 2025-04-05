@@ -3570,11 +3570,161 @@ public class Interview150 {
         }
     }
 
+    public static void main(String[] args) {
+        Interview150 test = new Interview150();
+        System.out.println(test.addBinary("1", "0"));
+    }
+
     /**
      * 二进制求和
      */
     public String addBinary(String a, String b) {
         int l1 = a.length();
         int l2 = b.length();
+        int carry = 0;
+        int idx1 = l1 - 1, idx2 = l2 - 1;
+        StringBuilder sb = new StringBuilder();
+        while (idx1 >= 0 || idx2 >= 0 || carry != 0) {
+            int val = (idx1 >= 0 && a.charAt(idx1) == '1' ? 1 : 0)
+                    + (idx2 >= 0 && b.charAt(idx2) == '1' ? 1 : 0)
+                    + carry;
+            carry = val >> 1;
+            sb.append(val % 2);
+            idx1--;
+            idx2--;
+        }
+        return sb.reverse().toString();
+    }
+
+    /**
+     * 十进制数转二进制
+     */
+    private String toBinary(int num) {
+        StringBuilder sb = new StringBuilder();
+        int repl = num;
+        int base = 1;
+        while (repl >= base) {
+            repl -= base;
+            base *= 2;
+        }
+        while (base > 0) {
+            if (num >= base) {
+                num -= base;
+                sb.append('1');
+            } else {
+                sb.append('0');
+            }
+            base /= 2;
+        }
+        String res = sb.toString();
+        int zeroIdx = 0;
+        while (zeroIdx < res.length() - 1 && res.charAt(zeroIdx) == '0') {
+            zeroIdx++;
+        }
+        return res.substring(zeroIdx);
+    }
+
+    /**
+     * 颠倒二进制位
+     * 没做出来
+     * 位运算不熟练
+     * & 常常用来取某位数
+     * | 常常用来作位的叠加
+     */
+    public int reverseBits(int n) {
+        int res = 0;
+        for (int i = 0; i < 32 && n != 0; ++i) {
+            res |= (n & 1) << (31 - i);
+            n >>>= 1;
+        }
+        return res;
+    }
+
+    /**
+     * 位1的个数
+     * 也是做完上一题开悟了
+     */
+    public int hammingWeight(int num) {
+        int count = 0;
+        while (num > 0) {
+            if ((num & 1) == 1) {
+                count++;
+            }
+            ;
+            num >>= 1;
+        }
+        return count;
+    }
+
+    /**
+     * 只出现一次的数字II
+     * 这个解法十分巧妙，就是对于n个数字
+     * 对于每一位数位，只有可能为0或者1，为0的我们可以不管，因为原始值就是0
+     * 那么我们只需要找到出现了一次的数，哪些数位是1
+     * 我们可以考虑统计每一位数在该数位上的值的和，然后对三取余
+     * 如果余数不为0，说明只出现一次的那个数字在这一数位上是1
+     */
+    public int singleNumberII(int[] nums) {
+        int res = 0;
+        for (int i = 0; i < 32; ++i) {
+            int count = 0;
+            for (int num : nums) {
+                count += ((num >> i) & 1);
+            }
+            if (count % 3 != 0) {
+                res |= (1 << i);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 数字范围按位与
+     * 这个解法已经是我的极限了
+     * 但是过不了最后的几个测试用例
+     * 正解是通过右移找公共前缀
+     */
+    public int rangeBitwiseAndTimeExceed(int left, int right) {
+        int[] digits = new int[32];
+        Arrays.fill(digits, -1);
+        int count = 0;
+        for (int i = left; i <= right && count < 32; i++) {
+            int num = i;
+            for (int j = 0; j < 32 && count < 32; j++) {
+                if (digits[j] == 0) {
+                    num >>= 1;
+                    continue;
+                }
+                digits[j] = (num & 1) == 0 ? 0 : 1;
+                num >>= 1;
+                if (digits[j] == 0) {
+                    count++;
+                }
+            }
+        }
+        int res = 0;
+        int base = 1;
+        for (int i = 0; i < digits.length && digits[i] != -1; i++) {
+            res += base * digits[i];
+            base <<= 1;
+        }
+        return res;
+    }
+
+    /**
+     * 数字范围按位与
+     * 通过右移找公共前缀
+     * 不断右移 left 和 right，直到它们相等为止
+     * 此时，剩下的部分就是它们的公共前缀
+     * 然后将公共前缀左移回原来的位置，得到最终结果
+     */
+    public int rangeBitwiseAnd(int left, int right) {
+        int shift = 0;
+        while (left < right) {
+            left >>= 1;
+            right >>= 1;
+            shift++;
+        }
+        return left << shift;
     }
 }
