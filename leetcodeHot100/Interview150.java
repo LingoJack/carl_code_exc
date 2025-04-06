@@ -3727,4 +3727,181 @@ public class Interview150 {
         }
         return left << shift;
     }
+
+    /**
+     * 回文数
+     * 思路就是把每一个数位保存下来
+     * 然后双指针对比
+     */
+    public boolean isPalindrome(int x) {
+        if (x < 0) {
+            return false;
+        }
+        List<Integer> digits = new ArrayList<>();
+        int repl = x;
+        while (repl > 0) {
+            digits.add(repl % 10);
+            repl /= 10;
+        }
+        int lt = 0, rt = digits.size() - 1;
+        while (lt < rt) {
+            if (!digits.get(lt).equals(digits.get(rt))) {
+                return false;
+            }
+            lt++;
+            rt--;
+        }
+        return true;
+    }
+
+    /**
+     * 回文数
+     * 思路就是把原来的数字从后往前读计算一个值
+     * 如果是回文串，那么这个值会和原值相同
+     */
+    public boolean isPalindromeRevertSolution(int x) {
+        if (x < 0) {
+            return false;
+        }
+        int repl = x;
+        int rev = 0;
+        while (repl > 0) {
+            rev += (repl % 10);
+            repl /= 10;
+            if (repl > 0) {
+                rev *= 10;
+            }
+        }
+        return rev == x;
+    }
+
+    /**
+     * 回文数
+     * 思路依旧是双指针，只不过替换成String而不是
+     * 像第一种解法一样用list来保存数位
+     */
+    public boolean isPalindromeRevertSolution(int x) {
+        if (x < 0) {
+            return false;
+        }
+        String num = String.valueOf(x);
+        int lt = 0, rt = num.length() - 1;
+        while (lt < rt) {
+            if (num.charAt(lt) != num.charAt(rt)) {
+                return false;
+            }
+            lt++;
+            rt--;
+        }
+        return true;
+    }
+
+    /**
+     * 加一
+     */
+    public int[] plusOne(int[] digits) {
+        int len = digits.length;
+        int carry = 0;
+        int idx = len - 1;
+        digits[idx]++;
+        if (digits[idx] > 9) {
+            digits[idx] = 0;
+            carry = 1;
+            idx--;
+        }
+        while (carry != 0 && idx >= 0) {
+            digits[idx]++;
+            carry = digits[idx] / 10;
+            if (digits[idx] > 9) {
+                digits[idx] = 0;
+                idx--;
+            }
+        }
+        int[] res = digits;
+        if (carry != 0) {
+            res = new int[digits.length + 1];
+            System.arraycopy(digits, 0, res, 1, len);
+            res[0] = 1;
+        }
+        return res;
+    }
+
+    /**
+     * 阶乘后的零
+     * 其实就是求质因子2和5的个数
+     * 对于阶乘来说，每五个数就一定有一个数包含质因子5，每两个数就一定包含一个质因子2
+     * 所以质因子5一定比质因子2少，所以最终有多少个0取决于质因子5的个数
+     * 每5个数一个质因子5，每25个数两个质因子5（因为5 * 5 = 25），每125个数一定有三个质因子5
+     * 所以我们要求的上面几种质因子的个数是c1, c2, c3, ..., cn
+     * 那么质因子5的总个数为：
+     * c1 + 2 * (c2 - c1) + 3 * (c3 - c2) + ... + n * (Cn - Cn - 1)
+     * 求和得到c1 + c2 + c3 + ... + cn
+     * 下面就是对这种解法的翻译
+     */
+    public int trailingZeroes(int n) {
+        int res = 0;
+        while (n > 0) {
+            n /= 5;
+            res += n;
+        }
+        return res;
+    }
+
+    /**
+     * x的平方根
+     */
+    public int mySqrt(int x) {
+        long lt = 0;
+        long rt = (x >> 1) + 1;
+        while (lt <= rt) {
+            long mid = (lt + rt) >> 1;
+            long square = mid * mid;
+            if (square > x) {
+                rt = mid - 1;
+            } else if (square < x) {
+                lt = mid + 1;
+            } else {
+                return (int) mid;
+            }
+        }
+        return (int) rt;
+    }
+
+    /**
+     * 直线上最多的点数
+     */
+    public int maxPoints(int[][] points) {
+        // (a, b) (c, d)
+        // (x - a) / (y - b) = (x - c) / (y - d)
+        // (x - a)(y - d) = (x - c)(y - b)
+        int res = 1;
+        int len = points.length;
+        for (int i = 0; i < len; i++) {
+            int[] origin = points[i];
+            int a = origin[0];
+            int b = origin[1];
+            for (int j = i + 1; j < len; j++) {
+                int[] dest = points[j];
+                int c = dest[0];
+                int d = dest[1];
+                int count = 0;
+                for (int k = j + 1; k < len; k++) {
+                    int[] check = points[k];
+                    int x = check[0], y = check[1];
+                    if ((x - a) * (y - d) == (x - c) * (y - b)) {
+                        count++;
+                    }
+                }
+                res = Math.max(res, count + 2);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 三角形最小路径和
+     */
+    public int minimumTotal(List<List<Integer>> triangle) {
+
+    }
 }
