@@ -3900,8 +3900,83 @@ public class Interview150 {
 
     /**
      * 三角形最小路径和
+     * 二维dp
      */
     public int minimumTotal(List<List<Integer>> triangle) {
+        int height = triangle.size();
+        int width = triangle.get(height - 1).size();
+        int[][] dp = new int[height][width];
+        int res = Integer.MAX_VALUE;
+        for (int[] line : dp) {
+            Arrays.fill(line, Integer.MAX_VALUE);
+        }
+        for (int row = 0; row < height; row++) {
+            List<Integer> rowList = triangle.get(row);
+            for (int col = 0; col < rowList.size(); col++) {
+                if (row == 0) {
+                    dp[row][col] = rowList.get(col);
+                } else {
+                    dp[row][col] = rowList.get(col)
+                            + (col == 0 ? dp[row - 1][col] : Math.min(dp[row - 1][col - 1], dp[row - 1][col]));
+                }
+                if (row == height - 1) {
+                    res = Math.min(res, dp[row][col]);
+                }
+            }
+        }
+        return res;
+    }
 
+    /**
+     * 三角形最小路径和
+     * 也是自己写出来了一维dp形式
+     */
+    public int minimumTotalWithOneDiamension(List<List<Integer>> triangle) {
+        int height = triangle.size();
+        int width = triangle.get(height - 1).size();
+        int[] dp = new int[width];
+        int res = Integer.MAX_VALUE;
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        for (int row = 0; row < height; row++) {
+            List<Integer> rowList = triangle.get(row);
+            int size = rowList.size();
+            for (int col = size - 1; col >= 0; col--) {
+                if (row == 0) {
+                    dp[col] = rowList.get(col);
+                } else {
+                    dp[col] = rowList.get(col) + (col == 0 ? dp[col] : Math.min(dp[col - 1], dp[col]));
+                }
+                if (row == height - 1) {
+                    res = Math.min(res, dp[col]);
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 交错字符串
+     * 没做出来
+     * 这题用双指针做不了
+     */
+    public boolean isInterleave(String s1, String s2, String s3) {
+        int l1 = s1.length(), l2 = s2.length(), l3 = s3.length();
+        if (l1 + l2 != l3) {
+            return false;
+        }
+        boolean[][] dp = new boolean[l1 + 1][l2 + 1];
+        dp[0][0] = true;
+        for (int idx1 = 0; idx1 <= l1; idx1++) {
+            for (int idx2 = 0; idx2 <= l2; idx2++) {
+                int idx3 = idx1 + idx2 - 1;
+                if (idx1 > 0) {
+                    dp[idx1][idx2] = dp[idx1][idx2] || (dp[idx1 - 1][idx2] && s1.charAt(idx1 - 1) == s3.charAt(idx3));
+                }
+                if (idx2 > 0) {
+                    dp[idx1][idx2] = dp[idx1][idx2] || (dp[idx1][idx2 - 1] && s2.charAt(idx2 - 1) == s3.charAt(idx3));
+                }
+            }
+        }
+        return dp[l1][l2];
     }
 }
