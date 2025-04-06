@@ -3780,7 +3780,7 @@ public class Interview150 {
      * 思路依旧是双指针，只不过替换成String而不是
      * 像第一种解法一样用list来保存数位
      */
-    public boolean isPalindromeRevertSolution(int x) {
+    public boolean isPalindromeStringDoublePointerSolution(int x) {
         if (x < 0) {
             return false;
         }
