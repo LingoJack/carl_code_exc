@@ -3958,12 +3958,14 @@ public class Interview150 {
      * 交错字符串
      * 没做出来
      * 这题用双指针做不了
+     * dp的关键是想到dp数组的定义以及，从s1，s2，s3三个字符串的长度切入
      */
     public boolean isInterleave(String s1, String s2, String s3) {
         int l1 = s1.length(), l2 = s2.length(), l3 = s3.length();
         if (l1 + l2 != l3) {
             return false;
         }
+        // dp[i][j]表示s1的前i个元素和s2的前j个元素能否交错组成s3的前i + j个元素
         boolean[][] dp = new boolean[l1 + 1][l2 + 1];
         dp[0][0] = true;
         for (int idx1 = 0; idx1 <= l1; idx1++) {
@@ -3978,5 +3980,44 @@ public class Interview150 {
             }
         }
         return dp[l1][l2];
+    }
+
+    /**
+     * 交错字符串
+     * dp + 滚动数组优化空间复杂度
+     * 对于滚动数组优化空间复杂度，可以参考下面的题目：
+     * 63. 不同路径II
+     * 70. 爬楼梯
+     * 剑指offer 46. 把数字翻译成字符串
+     */
+    public boolean isInterleaveBetterSpaceUsed(String s1, String s2, String s3) {
+        int l1 = s1.length(), l2 = s2.length(), l3 = s3.length();
+        if (l1 + l2 != l3) {
+            return false;
+        }
+        boolean[] dp = new boolean[l2 + 1];
+        dp[0] = true;
+        for (int idx1 = 0; idx1 <= l1; idx1++) {
+            for (int idx2 = 0; idx2 <= l2; idx2++) {
+                int idx3 = idx1 + idx2 - 1;
+                if (idx1 > 0) {
+                    dp[idx2] = dp[idx2] && s1.charAt(idx1 - 1) == s3.charAt(idx3);
+                }
+                if (idx2 > 0) {
+                    dp[idx2] = dp[idx2] || (dp[idx2 - 1] && s2.charAt(idx2 - 1) == s3.charAt(idx3));
+                }
+            }
+        }
+        return dp[l2];
+    }
+
+    /**
+     * 最大正方形
+     * TODO：
+     */
+    public int maximalSquare(char[][] matrix) {
+        int res = 0;
+
+        return res;
     }
 }
