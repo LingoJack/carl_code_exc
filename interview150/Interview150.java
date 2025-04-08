@@ -1,4 +1,4 @@
-package leetcodeHot100;
+package interview150;
 
 import java.security.InvalidKeyException;
 import java.util.ArrayDeque;
@@ -25,8 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import leetcodeHot100.Node;
+import interview150.*;
 
 public class Interview150 {
 
