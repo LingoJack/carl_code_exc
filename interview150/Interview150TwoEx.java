@@ -29,7 +29,7 @@ public class Interview150TwoEx {
     public int removeElement(int[] nums, int val) {
         int fast = 0, slow = 0;
         while (fast < nums.length) {
-            if(nums[fast] != val) {
+            if (nums[fast] != val) {
                 swap(nums, fast, slow++);
             }
             fast++;
@@ -44,6 +44,24 @@ public class Interview150TwoEx {
     }
 
     /**
-     * 
+     * 多数元素
      */
+    public int majorityElement(int[] nums) {
+        int count = 0;
+        Integer winner = null;
+        for (int num : nums) {
+            if (winner == null) {
+                winner = num;
+            }
+            if (winner == num) {
+                count++;
+            } else {
+                count--;
+                if (count == 0) {
+                    winner = null;
+                }
+            }
+        }
+        return winner;
+    }
 }
