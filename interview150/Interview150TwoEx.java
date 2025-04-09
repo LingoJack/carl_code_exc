@@ -88,4 +88,37 @@ public class Interview150TwoEx {
             end--;
         }
     }
+
+    /**
+     * 买卖股票的最佳时机
+     */
+    public int maxProfit(int[] prices) {
+        // dp[i][j] 到第i天为止，持有或不持有股票的最大收益
+        int[][] dp = new int[prices.length][2];
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < prices.length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], -prices[i]);
+        }
+        return dp[prices.length - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     * 这题和买卖股票的最佳时机II容易弄混
+     * 区别是II可以买卖多次
+     */
+    public int maxProfitAnotherSolution(int[] prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        for (int price : prices) {
+            if (minPrice > price) {
+                minPrice = price;
+            } else {
+                maxProfit = Math.max(maxProfit, price - minPrice);
+            }
+        }
+        return maxProfit;
+    }
 }

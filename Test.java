@@ -810,9 +810,7 @@ public class Test {
         List<Integer> positives = new ArrayList<>();
         // 负数集合
         List<Integer> negatives = new ArrayList<>();
-
         int count = 0;
-
         for (int num : nums) {
             if (num >= 0) {
                 // 在正数集合中找到第一个不小于 num 的位置
@@ -830,7 +828,6 @@ public class Test {
                 negatives.add(pos, num);
             }
         }
-
         return count;
     }
 
