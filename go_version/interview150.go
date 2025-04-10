@@ -134,3 +134,53 @@ func productExceptSelf(nums []int) []int {
 	}
 	return res
 }
+
+// 加油站
+// 这个解法效率不高，最好的是计算diff数组，然后求最大子数组和
+func canCompleteCircuit(gas []int, cost []int) int {
+	l := len(gas)
+	for start := range gas {
+		if gas[start] <= cost[start] && start < l-1 {
+			continue
+		}
+		curGas := 0
+		canComplete := true
+		for i := start; i < start+l; i++ {
+			idx := i % l
+			curGas += gas[idx]
+			if curGas < cost[idx] {
+				canComplete = false
+				break
+			}
+			curGas -= cost[idx]
+		}
+		if canComplete {
+			return start
+		}
+	}
+	return -1
+}
+
+// 加油站
+func canCompleteCircuitBetterSolution(gas []int, cost []int) int {
+	l := len(gas)
+	profit := make([]int, l)
+	total := 0
+	for i := range gas {
+		profit[i] = gas[i] - cost[i]
+		total += profit[i]
+	}
+	if total < 0 {
+		return -1
+	}
+	sum := 0
+	start := 0
+	for i, v := range profit {
+		if sum < 0 {
+			sum = 0
+			start = i
+		}
+		sum += v
+	}
+	return start
+}
