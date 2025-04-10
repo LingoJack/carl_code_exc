@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"math"
+	"strings"
 )
 
 func main() {
@@ -246,4 +247,48 @@ func trap(height []int) int {
 		stack = append(stack, i)
 	}
 	return res
+}
+
+// 反转字符串中的单词
+func reverseWords(s string) string {
+	var words []string
+	sLen := len(s)
+	fast := 0
+	for fast < sLen && s[fast] == ' ' {
+		fast++
+	}
+	slow := fast
+	for fast < sLen {
+		if s[fast] == ' ' {
+			words = append(words, s[slow:fast])
+			for fast < sLen && s[fast] == ' ' {
+				fast++
+			}
+			slow = fast
+		} else {
+			fast++
+		}
+	}
+	if slow < sLen && s[slow] != ' ' {
+		words = append(words, s[slow:])
+	}
+	var sb strings.Builder
+	for i := len(words) - 1; i >= 0; i-- {
+		sb.WriteString(words[i])
+		if i != 0 {
+			sb.WriteString(" ")
+		}
+	}
+	return sb.String()
+}
+
+func reverse(s string) string {
+	chs := []byte(s)
+	lt, rt := 0, len(s)-1
+	for lt < rt {
+		chs[lt], chs[rt] = s[rt], s[lt]
+		lt++
+		rt--
+	}
+	return s
 }

@@ -1,6 +1,8 @@
 package interview150;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Interview150TwoEx {
 
@@ -131,16 +133,51 @@ public class Interview150TwoEx {
         int len = ratings.length;
         int[] candy = new int[len];
         Arrays.fill(candy, 1);
-        for(int i = 0; i < len - 1; i++) {
-            if(ratings[i] < ratings[i + 1] && candy[i + 1] <= candy[i]) {
+        for (int i = 0; i < len - 1; i++) {
+            if (ratings[i] < ratings[i + 1] && candy[i + 1] <= candy[i]) {
                 candy[i + 1] = candy[i] + 1;
             }
         }
-        for(int i = len - 1; i > 0; i--) {
-            if(ratings[i - 1] > ratings[i] && candy[i - 1] <= candy[i]) {
+        for (int i = len - 1; i > 0; i--) {
+            if (ratings[i - 1] > ratings[i] && candy[i - 1] <= candy[i]) {
                 candy[i - 1] = candy[i] + 1;
             }
         }
         return Arrays.stream(candy).sum();
+    }
+
+    /**
+     * 反转字符串中的单词
+     */
+    public String reverseWords(String s) {
+        List<String> words = new ArrayList<>();
+        int len = s.length();
+        int fast = 0;
+        while (fast < len && s.charAt(fast) == ' ') {
+            fast++;
+        }
+        int slow = fast;
+        while (fast < len) {
+            if (s.charAt(fast) == ' ') {
+                words.add(s.substring(slow, fast));
+                do {
+                    fast++;
+                } while (fast < len && s.charAt(fast) == ' ');
+                slow = fast;
+                continue;
+            }
+            fast++;
+        }
+        if (slow < len && s.charAt(slow) != ' ') {
+            words.add(s.substring(slow));
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = words.size() - 1; i >= 0; i--) {
+            sb.append(words.get(i));
+            if (i != 0) {
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
     }
 }
