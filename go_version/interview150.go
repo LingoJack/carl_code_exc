@@ -207,3 +207,22 @@ func candy(ratings []int) int {
 	}
 	return res
 }
+
+// 接雨水
+func trap(height []int) int {
+	stack := []int{}
+	res := 0
+	for i, h := range height {
+		for len(stack) != 0 && height[stack[len(stack)-1]] < h {
+			idx := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			if len(stack) == 0 {
+				break
+			}
+			front := stack[len(stack)-1]
+			res += (min(height[front], h) - height[idx]) * (i - front - 1)
+		}
+		stack = append(stack, i)
+	}
+	return res
+}
