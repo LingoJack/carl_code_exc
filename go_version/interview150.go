@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
 	"math"
 )
@@ -204,6 +205,26 @@ func candy(ratings []int) int {
 	res := 0
 	for _, v := range candy {
 		res += v
+	}
+	return res
+}
+
+// 接雨水
+func trapAnotherSolution(height []int) int {
+	stack := list.New()
+	res := 0
+	for i, h := range height {
+		for stack.Len() > 0 && height[stack.Back().Value.(int)] < h {
+			top := stack.Remove(stack.Back()).(int)
+			if stack.Len() == 0 {
+				break
+			}
+			left := stack.Back().Value.(int)
+			width := i - left - 1
+			boundedHeight := min(height[left], h) - height[top]
+			res += width * boundedHeight
+		}
+		stack.PushBack(i)
 	}
 	return res
 }
