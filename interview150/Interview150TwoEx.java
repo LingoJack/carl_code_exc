@@ -1,5 +1,7 @@
 package interview150;
 
+import java.util.Arrays;
+
 public class Interview150TwoEx {
 
     /**
@@ -120,5 +122,25 @@ public class Interview150TwoEx {
             }
         }
         return maxProfit;
+    }
+
+    /**
+     * 分发糖果
+     */
+    public int candy(int[] ratings) {
+        int len = ratings.length;
+        int[] candy = new int[len];
+        Arrays.fill(candy, 1);
+        for(int i = 0; i < len - 1; i++) {
+            if(ratings[i] < ratings[i + 1] && candy[i + 1] <= candy[i]) {
+                candy[i + 1] = candy[i] + 1;
+            }
+        }
+        for(int i = len - 1; i > 0; i--) {
+            if(ratings[i - 1] > ratings[i] && candy[i - 1] <= candy[i]) {
+                candy[i - 1] = candy[i] + 1;
+            }
+        }
+        return Arrays.stream(candy).sum();
     }
 }

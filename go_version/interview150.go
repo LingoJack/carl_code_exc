@@ -184,3 +184,26 @@ func canCompleteCircuitBetterSolution(gas []int, cost []int) int {
 	}
 	return start
 }
+
+// 分发糖果
+func candy(ratings []int) int {
+	l, candy := len(ratings), make([]int, len(ratings))
+	for i := range candy {
+		candy[i] = 1
+	}
+	for i := 0; i < l-1; i++ {
+		if ratings[i] < ratings[i+1] && candy[i] >= candy[i+1] {
+			candy[i+1] = candy[i] + 1
+		}
+	}
+	for i := l - 1; i > 0; i-- {
+		if ratings[i-1] > ratings[i] && candy[i] >= candy[i-1] {
+			candy[i-1] = candy[i] + 1
+		}
+	}
+	res := 0
+	for _, v := range candy {
+		res += v
+	}
+	return res
+}
