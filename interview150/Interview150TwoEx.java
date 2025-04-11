@@ -184,31 +184,45 @@ public class Interview150TwoEx {
     /**
      * 找出字符串中第一个匹配项的下标
      * 没做出来
-     * 这个果然涉及KMP算法
+     * 这个果然涉及KMP算法（其实也可以不涉及KMP，滑动窗口就可以）
      * 就是针对needle的[0, i]建立前缀表
      * 比如
-     * a a b a d a a c a a b a c
-     * a a b a c
-     * 0 1 0 1 0
+     * a a b a d a a c a a e a c
+     * a a e a c
+     * 1 2 0 1 0
      */
     public int strStr(String haystack, String needle) {
         int[] prefixTable = buildPrefixTable(needle);
+        for (int i : prefixTable) {
+            System.out.print(i + " ");
+        }
         int idx = 0;
+        int matchIdx = 0;
         int nLen = needle.length();
         int hLen = haystack.length();
-        for(int i = 0; i < hLen; i++) {
-            
+        while (idx < hLen) {
+            if (haystack.charAt(idx) == needle.charAt(matchIdx)) {
+                matchIdx++;
+                idx++;
+                if (matchIdx == nLen) {
+                    return idx - nLen + 1;
+                }
+                continue;
+            }
+            idx += prefixTable[matchIdx];
+            matchIdx = 0;
         }
+        return -1;
     }
 
     private int[] buildPrefixTable(String needle) {
         int len = needle.length();
         int[] prefix = new int[len];
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             int count = 0;
             int lt = 0, rt = i;
             while (lt <= rt) {
-                if(needle.charAt(lt) != needle.charAt(rt)) {
+                if (needle.charAt(lt) != needle.charAt(rt)) {
                     break;
                 }
                 count++;
@@ -218,5 +232,21 @@ public class Interview150TwoEx {
             prefix[i] = count;
         }
         return prefix;
+    }
+
+    /**
+     * 找出字符串中第一个匹配项的下标
+     */
+    public int strStrWithRollingWindow(String haystack, String needle) {
+        int lt = 0;
+        int hLen = haystack.length(), nLen = needle.length();
+        while (lt <= (hLen - nLen)) {
+            int rt = lt + nLen;
+            if (haystack.substring(lt, rt).equals(needle)) {
+                return lt;
+            }
+            lt++;
+        }
+        return -1;
     }
 }
