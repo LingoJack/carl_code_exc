@@ -180,4 +180,43 @@ public class Interview150TwoEx {
         }
         return sb.toString();
     }
+
+    /**
+     * 找出字符串中第一个匹配项的下标
+     * 没做出来
+     * 这个果然涉及KMP算法
+     * 就是针对needle的[0, i]建立前缀表
+     * 比如
+     * a a b a d a a c a a b a c
+     * a a b a c
+     * 0 1 0 1 0
+     */
+    public int strStr(String haystack, String needle) {
+        int[] prefixTable = buildPrefixTable(needle);
+        int idx = 0;
+        int nLen = needle.length();
+        int hLen = haystack.length();
+        for(int i = 0; i < hLen; i++) {
+            
+        }
+    }
+
+    private int[] buildPrefixTable(String needle) {
+        int len = needle.length();
+        int[] prefix = new int[len];
+        for(int i = 0; i < len; i++) {
+            int count = 0;
+            int lt = 0, rt = i;
+            while (lt <= rt) {
+                if(needle.charAt(lt) != needle.charAt(rt)) {
+                    break;
+                }
+                count++;
+                lt++;
+                rt--;
+            }
+            prefix[i] = count;
+        }
+        return prefix;
+    }
 }

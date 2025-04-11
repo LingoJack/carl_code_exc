@@ -22,7 +22,7 @@ public class string {
             rt--;
         }
     }
-    
+
     /**
      * 反转字符串 II
      * 需要注意的是防止字符数组越界
@@ -36,7 +36,7 @@ public class string {
 
         // abcdefg k=2
         // lt = 0, rt = 0 + 2 - 1 = 1
-        for(int i = 0; i <= len; i += (2*k)) {
+        for (int i = 0; i <= len; i += (2 * k)) {
             int lt = i;
             int rt = Math.min(lt + k - 1, len - 1);
             while (lt < rt) {
@@ -60,11 +60,11 @@ public class string {
         String s = sc.next();
         char[] chars = s.toCharArray();
         StringBuilder sb = new StringBuilder();
-        for(char ch : chars) {
-            if (ch == '0' || ch == '1' || ch == '2' || ch == '3' || ch == '4' || ch == '5' || ch == '6' || ch == '7' || ch == '8' || ch == '9') {
+        for (char ch : chars) {
+            if (ch == '0' || ch == '1' || ch == '2' || ch == '3' || ch == '4' || ch == '5' || ch == '6' || ch == '7'
+                    || ch == '8' || ch == '9') {
                 sb.append("number");
-            }
-            else {
+            } else {
                 sb.append(ch);
             }
         }
@@ -86,7 +86,7 @@ public class string {
      */
     public String reverseWords(String s) {
         // the sky is blue
-        // a b        c  d
+        // a b c d
         // 去除输入字符串首尾的空格
         s = s.trim();
         char[] chars = s.toCharArray();
@@ -104,9 +104,9 @@ public class string {
                 show++;
             }
             fast = show;
-            
+
             // 找到单词结束的位置
-            while (fast < len && chars[fast] != ' ' ) {
+            while (fast < len && chars[fast] != ' ') {
                 fast++;
             }
             fast--;
@@ -166,7 +166,9 @@ public class string {
     }
 
     /**
+     * 找出字符串中第一个匹配项的下标
      * 实现 strStr()
+     * 没做出来
      * 这个涉及到KMP算法，关键是要求前缀表
      * 你要弄清楚前缀表的概念，并且要掌握求前缀表的逻辑
      * 这道题不是我自己写出来的
@@ -178,32 +180,26 @@ public class string {
         if (haystack.isEmpty() || haystack.length() < needle.length()) {
             return -1;
         }
-    
         int[] prefix = buildPrefixTable(needle);
         // j是指向待匹配的模板的，即needle
         int j = 0;
-
         // aabaaabaaac
-        //       i
+        // i
         // aabaaac
-        //   j
+        // j
         // aabaaac
         // 0101220
-    
         for (int i = 0; i < haystack.length(); i++) {
             while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
                 j = prefix[j - 1]; // 使用前缀表跳过重复匹配
             }
-    
             if (haystack.charAt(i) == needle.charAt(j)) {
                 j++;
             }
-    
             if (j == needle.length()) {
                 return i - j + 1; // 找到匹配位置
             }
         }
-    
         return -1;
     }
 
@@ -217,19 +213,16 @@ public class string {
         int[] prefix = new int[str.length];
         int j = 0;
         prefix[0] = 0;
-
         // a b e a b f
-        //     j
-        //           i
+        // j
+        // i
         // 0 0 0 1 2 0
-
         // 计算字符串每一位的最长前后缀
         for (int i = 1; i < str.length; i++) {
             while (j > 0 && str[j] != str[i]) {
                 // 回退到上一次匹配的前缀的前一个位置
                 j = prefix[j - 1];
             }
-
             // str[i] == str[j] or j == 0
             if (str[j] == str[i]) {
                 j++;
