@@ -191,7 +191,7 @@ public class Interview150TwoEx {
      * a a e a c
      * 1 2 0 1 0
      */
-    public int strStr(String haystack, String needle) {
+    public int strStrError(String haystack, String needle) {
         int[] prefixTable = buildPrefixTable(needle);
         for (int i : prefixTable) {
             System.out.print(i + " ");
@@ -215,7 +215,7 @@ public class Interview150TwoEx {
         return -1;
     }
 
-    private int[] buildPrefixTable(String needle) {
+    private int[] buildPrefixTableError(String needle) {
         int len = needle.length();
         int[] prefix = new int[len];
         for (int i = 0; i < len; i++) {
