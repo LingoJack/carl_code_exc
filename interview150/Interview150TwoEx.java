@@ -602,6 +602,22 @@ public class Interview150TwoEx {
      * 快乐数
      */
     public boolean isHappy(int n) {
-        
+        Set<Integer> set = new HashSet<>();
+        int sum = 0;
+        while (true) {
+            int digit = n % 10;
+            sum += digit * digit;
+            n /= 10;
+            if (n == 0) {
+                if (set.contains(sum)) {
+                    return false;
+                } else if (sum == 1) {
+                    return true;
+                }
+                set.add(sum);
+                n = sum;
+                sum = 0;
+            }
+        }
     }
 }

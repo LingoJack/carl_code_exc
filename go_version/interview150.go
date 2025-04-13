@@ -631,5 +631,21 @@ func twoSum(nums []int, target int) []int {
 
 // 快乐数
 func isHappy(n int) bool {
-
+	exist := make(map[int]bool)
+	sum := 0
+	for {
+		digit := (n % 10)
+		sum += digit * digit
+		n /= 10
+		if n == 0 {
+			if exist[sum] {
+				return false
+			} else if sum == 1 {
+				return true
+			}
+			exist[sum] = true
+			n = sum
+			sum = 0
+		}
+	}
 }
