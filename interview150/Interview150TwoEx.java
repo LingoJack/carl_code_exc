@@ -529,4 +529,79 @@ public class Interview150TwoEx {
             }
         }
     }
+
+    /**
+     * 赎金信
+     */
+    public boolean canConstruct(String ransomNote, String magazine) {
+        int[] count = new int[26];
+        for(char c : ransomNote.toCharArray()) {
+            count[c - 'a']++;
+        }
+        for(char c : magazine.toCharArray()) {
+            count[c - 'a']--;
+        }
+        for(int val : count) {
+            if (val > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 有效的字母异位词
+     */
+    public boolean isAnagram(String s, String t) {
+        int[] count = new int[26];
+        for(char c : s.toCharArray()) {
+            count[c - 'a']++;
+        }
+        for(char c : t.toCharArray()) {
+            count[c - 'a']--;
+        }
+        for(int val : count) {
+            if (val != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 字母异位词分组
+     */
+    public List<List<String>> groupAnagrams(String[] strs) {
+        Map<String, List<String>> stringListMap = new HashMap<>();
+        for(String s : strs) {
+            char[] chs = s.toCharArray();
+            Arrays.sort(chs);
+            String sortedString = new String(chs);
+            List<String> list = stringListMap.getOrDefault(sortedString, new ArrayList<>());
+            list.add(s);
+            stringListMap.put(sortedString, list);
+        }
+        return new ArrayList<>(stringListMap.values());
+    }
+
+    /**
+     * 两数之和
+     */
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int i = 0; i < nums.length; i++) {
+            if(map.containsKey(target - nums[i])) {
+                return new int[] {map.get(target - nums[i]), i};
+            }
+            map.put(nums[i], i);
+        }
+        return null;
+    }
+
+    /**
+     * 快乐数
+     */
+    public boolean isHappy(int n) {
+        
+    }
 }

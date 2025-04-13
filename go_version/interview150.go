@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -542,4 +543,93 @@ func setZeroes(matrix [][]int) {
 			}
 		}
 	}
+}
+
+// 赎金信
+// 做出来了，但是效率不高
+// 由于都是小写字母，所以可以直接用数组来表示
+func canConstruct(ransomNote string, magazine string) bool {
+	valid := 0
+	need, have := make(map[rune]int), make(map[rune]int)
+	for _, v := range []rune(ransomNote) {
+		need[v]++
+	}
+	for _, v := range []rune(magazine) {
+		if _, exist := need[v]; exist {
+			have[v]++
+			if have[v] == need[v] {
+				valid++
+			}
+		}
+	}
+	return valid >= len(need)
+}
+
+// 赎金信
+// 数组写法
+func canConstructWithArray(ransomNote string, magazine string) bool {
+	count := [26]int{}
+	for i := 0; i < len(ransomNote); i++ {
+		count[ransomNote[i]-'a']++
+	}
+	for i := 0; i < len(magazine); i++ {
+		count[magazine[i]-'a']--
+	}
+	for _, v := range count {
+		if v > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// 有效的字母异位词
+func isAnagram(s string, t string) bool {
+	count := make([]int, 26)
+	for _, c := range []byte(s) {
+		count[c-'a']++
+	}
+	for _, c := range []byte(t) {
+		count[c-'a']--
+	}
+	for _, v := range count {
+		if v != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// 字母异位词分组
+func groupAnagram(strs []string) [][]string {
+	anagramListMap := make(map[string][]string)
+	for _, s := range strs {
+		chs := []byte(s)
+		slices.Sort(chs)
+		sorted := string(chs)
+		anagramListMap[sorted] = append(anagramListMap[sorted], s)
+	}
+	// return slices.Collect(maps.Values(anagramListMap))
+	res := make([][]string, 0)
+	for _, list := range anagramListMap {
+		res = append(res, list)
+	}
+	return res
+}
+
+// 两数之和
+func twoSum(nums []int, target int) []int {
+	m := make(map[int]int)
+	for i, v := range nums {
+		if _, ok := m[target-v]; ok {
+			return []int{m[target-v], i}
+		}
+		m[v] = i
+	}
+	return nil
+}
+
+// 快乐数
+func isHappy(n int) bool {
+
 }

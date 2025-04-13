@@ -235,21 +235,18 @@ public class hashtable {
             count++;
             map.put(ch, count);
         }
-        
         for(int i=0;i<lenM;i++) {
             char ch = magazine.charAt(i);
             int count = map.getOrDefault(ch, 0);
             count--;
             map.put(ch, count);
         }
-
         for(int i=0;i<lenR;i++){
             char ch = ransomNote.charAt(i);
             if(map.get(ch) > 0) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -259,23 +256,19 @@ public class hashtable {
     public boolean canConstructWithArray(String ransomNote, String magazine) {
         int lenR = ransomNote.length();
         int lenM = magazine.length();
-        
         int[] chars = new int[26];
         // 这个赋值是多余的，int基本类型有默认值0
         // Arrays.fill(chars, 0);
-
         for(int i=0;i<lenR;i++){
             char ch = ransomNote.charAt(i);
             int index = ch - 'a';
             chars[index]++;
         }
-
         for(int i=0;i<lenM;i++) {
             char ch = magazine.charAt(i);
             int index = ch - 'a';
             chars[index]--;
         }
-
         for(int i=0;i<lenR;i++){
             char ch = ransomNote.charAt(i);
             int index = ch - 'a';
