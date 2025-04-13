@@ -649,3 +649,24 @@ func isHappy(n int) bool {
 		}
 	}
 }
+
+// 最长连续序列
+func longestConsecutive(nums []int) int {
+	exist := make(map[int]bool)
+	for _, num := range nums {
+		exist[num] = true
+	}
+	res := 0
+	for num := range exist {
+		if exist[num-1] {
+			continue
+		}
+		count, repl := 0, num
+		for exist[repl] {
+			repl++
+			count++
+		}
+		res = max(res, count)
+	}
+	return res
+}

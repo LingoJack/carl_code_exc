@@ -620,4 +620,31 @@ public class Interview150TwoEx {
             }
         }
     }
+
+    /**
+     * 最长连续序列
+     * 没做出来，忘记了
+     * 只记得从最低的点开始找
+     * 实际上是先把所有都放进去Set，然后看看是否包含更低的
+     */
+    public int longestConsecutive(int[] nums) {
+        Set<Integer> set = new HashSet<>();
+        for (int num : nums) {
+            set.add(num);
+        }
+        int res = 0;
+        for (int num : set) {
+            if (set.contains(num - 1)) {
+                continue;
+            }
+            int count = 0;
+            int repl = num;
+            while (set.contains(repl)) {
+                repl++;
+                count++;
+            }
+            res = Math.max(res, count);
+        }
+        return res;
+    }
 }
