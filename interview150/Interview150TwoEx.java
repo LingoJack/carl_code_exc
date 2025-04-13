@@ -503,6 +503,30 @@ public class Interview150TwoEx {
      * 矩阵置零
      */
     public void setZeroes(int[][] matrix) {
-
+        int row = matrix.length, col = matrix[0].length;
+        boolean[] zeroRows = new boolean[row];
+        boolean[] zeroCols = new boolean[col];
+        for(int i = 0; i < row; i++) {
+            for(int j = 0; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    zeroCols[j] = true;
+                    zeroRows[i] = true;
+                }
+            }
+        }
+        for(int i = 0; i < row; i++) {
+            if (zeroRows[i]) {
+                for(int j = 0; j < col; j++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        for(int i = 0; i < col; i++) {
+            if (zeroCols[i]) {
+                for(int j = 0; j < row; j++) {
+                    matrix[j][i] = 0;
+                }
+            }
+        }
     }
 }

@@ -518,5 +518,28 @@ func rotate(nums [][]int) {
 
 // 矩阵置零
 func setZeroes(matrix [][]int) {
-
+	row, col := len(matrix), len(matrix[0])
+	zeroRows, zeroCols := make([]bool, row), make([]bool, col)
+	for i, row := range matrix {
+		for j, v := range row {
+			if v == 0 {
+				zeroRows[i] = true
+				zeroCols[j] = true
+			}
+		}
+	}
+	for i, b := range zeroRows {
+		if b {
+			for j := 0; j < col; j++ {
+				matrix[i][j] = 0
+			}
+		}
+	}
+	for j, b := range zeroCols {
+		if b {
+			for i := 0; i < row; i++ {
+				matrix[i][j] = 0
+			}
+		}
+	}
 }
