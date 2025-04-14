@@ -14,7 +14,7 @@ func main() {
 }
 
 // 合并两个有序数组
-func merge(nums1 []int, m int, nums2 []int, n int) {
+func mergeTwoOrderedArrays(nums1 []int, m int, nums2 []int, n int) {
 	idx1, idx2 := m-1, n-1
 	idx := m + n - 1
 	for idx1 >= 0 || idx2 >= 0 {
@@ -669,4 +669,27 @@ func longestConsecutive(nums []int) int {
 		res = max(res, count)
 	}
 	return res
+}
+
+// 合并区间
+func merge(intervals [][]int) [][]int {
+	sort.Slice(intervals, func(i, j int) bool {
+		if intervals[i][0] != intervals[j][0] {
+			return intervals[i][0] < intervals[j][0]
+		}
+		return intervals[i][1] < intervals[j][1]
+	})
+	stack := make([][]int, 0)
+	for _, interval := range intervals {
+		if len(stack) != 0 {
+			last := stack[len(stack)-1]
+			if last[1] >= interval[0] {
+				stack = stack[:len(stack)-1]
+				stack = append(stack, []int{last[0], max(last[1], interval[1])})
+				continue
+			}
+		}
+		stack = append(stack, interval)
+	}
+	return stack
 }

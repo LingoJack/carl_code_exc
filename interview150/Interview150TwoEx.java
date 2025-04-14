@@ -1,7 +1,9 @@
 package interview150;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -644,6 +646,33 @@ public class Interview150TwoEx {
                 count++;
             }
             res = Math.max(res, count);
+        }
+        return res;
+    }
+
+    /**
+     * 合并区间
+     */
+    public int[][] merge(int[][] intervals) {
+        Arrays.sort(intervals, (a, b) -> {
+            return a[0] == b[0] ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
+        });
+        Deque<int[]> stack = new ArrayDeque<>();
+        for(int[] interval : intervals) {
+            if (!stack.isEmpty()) {
+                int[] last = stack.peek();
+                if (last[1] >= interval[0]) {
+                    stack.pop();
+                    stack.push(new int[]{last[0], Math.max(last[1], interval[1])});
+                    continue;
+                }
+            }
+            stack.push(interval);
+        }
+        int[][] res = new int[stack.size()][2];
+        int idx = stack.size() - 1;
+        for(int[] interval : stack) {
+            res[idx--] = interval;
         }
         return res;
     }
