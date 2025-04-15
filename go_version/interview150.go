@@ -693,3 +693,67 @@ func merge(intervals [][]int) [][]int {
 	}
 	return stack
 }
+
+// 用最少数量的箭引爆气球
+func findMinArrowShots(points [][]int) int {
+	sort.Slice(points, func(i, j int) bool {
+		if points[i][0] != points[j][0] {
+			return points[i][0] < points[j][0]
+		}
+		return points[i][1] <= points[j][1]
+	})
+	count := 0
+	edge := math.MinInt32
+	for _, point := range points {
+		if edge < point[0] {
+			count++
+			edge = point[1]
+		}
+		edge = min(edge, point[1])
+	}
+	return count
+}
+
+// 有效的括号
+func isValid(s string) bool {
+	stack := make([]byte, 0)
+	match := make(map[byte]byte)
+	match[']'] = '['
+	match['}'] = '{'
+	match[')'] = '('
+	for _, c := range []byte(s) {
+		if _, e := match[c]; e {
+			if len(stack) == 0 || stack[len(stack)-1] != match[c] {
+				return false
+			}
+			stack = stack[:len(stack)-1]
+			continue
+		}
+		stack = append(stack, c)
+	}
+	return len(stack) == 0
+}
+
+// 最小栈
+type MinStack struct {
+}
+
+func Constructor() MinStack {
+
+}
+
+func (this *MinStack) Push(val int) {
+
+}
+
+func (this *MinStack) Pop() {
+
+}
+
+func (this *MinStack) Top() int {
+
+}
+
+func (this *MinStack) GetMin() int {
+
+}

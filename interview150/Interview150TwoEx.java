@@ -508,24 +508,24 @@ public class Interview150TwoEx {
         int row = matrix.length, col = matrix[0].length;
         boolean[] zeroRows = new boolean[row];
         boolean[] zeroCols = new boolean[col];
-        for(int i = 0; i < row; i++) {
-            for(int j = 0; j < col; j++) {
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
                 if (matrix[i][j] == 0) {
                     zeroCols[j] = true;
                     zeroRows[i] = true;
                 }
             }
         }
-        for(int i = 0; i < row; i++) {
+        for (int i = 0; i < row; i++) {
             if (zeroRows[i]) {
-                for(int j = 0; j < col; j++) {
+                for (int j = 0; j < col; j++) {
                     matrix[i][j] = 0;
                 }
             }
         }
-        for(int i = 0; i < col; i++) {
+        for (int i = 0; i < col; i++) {
             if (zeroCols[i]) {
-                for(int j = 0; j < row; j++) {
+                for (int j = 0; j < row; j++) {
                     matrix[j][i] = 0;
                 }
             }
@@ -537,13 +537,13 @@ public class Interview150TwoEx {
      */
     public boolean canConstruct(String ransomNote, String magazine) {
         int[] count = new int[26];
-        for(char c : ransomNote.toCharArray()) {
+        for (char c : ransomNote.toCharArray()) {
             count[c - 'a']++;
         }
-        for(char c : magazine.toCharArray()) {
+        for (char c : magazine.toCharArray()) {
             count[c - 'a']--;
         }
-        for(int val : count) {
+        for (int val : count) {
             if (val > 0) {
                 return false;
             }
@@ -556,13 +556,13 @@ public class Interview150TwoEx {
      */
     public boolean isAnagram(String s, String t) {
         int[] count = new int[26];
-        for(char c : s.toCharArray()) {
+        for (char c : s.toCharArray()) {
             count[c - 'a']++;
         }
-        for(char c : t.toCharArray()) {
+        for (char c : t.toCharArray()) {
             count[c - 'a']--;
         }
-        for(int val : count) {
+        for (int val : count) {
             if (val != 0) {
                 return false;
             }
@@ -575,7 +575,7 @@ public class Interview150TwoEx {
      */
     public List<List<String>> groupAnagrams(String[] strs) {
         Map<String, List<String>> stringListMap = new HashMap<>();
-        for(String s : strs) {
+        for (String s : strs) {
             char[] chs = s.toCharArray();
             Arrays.sort(chs);
             String sortedString = new String(chs);
@@ -591,9 +591,9 @@ public class Interview150TwoEx {
      */
     public int[] twoSum(int[] nums, int target) {
         Map<Integer, Integer> map = new HashMap<>();
-        for(int i = 0; i < nums.length; i++) {
-            if(map.containsKey(target - nums[i])) {
-                return new int[] {map.get(target - nums[i]), i};
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(target - nums[i])) {
+                return new int[] { map.get(target - nums[i]), i };
             }
             map.put(nums[i], i);
         }
@@ -658,12 +658,12 @@ public class Interview150TwoEx {
             return a[0] == b[0] ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
         });
         Deque<int[]> stack = new ArrayDeque<>();
-        for(int[] interval : intervals) {
+        for (int[] interval : intervals) {
             if (!stack.isEmpty()) {
                 int[] last = stack.peek();
                 if (last[1] >= interval[0]) {
                     stack.pop();
-                    stack.push(new int[]{last[0], Math.max(last[1], interval[1])});
+                    stack.push(new int[] { last[0], Math.max(last[1], interval[1]) });
                     continue;
                 }
             }
@@ -671,9 +671,48 @@ public class Interview150TwoEx {
         }
         int[][] res = new int[stack.size()][2];
         int idx = stack.size() - 1;
-        for(int[] interval : stack) {
+        for (int[] interval : stack) {
             res[idx--] = interval;
         }
         return res;
+    }
+
+    /**
+     * 用最少的箭引爆气球
+     */
+    public int findMinArrowShots(int[][] points) {
+        Arrays.sort(points, (a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0]) : Integer.compare(a[1], b[1]));
+        long edge = Long.MIN_VALUE;
+        int count = 0;
+        for (int[] point : points) {
+            if (edge < point[0]) {
+                edge = point[1];
+                count++;
+            }
+            edge = Math.min(edge, point[1]);
+        }
+        return count;
+    }
+
+    /**
+     * 有效的括号
+     */
+    public boolean isValid(String s) {
+        Deque<Character> stack = new ArrayDeque<>();
+        HashMap<Character, Character> map = new HashMap<>();
+        map.put('}', '{');
+        map.put(']', '[');
+        map.put(')', '(');
+        for(char c : s.toCharArray()) {
+            if (map.containsKey(c)) {
+                if(stack.isEmpty() || !stack.peek().equals(map.get(c))) {
+                    return false;
+                }
+                stack.pop();
+                continue;
+            }
+            stack.push(c);
+        }
+        return stack.size() == 0;
     }
 }
