@@ -789,3 +789,17 @@ func GoSliceCopyTest() {
 		fmt.Print(num, " ")
 	}
 }
+
+// LCR120.寻找文件副本
+func findRepeatDocument(documents []int) int {
+	exist := make([]bool, len(documents))
+	for _, document := range documents {
+		if exist[document] {
+			return document
+		}
+		exist[document] = true
+	}
+	return -1
+}
+
+//

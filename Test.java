@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import interview150.Interview150TwoEx;
 import leetcodeHot100.link_list;
 
 public class Test {
@@ -743,11 +744,6 @@ public class Test {
         return res;
     }
 
-    public static void main(String[] args) {
-        Test test = new Test();
-        System.out.println(test.countPairs(new int[] { 1, 1, 4, 5, 0, 4 }));
-    }
-
     /**
      * 求和谐数对
      * |x - y| = |x| - |y|
@@ -802,6 +798,7 @@ public class Test {
 
     /**
      * 蚂蚁
+     * 
      * @param nums
      * @return
      */
@@ -857,5 +854,140 @@ public class Test {
             }
         }
         return left;
+    }
+
+    /**
+     * 字节面试题
+     * 具有相同字符种类的两个字符串的最长子串组合
+     * 比如s1 = "adcdfe", s2 = "acbfefe"
+     * 输出：
+     * ("acb", "abc"), ("fefe", "fe")
+     */
+    public List<List<String>> longestSubstringCombinationWithSameCharacter(String s1, String s2) {
+        List<List<String>> res = new ArrayList<>();
+        int l1 = s1.length();
+        boolean[] exist1 = new boolean[26];
+        boolean[] exist2 = new boolean[26];
+        int count1 = 0, count2 = 0;
+        for (char c : s1.toCharArray()) {
+            if (exist1[c - 'a']) {
+                continue;
+            }
+            exist1[c - 'a'] = true;
+            count1++;
+        }
+        for (char c : s2.toCharArray()) {
+            if (exist2[c - 'a']) {
+                continue;
+            }
+            exist2[c - 'a'] = true;
+            count2++;
+        }
+        // 要求s1的字符种类必须不少于s2
+        if (count2 > count1) {
+            return longestSubstringCombinationWithSameCharacter(s2, s1);
+        }
+        boolean[] exist1ButNotExist2 = new boolean[26];
+        for (char c = 'a'; c <= 'z'; c++) {
+            exist1ButNotExist2[c - 'a'] = exist1[c - 'a'] && !exist2[c - 'a'];
+        }
+        List<String> candidates = new ArrayList<>();
+        int start = 0;
+        for (int end = 0; end <= l1; end++) {
+            if (end == l1 || exist1ButNotExist2[s1.charAt(end) - 'a']) {
+                candidates.add(s1.substring(start, end));
+                start = end + 1;
+            }
+        }
+        if (candidates.isEmpty()) {
+            res.add(List.of(s1, s2));
+            return res;
+        }
+        int maxLen = 0;
+        for (String candidate : candidates) {
+            List<String> list = findLongestSubstringContainingSameCharacterWithPattern(s2, candidate);
+            if (list.isEmpty()) {
+                continue;
+            }
+            int len = list.get(0).length() + candidate.length();
+            if (len > maxLen) {
+                maxLen = len;
+                res.clear();
+            }
+            if (len >= maxLen) {
+                for (String substring : list) {
+                    res.add(List.of(substring, candidate));
+                }
+            }
+        }
+        return res;
+    }
+
+    private List<String> findLongestSubstringContainingSameCharacterWithPattern(String s, String pattern) {
+        boolean[] exist = new boolean[26];
+        int count = 0;
+        for (char c : pattern.toCharArray()) {
+            if (exist[c - 'a']) {
+                continue;
+            }
+            exist[c - 'a'] = true;
+            count++;
+        }
+        int valid = 0;
+        int start = 0;
+        int maxLen = 0;
+        List<String> list = new ArrayList<>();
+        boolean[] have = new boolean[26];
+        for (int end = 0; end < s.length(); end++) {
+            char c = s.charAt(end);
+            int len = end - 1 - start + 1;
+            if (!exist[c - 'a']) {
+                if (valid < count) {
+                    valid = 0;
+                    Arrays.fill(have, false);
+                    start = end + 1;
+                    continue;
+                }
+                if (len > maxLen) {
+                    maxLen = len;
+                    list.clear();
+                }
+                if (len >= maxLen) {
+                    list.add(s.substring(start, end));
+                }
+                valid = 0;
+                Arrays.fill(have, false);
+                start = end + 1;
+            }
+            if (!have[c - 'a']) {
+                valid++;
+            }
+            have[c - 'a'] = true;
+        }
+        if (start != s.length()) {
+            int len = s.length() - 1 - start + 1;
+            if (len > maxLen) {
+                maxLen = len;
+                list.clear();
+            }
+            if (len >= maxLen) {
+                list.add(s.substring(start, s.length()));
+                start = s.length() + 1;
+            }
+        }
+        return list;
+    }
+
+    public static void main(String[] args) {
+        String s1 = "aecddiaij";
+        String s2 = "abcdjiadiajdoaw";
+        Test iEx = new Test();
+        List<List<String>> res = iEx.longestSubstringCombinationWithSameCharacter(s2, s1);
+        for (List<String> list : res) {
+            for (String s : list) {
+                System.out.print(s + " ");
+            }
+            System.out.println();
+        }
     }
 }

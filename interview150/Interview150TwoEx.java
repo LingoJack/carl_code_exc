@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import leetcodeHot100.link_list;
+
 public class Interview150TwoEx {
 
     /**
@@ -703,9 +705,9 @@ public class Interview150TwoEx {
         map.put('}', '{');
         map.put(']', '[');
         map.put(')', '(');
-        for(char c : s.toCharArray()) {
+        for (char c : s.toCharArray()) {
             if (map.containsKey(c)) {
-                if(stack.isEmpty() || !stack.peek().equals(map.get(c))) {
+                if (stack.isEmpty() || !stack.peek().equals(map.get(c))) {
                     return false;
                 }
                 stack.pop();
@@ -737,7 +739,7 @@ public class Interview150TwoEx {
         }
 
         public void pop() {
-            int val =  stack.pop();
+            int val = stack.pop();
             if (val == minStack.peek()) {
                 minStack.pop();
             }
@@ -750,5 +752,20 @@ public class Interview150TwoEx {
         public int getMin() {
             return minStack.peek();
         }
+    }
+
+    /**
+     * LCR120.寻找文件副本
+     */
+    public int findRepeatDocument(int[] documents) {
+        int len = documents.length;
+        boolean[] exist = new boolean[len];
+        for (int document : documents) {
+            if (exist[document]) {
+                return document;
+            }
+            exist[document] = true;
+        }
+        return -1;
     }
 }
