@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello world")
+
 }
 
 // 合并两个有序数组
@@ -736,24 +736,56 @@ func isValid(s string) bool {
 
 // 最小栈
 type MinStack struct {
+	stack    []int
+	minStack []int
 }
 
 func Constructor() MinStack {
-
+	return MinStack{
+		stack:    make([]int, 0),
+		minStack: make([]int, 0),
+	}
 }
 
 func (this *MinStack) Push(val int) {
-
+	this.stack = append(this.stack, val)
+	if len(this.minStack) == 0 || this.minStack[len(this.minStack)-1] >= val {
+		this.minStack = append(this.minStack, val)
+	}
 }
 
 func (this *MinStack) Pop() {
-
+	val := this.stack[len(this.stack)-1]
+	this.stack = this.stack[:len(this.stack)-1]
+	if val == this.minStack[len(this.minStack)-1] {
+		this.minStack = this.minStack[:len(this.minStack)-1]
+	}
 }
 
 func (this *MinStack) Top() int {
-
+	return this.stack[len(this.stack)-1]
 }
 
 func (this *MinStack) GetMin() int {
+	return this.minStack[len(this.minStack)-1]
+}
 
+// 了解Go中slice的复制原理
+func GoSliceCopyTest() {
+	arr := []int{
+		1, 2, 3, 4, 5,
+	}
+	for _, num := range arr {
+		fmt.Print(num, " ")
+	}
+	fmt.Println("brr: ")
+	brr := arr[:len(arr)-1]
+	brr[0] = -1
+	for _, num := range brr {
+		fmt.Print(num, " ")
+	}
+	fmt.Println("arr: ")
+	for _, num := range arr {
+		fmt.Print(num, " ")
+	}
 }
