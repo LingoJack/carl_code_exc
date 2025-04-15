@@ -6,6 +6,7 @@ import (
 	"math"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -802,4 +803,31 @@ func findRepeatDocument(documents []int) int {
 	return -1
 }
 
-//
+// 逆波兰表达式求值
+func evalRPN(tokens []string) int {
+	stack := make([]int, 0)
+	for _, token := range tokens {
+		if token == "+" || token == "-" || token == "*" || token == "/" {
+			num1 := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			num2 := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			num := 0
+			switch token {
+			case "+":
+				num = num1 + num2
+			case "-":
+				num = num2 - num1
+			case "*":
+				num = num1 * num2
+			case "/":
+				num = num2 / num1
+			}
+			stack = append(stack, num)
+			continue
+		}
+		num, _ := strconv.Atoi(token)
+		stack = append(stack, num)
+	}
+	return stack[len(stack)-1]
+}

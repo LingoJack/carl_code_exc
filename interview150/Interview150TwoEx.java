@@ -768,4 +768,27 @@ public class Interview150TwoEx {
         }
         return -1;
     }
+
+    /**
+     * 逆波兰表达式求值
+     */
+    public int evalRPN(String[] tokens) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        for(String token : tokens) {
+            if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
+                int num1 = stack.pop();
+                int num2 = stack.pop();
+                int num = 0;
+                if (token.equals("+") || token.equals("-")) {
+                    num = token.equals("+") ? num1 + num2 : num2 - num1;
+                } else {
+                    num = token.equals("*") ? num1 * num2 : num2 / num1;
+                }
+                stack.push(num);
+                continue;
+            }
+            stack.push(Integer.parseInt(token));
+        }
+        return stack.pop();
+    }
 }
