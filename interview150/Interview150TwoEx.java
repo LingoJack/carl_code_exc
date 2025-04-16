@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import interview150.Interview150TwoEx.CopyRandomListClass.Node;
 import leetcodeHot100.link_list;
 
 public class Interview150TwoEx {
@@ -774,7 +775,7 @@ public class Interview150TwoEx {
      */
     public int evalRPN(String[] tokens) {
         Deque<Integer> stack = new ArrayDeque<>();
-        for(String token : tokens) {
+        for (String token : tokens) {
             if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
                 int num1 = stack.pop();
                 int num2 = stack.pop();
@@ -805,5 +806,123 @@ public class Interview150TwoEx {
             }
         }
         return false;
+    }
+
+    /**
+     * 两数相加
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        ListNode node1 = l1, node2 = l2;
+        int carry = 0;
+        while (carry != 0 || node1 != null || node2 != null) {
+            int num1 = node1 == null ? 0 : node1.val;
+            int num2 = node2 == null ? 0 : node2.val;
+            int num = num1 + num2 + carry;
+            carry = num / 10;
+            num %= 10;
+            ListNode node = new ListNode(num);
+            last.next = node;
+            last = node;
+            if (node1 != null) {
+                node1 = node1.next;
+            }
+            if (node2 != null) {
+                node2 = node2.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 合并两个有序链表
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        ListNode node1 = list1, node2 = list2;
+        while (node1 != null || node2 != null) {
+            int num1 = node1 == null ? Integer.MAX_VALUE : node1.val;
+            int num2 = node2 == null ? Integer.MAX_VALUE : node2.val;
+            if (num1 < num2) {
+                last.next = node1;
+                last = node1;
+                node1 = node1.next;
+            } else {
+                last.next = node2;
+                last = node2;
+                node2 = node2.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 随机链表的复制
+     */
+    public class CopyRandomListClass {
+
+        private class Node {
+            int val;
+            Node next;
+            Node random;
+
+            public Node(int val) {
+                this.val = val;
+            }
+        }
+
+        public Node copyRandomList(Node head) {
+            Map<Node, Node> map = new HashMap<>();
+            Node node = head;
+            while (node != null) {
+                Node newNode = new Node(node.val);
+                map.put(node, newNode);
+                node = node.next;
+            }
+            node = head;
+            while (node != null) {
+                Node newNode = map.get(node);
+                newNode.next = map.get(node.next);
+                newNode.random = map.get(node.random);
+                node = node.next;
+            }
+            return map.get(head);
+        }
+    }
+
+    /**
+     * 反转链表II
+     */
+    public ListNode reverseBetween(ListNode head, int left, int right) {
+        ListNode dummy = new ListNode(0, head);
+        int count = 0;
+        ListNode node = dummy;
+        ListNode last = dummy, prevGroupEnd = dummy;
+        ListNode lt = null, rt = null;
+        while (count < left) {
+            last = node;
+            node = node.next;
+            count++;
+        }
+        lt = node;
+        while (count < right) {
+            node = node.next;
+            count++;
+        }
+        rt = node;
+        ListNode prevEnd = last, nextStart = rt.next;
+        node = lt;
+        last = null;
+        while (node != nextStart) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        lt.next = nextStart;
+        prevEnd.next = rt;
+        return dummy.next;
     }
 }

@@ -832,11 +832,6 @@ func evalRPN(tokens []string) int {
 	return stack[len(stack)-1]
 }
 
-type ListNode struct {
-	Val  int
-	Next *ListNode
-}
-
 // 环形链表
 func hasCycle(head *ListNode) bool {
 	slow, fast := head, head
@@ -848,4 +843,120 @@ func hasCycle(head *ListNode) bool {
 		}
 	}
 	return false
+}
+
+// 两数相加
+func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
+	carry := 0
+	node1, node2 := l1, l2
+	num1, num2 := 0, 0
+	dummy := &ListNode{}
+	last := dummy
+	for node1 != nil || node2 != nil || carry != 0 {
+		if node1 == nil {
+			num1 = 0
+		} else {
+			num1 = node1.Val
+			node1 = node1.Next
+		}
+		if node2 == nil {
+			num2 = 0
+		} else {
+			num2 = node2.Val
+			node2 = node2.Next
+		}
+		num := num1 + num2 + carry
+		carry = num / 10
+		num = num % 10
+		node := &ListNode{
+			Val:  num,
+			Next: nil,
+		}
+		last.Next = node
+		last = node
+	}
+	return dummy.Next
+}
+
+// 合并两个有序链表
+func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
+	n1, n2 := list1, list2
+	dummy := &ListNode{}
+	last := dummy
+	v1, v2 := 0, 0
+	for n1 != nil || n2 != nil {
+		if n1 == nil {
+			v1 = math.MaxInt32
+		} else {
+			v1 = n1.Val
+		}
+		if n2 == nil {
+			v2 = math.MaxInt32
+		} else {
+			v2 = n2.Val
+		}
+		if v1 < v2 {
+			last.Next = n1
+			last = n1
+			n1 = n1.Next
+		} else {
+			last.Next = n2
+			last = n2
+			n2 = n2.Next
+		}
+	}
+	return dummy.Next
+}
+
+// 随机链表的复制
+func copyRandomList(head *Node) *Node {
+	m := make(map[*Node]*Node)
+	node := head
+	for node != nil {
+		newNode := &Node{
+			Val: node.Val,
+		}
+		m[node] = newNode
+		node = node.Next
+	}
+	node = head
+	for node != nil {
+		newNode := m[node]
+		newNode.Random = m[node.Random]
+		newNode.Next = m[node.Next]
+		node = node.Next
+	}
+	return m[head]
+}
+
+// 反转链表II
+func reverseBetween(head *ListNode, left int, right int) *ListNode {
+	count := 0
+	dummy := &ListNode{Next: head}
+	var lt, rt *ListNode
+	last := dummy
+	node := dummy
+	for count < left {
+		last = node
+		node = node.Next
+		count++
+	}
+	lt = node
+	for count < right {
+		node = node.Next
+		count++
+	}
+	rt = node
+	prevEnd, nextStart := last, rt.Next
+	node = lt
+	last = nil
+	for node != nextStart {
+		next := node.Next
+		node.Next = last
+		last = node
+		node = next
+	}
+	prevEnd.Next = rt
+	lt.Next = nextStart
+	return dummy.Next
 }
