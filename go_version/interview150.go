@@ -831,3 +831,21 @@ func evalRPN(tokens []string) int {
 	}
 	return stack[len(stack)-1]
 }
+
+type ListNode struct {
+	Val  int
+	Next *ListNode
+}
+
+// 环形链表
+func hasCycle(head *ListNode) bool {
+	slow, fast := head, head
+	for fast != nil && fast.Next != nil {
+		fast = fast.Next.Next
+		slow = slow.Next
+		if fast == slow {
+			return true
+		}
+	}
+	return false
+}

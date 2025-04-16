@@ -801,9 +801,9 @@ public class Interview150TwoEx {
             fast = fast.next.next;
             slow = slow.next;
             if (fast == slow) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }
