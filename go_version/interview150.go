@@ -960,3 +960,25 @@ func reverseBetween(head *ListNode, left int, right int) *ListNode {
 	lt.Next = nextStart
 	return dummy.Next
 }
+
+// K个一组反转链表
+func reverseKGroup(head *ListNode, k int) *ListNode {
+	node := head
+	count := 0
+	for node != nil {
+		for count < k || node 
+	}
+}
+
+func reverseListNodes(head *ListNode, tail *ListNode) (newHead *ListNode, newTail *ListNode) {
+	node := head
+	var last *ListNode
+	for node != tail.Next {
+		next := node.Next
+		node.Next = last
+		last = node
+		node = next
+	}
+	newTail = head
+	newHead = last
+}

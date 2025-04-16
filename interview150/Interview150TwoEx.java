@@ -925,4 +925,11 @@ public class Interview150TwoEx {
         prevEnd.next = rt;
         return dummy.next;
     }
+
+    /**
+     * K个一组反转链表
+     */
+    public ListNode reverseKGroup(ListNode head, int k) {
+        
+    }
 }
