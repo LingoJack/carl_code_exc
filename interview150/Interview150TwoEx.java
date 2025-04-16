@@ -791,4 +791,19 @@ public class Interview150TwoEx {
         }
         return stack.pop();
     }
+
+    /**
+     * 环形链表
+     */
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
