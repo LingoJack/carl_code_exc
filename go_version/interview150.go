@@ -1003,5 +1003,24 @@ func reverseListNodes(head *ListNode, tail *ListNode) (newHead *ListNode, newTai
 
 // 删除链表的倒数第N个结点
 func removeNthFromEnd(head *ListNode, n int) *ListNode {
+    dummy := &ListNode{Next: head}
+	len := 0
+	slow, fast := head, head
+	for fast != nil {
+		fast = fast.Next
+		len++
+	}
+	last := dummy
+	for len != n {
+		last = slow
+		slow = slow.Next
+		len--
+	}
+	last.Next = slow.Next
+	return dummy.Next
+}
 
+// 删除排序链表中的重复元素II
+func deleteDuplicates(head *ListNode) *ListNode {
+   
 }

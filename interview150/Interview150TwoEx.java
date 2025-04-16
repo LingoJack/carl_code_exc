@@ -969,6 +969,28 @@ public class Interview150TwoEx {
      * 删除链表的倒数第N个结点
      */
     public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode slow = head, fast = head;
+        int len = 0;
+        while (fast != null) {
+            fast = fast.next;
+            len++;
+        }
+        ListNode last = dummy;
+        while (len != n) {
+            last = slow;
+            slow = slow.next;
+            len--;
+        }
+        last.next = slow.next;
+        slow.next = null;
+        return dummy.next;
+    }
+
+    /**
+     * 删除排序链表中的重复元素II
+     */
+    public ListNode deleteDuplicates(ListNode head) {
 
     }
 }
