@@ -963,17 +963,34 @@ func reverseBetween(head *ListNode, left int, right int) *ListNode {
 
 // K个一组反转链表
 func reverseKGroup(head *ListNode, k int) *ListNode {
-	node := head
-	count := 0
-	for node != nil {
-		for count < k || node 
+	dummy := &ListNode{Next: head}
+	slow := head
+	prevGourpEnd := dummy
+	for slow != nil {
+		count := 0
+		fast := slow
+		for count < k && fast != nil {
+			fast = fast.Next
+			count++
+		}
+		if count < k {
+			break
+		}
+		nextGroupStart := fast
+		newHead, newTail := reverseListNodes(slow, fast)
+		newTail.Next = nextGroupStart
+		prevGourpEnd.Next = newHead
+		prevGourpEnd = newTail
+		slow = nextGroupStart
 	}
+	return dummy.Next
 }
 
+// 反转链表并返回反转后的头尾节点，左闭右开
 func reverseListNodes(head *ListNode, tail *ListNode) (newHead *ListNode, newTail *ListNode) {
 	node := head
 	var last *ListNode
-	for node != tail.Next {
+	for node != tail {
 		next := node.Next
 		node.Next = last
 		last = node
@@ -981,4 +998,10 @@ func reverseListNodes(head *ListNode, tail *ListNode) (newHead *ListNode, newTai
 	}
 	newTail = head
 	newHead = last
+	return
+}
+
+// 删除链表的倒数第N个结点
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+
 }

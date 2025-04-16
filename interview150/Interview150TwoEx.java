@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import interview150.Interview150TwoEx.CopyRandomListClass.Node;
 import leetcodeHot100.link_list;
 
 public class Interview150TwoEx {
@@ -930,6 +929,46 @@ public class Interview150TwoEx {
      * K个一组反转链表
      */
     public ListNode reverseKGroup(ListNode head, int k) {
-        
+        ListNode dummy = new ListNode(0, head);
+        ListNode slow = head;
+        ListNode prevGroupEnd = dummy;
+        while (slow != null) {
+            int count = 0;
+            ListNode fast = slow;
+            while (count < k && fast != null) {
+                count++;
+                fast = fast.next;
+            }
+            if (count < k) {
+                break;
+            }
+            ListNode nextGroupStart = fast;
+            ListNode[] newHeadAndTail = reverseListNodes(slow, fast);
+            ListNode newHead = newHeadAndTail[0], newTail = newHeadAndTail[1];
+            newTail.next = nextGroupStart;
+            prevGroupEnd.next = newHead;
+            prevGroupEnd = newTail;
+            slow = nextGroupStart;
+        }
+        return dummy.next;
+    }
+
+    private ListNode[] reverseListNodes(ListNode head, ListNode tail) {
+        ListNode node = head;
+        ListNode last = null;
+        while (node != tail) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return new ListNode[] { last, head };
+    }
+
+    /**
+     * 删除链表的倒数第N个结点
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+
     }
 }
