@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import interview150.Interview150TwoEx.LRUCache.CacheEntry;
 import leetcodeHot100.link_list;
 
 public class Interview150TwoEx {
@@ -1010,5 +1011,97 @@ public class Interview150TwoEx {
             node = node.next;
         }
         return dummy.next;
+    }
+
+    /**
+     * LRU缓存
+     */
+    class LRUCache {
+
+        private class CacheEntry {
+            private int key;
+            private int val;
+            private CacheEntry next;
+            private CacheEntry prev;
+
+            public CacheEntry() {
+
+            }
+
+            public CacheEntry(int key, int val) {
+                this.val = val;
+                this.key = key;
+            }
+        }
+
+        private Map<Integer, CacheEntry> cache;
+
+        private CacheEntry head;
+
+        private CacheEntry tail;
+
+        private int capacity;
+
+        public LRUCache(int capacity) {
+            head = new CacheEntry();
+            tail = new CacheEntry();
+            head.next = tail;
+            tail.prev = head;
+            cache = new HashMap<>();
+            this.capacity = capacity;
+        }
+
+        public int get(int key) {
+            if (!cache.containsKey(key)) {
+                return -1;
+            }
+            CacheEntry entry = cache.get(key);
+            entry.prev.next = entry.next;
+            entry.next.prev = entry.prev;
+            entry.next = null;
+            entry.prev = null;
+            entry.prev = head;
+            entry.next = head.next;
+            head.next.prev = entry;
+            head.next = entry;
+            return entry.val;
+        }
+
+        public void put(int key, int value) {
+            if (cache.containsKey(key)) {
+                CacheEntry entry = cache.get(key);
+                entry.next.prev = entry.prev;
+                entry.prev.next = entry.next;
+                entry.next = null;
+                entry.prev = null;
+                entry.prev = head;
+                entry.next = head.next;
+                head.next.prev = entry;
+                head.next = entry;
+                entry.val = value;
+                return;
+            }
+            CacheEntry entry = new CacheEntry(key, value);
+            entry.prev = this.head;
+            entry.next = this.head.next;
+            this.head.next.prev = entry;
+            this.head.next = entry;
+            cache.put(key, entry);
+            if (capacity < cache.size()) {
+                CacheEntry removedEntry = tail.prev;
+                removedEntry.prev.next = tail;
+                tail.prev = removedEntry.prev;
+                removedEntry.next = null;
+                removedEntry.prev = null;
+                cache.remove(removedEntry.key);
+            }
+        }
+    }
+
+    /**
+     * 二叉树的最大深度
+     */
+    public int maxDepth(TreeNode root) {
+
     }
 }
