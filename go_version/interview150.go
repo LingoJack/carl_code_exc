@@ -1121,5 +1121,35 @@ func (this *LRUCache) Put(key int, value int) {
 
 // 二叉树的最大深度
 func maxDepth(root *TreeNode) int {
+	if root == nil {
+		return 0
+	}
+	return max(maxDepth(root.Left), maxDepth(root.Right)) + 1
+}
+
+// 相同的树
+func isSameTree(p *TreeNode, q *TreeNode) bool {
+	if p == nil && q == nil {
+		return true
+	}
+	if p != nil && q != nil && (p.Val == q.Val) {
+		return isSameTree(p.Left, q.Left) && isSameTree(p.Right, q.Right)
+	}
+	return false
+}
+
+// 翻转二叉树
+func invertTree(root *TreeNode) *TreeNode {
+	if node == nil {
+		return node
+	}
+	node.Left, node.Right = node.Right, node.Left
+	invertTree(node.Left)
+	invertTree(node.Right)
+	return node
+}
+
+// 对称二叉树
+func isSymmetric(root *TreeNode) bool {
 
 }

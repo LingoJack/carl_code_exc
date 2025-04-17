@@ -1102,6 +1102,48 @@ public class Interview150TwoEx {
      * 二叉树的最大深度
      */
     public int maxDepth(TreeNode root) {
+        return height(root);
+    }
 
+    private int height(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return Math.max(height(node.left), height(node.right)) + 1;
+    }
+
+    /**
+     * 相同的树
+     */
+    public boolean isSameTree(TreeNode p, TreeNode q) {
+        if (p == null && q == null) {
+            return true;
+        }
+        if (p != null && q != null && p.val == q.val) {
+            return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+        }
+        return false;
+    }
+
+    /**
+     * 翻转二叉树
+     */
+    public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return root;
+        }
+        TreeNode t = root.left;
+        root.left = root.right;
+        root.right = t;
+        invertTree(root.left);
+        invertTree(root.right);
+        return root;
+    }
+
+    /**
+     * 对称二叉树
+     */
+    public boolean isSymmetric(TreeNode root) {
+        
     }
 }
