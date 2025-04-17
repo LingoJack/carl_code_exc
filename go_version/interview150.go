@@ -1139,7 +1139,7 @@ func isSameTree(p *TreeNode, q *TreeNode) bool {
 }
 
 // 翻转二叉树
-func invertTree(root *TreeNode) *TreeNode {
+func invertTree(node *TreeNode) *TreeNode {
 	if node == nil {
 		return node
 	}

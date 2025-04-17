@@ -1,7 +1,7 @@
 package main
 
-type TreeNdoe struct {
+type TreeNode struct {
 	Val   int
-	Left  *TreeNdoe
-	Right *TreeNdoe
+	Left  *TreeNode
+	Right *TreeNode
 }
