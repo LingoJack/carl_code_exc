@@ -991,6 +991,24 @@ public class Interview150TwoEx {
      * 删除排序链表中的重复元素II
      */
     public ListNode deleteDuplicates(ListNode head) {
-
+        ListNode dummy = new ListNode(0, head);
+        ListNode node = head;
+        ListNode last = dummy;
+        while (node != null) {
+            ListNode next = node.next;
+            boolean duplicated = false;
+            while (next != null && next.val == node.val) {
+                node.next = next.next;
+                next = node.next;
+                duplicated = true;
+            }
+            if (duplicated) {
+                last.next = node.next;
+            } else {
+                last = node;
+            }
+            node = node.next;
+        }
+        return dummy.next;
     }
 }

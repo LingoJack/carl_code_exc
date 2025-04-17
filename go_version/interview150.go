@@ -741,7 +741,7 @@ type MinStack struct {
 	minStack []int
 }
 
-func Constructor() MinStack {
+func MinStackConstructor() MinStack {
 	return MinStack{
 		stack:    make([]int, 0),
 		minStack: make([]int, 0),
@@ -1003,7 +1003,7 @@ func reverseListNodes(head *ListNode, tail *ListNode) (newHead *ListNode, newTai
 
 // 删除链表的倒数第N个结点
 func removeNthFromEnd(head *ListNode, n int) *ListNode {
-    dummy := &ListNode{Next: head}
+	dummy := &ListNode{Next: head}
 	len := 0
 	slow, fast := head, head
 	for fast != nil {
@@ -1022,5 +1022,99 @@ func removeNthFromEnd(head *ListNode, n int) *ListNode {
 
 // 删除排序链表中的重复元素II
 func deleteDuplicates(head *ListNode) *ListNode {
-   
+	dummy := &ListNode{Next: head}
+	node, last := head, dummy
+	for node != nil {
+		next := node.Next
+		duplicated := false
+		for next != nil && next.Val == node.Val {
+			node.Next = next.Next
+			next = node.Next
+			duplicated = true
+		}
+		if duplicated {
+			last.Next = node.Next
+		} else {
+			last = node
+		}
+		node = node.Next
+	}
+	return dummy.Next
+}
+
+// LRU缓存
+type LRUCache struct {
+	cache    map[int]*CacheEntry
+	head     *CacheEntry
+	tail     *CacheEntry
+	capacity int
+}
+
+type CacheEntry struct {
+	key  int
+	val  int
+	next *CacheEntry
+	prev *CacheEntry
+}
+
+func Constructor(capacity int) LRUCache {
+	head := CacheEntry{}
+	tail := CacheEntry{}
+	head.next = &tail
+	tail.prev = &head
+	return LRUCache{
+		cache:    make(map[int]*CacheEntry),
+		head:     &head,
+		tail:     &tail,
+		capacity: capacity,
+	}
+}
+
+func (this *LRUCache) Get(key int) int {
+	entry, exist := this.cache[key]
+	if !exist {
+		return -1
+	}
+	entry.prev.next = entry.next
+	entry.next.prev = entry.prev
+	entry.prev = nil
+	entry.next = nil
+	entry.next = this.head.next
+	this.head.next.prev = entry
+	entry.prev = this.head
+	this.head.next = entry
+	return entry.val
+}
+
+func (this *LRUCache) Put(key int, value int) {
+	entry, exist := this.cache[key]
+	if exist {
+		entry.prev.next = entry.next
+		entry.next.prev = entry.prev
+		entry.next = nil
+		entry.prev = nil
+		this.head.next.prev = entry
+		entry.next = this.head.next
+		this.head.next = entry
+		entry.prev = this.head
+		entry.val = value
+		return
+	}
+	entry = &CacheEntry{
+		key: key,
+		val: value,
+	}
+	this.cache[key] = entry
+	entry.next = this.head.next
+	entry.prev = this.head
+	this.head.next.prev = entry
+	this.head.next = entry
+	if this.capacity < len(this.cache) {
+		removedEntry := this.tail.prev
+		removedEntry.prev.next = removedEntry.next
+		removedEntry.next.prev = removedEntry.prev
+		removedEntry.next = nil
+		removedEntry.prev = nil
+		delete(this.cache, removedEntry.key)
+	}
 }
