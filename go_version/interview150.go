@@ -909,11 +909,11 @@ func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
 }
 
 // 随机链表的复制
-func copyRandomList(head *Node) *Node {
-	m := make(map[*Node]*Node)
+func copyRandomList(head *RandomNode) *RandomNode {
+	m := make(map[*RandomNode]*RandomNode)
 	node := head
 	for node != nil {
-		newNode := &Node{
+		newNode := &RandomNode{
 			Val: node.Val,
 		}
 		m[node] = newNode
@@ -1216,4 +1216,37 @@ func getRootFromInorderScopeAndPostorderIdx(postorder []int, inorder []int, inor
 	root.Right = getRootFromInorderScopeAndPostorderIdx(postorder, inorder, inorderIdxMap, inorderIdx+1, end)
 	root.Left = getRootFromInorderScopeAndPostorderIdx(postorder, inorder, inorderIdxMap, start, inorderIdx-1)
 	return root
+}
+
+// 填充每个节点的下一个右侧节点指针
+func connect(root *Node) *Node {
+	stack := make([]*Node, 0)
+	if root == nil {
+		return nil
+	}
+	stack = append(stack, root)
+	for len(stack) > 0 {
+		size := len(stack)
+		var last *Node = nil
+		for i := 0; i < size; i++ {
+			node := stack[0]
+			stack = stack[1:]
+			if last != nil {
+				last.Next = node
+			}
+			last = node
+			if node.Left != nil {
+				stack = append(stack, node.Left)
+			}
+			if node.Right != nil {
+				stack = append(stack, node.Right)
+			}
+		}
+	}
+	return root
+}
+
+// 二叉树展开为链表
+func flatten(root *TreeNode) {
+
 }

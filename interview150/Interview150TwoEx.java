@@ -1214,4 +1214,64 @@ public class Interview150TwoEx {
         root.left = getRootFromInorderScopeAndPostorder(postorder, inorder, inorderIdxMap, start, inorderIdx - 1);
         return root;
     }
+
+    /**
+     * 填充每个节点的下一个右侧节点指针
+     */
+    public class ConnectSolution {
+        public Node connect(Node root) {
+            Deque<Node> queue = new ArrayDeque<>();
+            if (root == null) {
+                return null;
+            }
+            queue.offer(root);
+            while (!queue.isEmpty()) {
+                int size = queue.size();
+                Node last = null;
+                for(int i = 0; i < size; i++) {
+                    Node node = queue.poll();
+                    if (last != null) {
+                        last.next = node;
+                    }
+                    last = node;
+                    if (node.left != null) {
+                        queue.offer(node.left);
+                    }
+                    if (node.right != null) {
+                        queue.offer(node.right);
+                    }
+                }
+            }
+            return root;
+        }
+
+        private class Node {
+            int val;
+            Node left;
+            Node right;
+            Node next;
+
+            public Node() {
+
+            }
+
+            public Node(int val) {
+                this.val = val;
+            }
+
+            public Node(int val, Node left, Node right, Node next) {
+                this.val = val;
+                this.left = left;
+                this.right = right;
+                this.next = next;
+            }
+        }
+    }
+
+    /**
+     * 二叉树展开为链表
+     */
+    public TreeNode flatten(TreeNode root) {
+        
+    }
 }

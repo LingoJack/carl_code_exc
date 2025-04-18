@@ -1,7 +1,14 @@
 package main
 
-type Node struct {
+type RandomNode struct {
 	Val    int
-	Next   *Node
-	Random *Node
+	Next   *RandomNode
+	Random *RandomNode
+}
+
+type Node struct {
+	Val   int
+	Left  *Node
+	Right *Node
+	Next  *Node
 }
