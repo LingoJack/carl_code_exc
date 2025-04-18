@@ -1151,5 +1151,69 @@ func invertTree(node *TreeNode) *TreeNode {
 
 // 对称二叉树
 func isSymmetric(root *TreeNode) bool {
+	if root == nil {
+		return true
+	}
+	return check(root.Left, root.Right)
+}
 
+func check(lt *TreeNode, rt *TreeNode) bool {
+	if lt == nil && rt == nil {
+		return true
+	} else if lt != nil && rt != nil {
+		if lt.Val == rt.Val {
+			return check(lt.Left, rt.Right) && check(lt.Right, rt.Left)
+		}
+		return false
+	}
+	return false
+}
+
+// 从前序和中序遍历构造二叉树
+func buildTreeFromInorderAndPreorder(preorder []int, inorder []int) *TreeNode {
+	preorderIdx = 0
+	inorderIdxMap := make(map[int]int)
+	for i, v := range inorder {
+		inorderIdxMap[v] = i
+	}
+	return getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, 0, len(inorder)-1)
+}
+
+var preorderIdx int
+
+func getRootFromInorderScopeAndPreorderIdx(preorder []int, inorder []int, inorderIdxMap map[int]int, start int, end int) *TreeNode {
+	if end < start {
+		return nil
+	}
+	root := &TreeNode{Val: preorder[preorderIdx]}
+	preorderIdx++
+	inorderIdx := inorderIdxMap[root.Val]
+	root.Left = getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, start, inorderIdx-1)
+	root.Right = getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, inorderIdx+1, end)
+	return root
+}
+
+// 从中序和后序遍历构造二叉树
+// 本题和“从中序和先序遍历构造二叉树”的区别是子树的构造先后顺序
+func buildTreeFromInorderAndPostorder(inorder []int, postorder []int) *TreeNode {
+	postorderIdx = len(postorder) - 1
+	inorderIdxMap := make(map[int]int)
+	for i, v := range inorder {
+		inorderIdxMap[v] = i
+	}
+	return getRootFromInorderScopeAndPostorderIdx(postorder, inorder, inorderIdxMap, 0, len(inorder)-1)
+}
+
+var postorderIdx int
+
+func getRootFromInorderScopeAndPostorderIdx(postorder []int, inorder []int, inorderIdxMap map[int]int, start int, end int) *TreeNode {
+	if end < start {
+		return nil
+	}
+	root := &TreeNode{Val: postorder[postorderIdx]}
+	postorderIdx--
+	inorderIdx := inorderIdxMap[root.Val]
+	root.Right = getRootFromInorderScopeAndPostorderIdx(postorder, inorder, inorderIdxMap, inorderIdx+1, end)
+	root.Left = getRootFromInorderScopeAndPostorderIdx(postorder, inorder, inorderIdxMap, start, inorderIdx-1)
+	return root
 }

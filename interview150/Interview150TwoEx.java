@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import apple.laf.JRSUIUtils.Tree;
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
 import leetcodeHot100.link_list;
 
@@ -1144,6 +1145,73 @@ public class Interview150TwoEx {
      * 对称二叉树
      */
     public boolean isSymmetric(TreeNode root) {
-        
+        if (root == null) {
+            return true;
+        }
+        return isSysmetric(root.left, root.right);
+    }
+
+    private boolean isSysmetric(TreeNode lt, TreeNode rt) {
+        if (lt == null && rt == null) {
+            return true;
+        } else if (lt != null && rt != null) {
+            if (lt.val != rt.val) {
+                return false;
+            }
+            return isSysmetric(lt.left, rt.right) && isSysmetric(lt.right, rt.left);
+        }
+        return false;
+    }
+
+    /**
+     * 从前序和中序遍历构造二叉树
+     */
+    public TreeNode buildTreeFromInorderAndPreorder(int[] preorder, int[] inorder) {
+        preorderIdx = 0;
+        Map<Integer, Integer> inorderIdxMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            inorderIdxMap.put(inorder[i], i);
+        }
+        return getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, 0, inorder.length - 1);
+    }
+
+    private int preorderIdx;
+
+    private TreeNode getRootFromInorderScopeAndPreorderIdx(int[] preorder, int[] inorder,
+            Map<Integer, Integer> inorderIdxMap, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preorderIdx++]);
+        Integer inorderIdx = inorderIdxMap.get(root.val);
+        root.left = getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, start, inorderIdx - 1);
+        root.right = getRootFromInorderScopeAndPreorderIdx(preorder, inorder, inorderIdxMap, inorderIdx + 1, end);
+        return root;
+    }
+
+    /**
+     * 从中序和后序遍历构造二叉树
+     */
+    public TreeNode buildTreeFromInorderAndPostorder(int[] inorder, int[] postorder) {
+        postorderIdx = postorder.length - 1;
+        Map<Integer, Integer> inorderMap = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            inorderMap.put(inorder[i], i);
+        }
+        return getRootFromInorderScopeAndPostorder(postorder, inorder, inorderMap, 0, inorder.length - 1);
+    }
+
+    private int postorderIdx;
+
+    private TreeNode getRootFromInorderScopeAndPostorder(int[] postorder, int[] inorder,
+            Map<Integer, Integer> inorderIdxMap, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        TreeNode root = new TreeNode(postorder[postorderIdx--]);
+        int inorderIdx = inorderIdxMap.get(root.val);
+        root.right = getRootFromInorderScopeAndPostorder(postorder, inorder, inorderIdxMap, inorderIdx + 1, end);
+        root.left = getRootFromInorderScopeAndPostorder(postorder, inorder, inorderIdxMap, start, inorderIdx - 1);
+        return root;
     }
 }
