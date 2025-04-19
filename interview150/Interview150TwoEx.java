@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import apple.laf.JRSUIUtils.Tree;
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
 import leetcodeHot100.link_list;
 
@@ -1020,7 +1019,7 @@ public class Interview150TwoEx {
      */
     class LRUCache {
 
-        private class CacheEntry {
+        public class CacheEntry {
             private int key;
             private int val;
             private CacheEntry next;
@@ -1382,5 +1381,4 @@ public class Interview150TwoEx {
     public TreeNode flatten(TreeNode root) {
 
     }
-
 }
