@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import apple.laf.JRSUIUtils.Tree;
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
@@ -1228,7 +1229,7 @@ public class Interview150TwoEx {
             while (!queue.isEmpty()) {
                 int size = queue.size();
                 Node last = null;
-                for(int i = 0; i < size; i++) {
+                for (int i = 0; i < size; i++) {
                     Node node = queue.poll();
                     if (last != null) {
                         last.next = node;
@@ -1272,6 +1273,63 @@ public class Interview150TwoEx {
      * 二叉树展开为链表
      */
     public TreeNode flatten(TreeNode root) {
-        
+
     }
+
+    /**
+     * 统计公平数对的数目
+     */
+    public long countFairPairs(int[] nums, int lower, int upper) {
+        Map<Integer, Integer> map = new HashMap<>();
+        int count = 0;
+        for (int num : nums) {
+            for(int another : map.keySet()) {
+                int sum = another + num;
+                if (sum <= upper && sum >= lower) {
+                    count += map.get(another);
+                }
+            }
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        return count;
+    }
+
+    public long countFairPairsV2(int[] nums, int lower, int upper) {
+        Map<Integer, Integer> map = new HashMap<>();
+        List<Integer> sortedKeys = new ArrayList<>();
+        int count = 0;
+        for (int num : nums) {
+            int start = binarySearch(sortedKeys, lower - num);
+            for (int i = start; i < sortedKeys.size(); i++) {
+                int key = sortedKeys.get(i);
+                int sum = key + num;
+                if (sum > upper) {
+                    break;
+                }
+                if (sum < lower) {
+                    continue;
+                }
+                count += map.get(key);
+            }
+            sortedKeys.add(binarySearch(sortedKeys, num), num);
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        return count;
+    }
+
+    private int binarySearch(List<Integer> list, int num) {
+        // 1 2 4 6
+        int lt = 0, rt = list.size() - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (list.get(mid) > num) {
+                rt = mid - 1;
+            } else if (list.get(mid) < num) {
+                lt = mid + 1;
+            } else {
+                return mid + 1;
+            }
+        }
+        return lt;
+    }    
 }
