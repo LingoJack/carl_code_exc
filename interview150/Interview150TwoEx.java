@@ -1378,7 +1378,32 @@ public class Interview150TwoEx {
     /**
      * 二叉树展开为链表
      */
-    public TreeNode flatten(TreeNode root) {
+    public void flatten(TreeNode root) {
+        TreeNode node = root;
+        while (node != null) {
+            if (node.left != null) {
+                TreeNode right = node.right;
+                node.right = node.left;
+                node.left = null;
+                TreeNode tail = node;
+                while (tail.right != null) {
+                    tail = tail.right;
+                }
+                tail.right = right;
+            }
+            node = node.right;
+        }
+    }
 
+    /**
+     * 路径总和
+     */
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if (root == null) {
+            return false;
+        }
+        return (targetSum == root.val && root.left == null && root.right == null)
+                || hasPathSum(root.left, targetSum - root.val)
+                || hasPathSum(root.right, targetSum - root.val);
     }
 }

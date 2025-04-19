@@ -979,15 +979,50 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        String s1 = "aecddiaij";
-        String s2 = "abcdjiadiajdoaw";
-        Test iEx = new Test();
-        List<List<String>> res = iEx.longestSubstringCombinationWithSameCharacter(s2, s1);
-        for (List<String> list : res) {
-            for (String s : list) {
-                System.out.print(s + " ");
+        // int[] nums = new int[]{1, 2, 3, 4, 5, 6};
+        int[] nums = new int[] { 1, 11, 8, 14, 6, 13 };
+        System.out.println(new Test().isContinue(nums));
+    }
+
+    /**
+     * 拼多多一面
+     * 一副扑克牌随机抽六张牌，判断是不是顺子（数字连在一起的，比如A23456），大小王可以当任意牌用
+     */
+    public boolean isContinue(int[] nums) {
+        boolean[] exist = new boolean[15]; // 0 - 14
+        for (int num : nums) {
+            if (exist[num]) {
+                return false;
             }
-            System.out.println();
+            exist[num] = true;
         }
+        int any = 0;
+        if (exist[13]) {
+            any++;
+        }
+        if (exist[14]) {
+            any++;
+        }
+        int count = 0;
+        for (int num : nums) {
+            if (exist[num - 1]) {
+                continue;
+            }
+            // !exist[num - 1] 可能是起点
+            while (exist[num] || any > 0) {
+                if (!exist[num]) {
+                    any--;
+                }
+                num++;
+                count++;
+                if (count == 6) {
+                    return true;
+                }
+            }
+            if (count < 6) {
+                return false;
+            }
+        }
+        return false;
     }
 }

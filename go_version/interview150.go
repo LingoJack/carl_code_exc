@@ -1248,5 +1248,28 @@ func connect(root *Node) *Node {
 
 // 二叉树展开为链表
 func flatten(root *TreeNode) {
+	node := root
+	for node != nil {
+		if node.Left != nil {
+			left := node.Left
+			node.Left = nil
+			tail := left
+			for tail.Right != nil {
+				tail = tail.Right
+			}
+			tail.Right = node.Right
+			node.Right = left
+		}
+		node = node.Right
+	}
+}
 
+// 路径总和
+func hasPathSum(root *TreeNode, targetSum int) bool {
+	if root == nil {
+		return false
+	}
+	return (root.Val == targetSum && root.Left == nil && root.Right == nil) ||
+		hasPathSum(root.Left, targetSum-root.Val) ||
+		hasPathSum(root.Right, targetSum-root.Val)
 }
