@@ -1273,3 +1273,31 @@ func hasPathSum(root *TreeNode, targetSum int) bool {
 		hasPathSum(root.Left, targetSum-root.Val) ||
 		hasPathSum(root.Right, targetSum-root.Val)
 }
+
+// 求根节点到叶子节点数字之和
+func sumNumbers(root *TreeNode) int {
+	sum = 0
+	dfs(root, 0)
+	return sum
+}
+
+var sum int
+
+func dfs(node *TreeNode, pathSum int) {
+	if node.Left == nil && node.Right == nil {
+		sum += node.Val + pathSum
+		return
+	}
+	pathSum = (pathSum + node.Val) * 10
+	if node.Left != nil {
+		dfs(node.Left, pathSum)
+	}
+	if node.Right != nil {
+		dfs(node.Right, pathSum)
+	}
+}
+
+// 二叉树中的最大路径和
+func maxPathSum(root *TreeNode) int {
+
+}

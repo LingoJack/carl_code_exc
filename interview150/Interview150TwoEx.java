@@ -1406,4 +1406,36 @@ public class Interview150TwoEx {
                 || hasPathSum(root.left, targetSum - root.val)
                 || hasPathSum(root.right, targetSum - root.val);
     }
+
+    /**
+     * 求根节点到叶子节点数字之和
+     */
+    public int sumNumbers(TreeNode root) {
+        this.sum = 0;
+        dfs(root, 0);
+        return this.sum;
+    }
+
+    private int sum;
+
+    private void dfs(TreeNode node, int pathSum) {
+        if (node.left == null && node.right == null) {
+            sum += pathSum + node.val;
+            return;
+        }
+        int val = (pathSum + node.val) * 10;
+        if (node.left != null) {
+            dfs(node.left, val);
+        }
+        if (node.right != null) {
+            dfs(node.right, val);
+        }
+    }
+
+    /**
+     * 二叉树中的最大路径和
+     */
+    public int maxPathSum(TreeNode root) {
+
+    }
 }
