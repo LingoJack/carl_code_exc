@@ -1270,20 +1270,38 @@ public class Interview150TwoEx {
     }
 
     /**
-     * 二叉树展开为链表
+     * 统计公平数对的数目
+     * 这个类似两数之和的解法是超时的
+     * 需要注意到，因为不需要返回具体的数对，只需要数对的数量，所以排序不会影响最终结果
      */
-    public TreeNode flatten(TreeNode root) {
-
+    public long countFairPairs(int[] nums, int lower, int upper) {
+        Arrays.sort(nums);
+        long count = 0;
+        int mid = nums.length - 1, rt = nums.length - 1;
+        for (int lt = 0; lt < nums.length - 1; lt++) {
+            while (mid > lt && nums[mid] + nums[lt] >= lower) {
+                mid--;
+            }
+            while (rt > lt && nums[rt] + nums[lt] > upper) {
+                rt--;
+            }
+            // System.out.printf("lt = %s, mid = %s, rt = %s, delta count = %s\n", lt, mid,
+            // rt, rt - mid);
+            count += Math.max(rt, lt) - Math.max(mid, lt);
+        }
+        return count;
     }
 
     /**
      * 统计公平数对的数目
+     * 这个类似两数之和的解法是超时的
+     * 需要注意到，因为不需要返回具体的数对，只需要数对的数量，所以排序不会影响最终结果
      */
-    public long countFairPairs(int[] nums, int lower, int upper) {
+    public long countFairPairsTimeExceed(int[] nums, int lower, int upper) {
         Map<Integer, Integer> map = new HashMap<>();
         int count = 0;
         for (int num : nums) {
-            for(int another : map.keySet()) {
+            for (int another : map.keySet()) {
                 int sum = another + num;
                 if (sum <= upper && sum >= lower) {
                     count += map.get(another);
@@ -1294,42 +1312,75 @@ public class Interview150TwoEx {
         return count;
     }
 
-    public long countFairPairsV2(int[] nums, int lower, int upper) {
-        Map<Integer, Integer> map = new HashMap<>();
-        List<Integer> sortedKeys = new ArrayList<>();
-        int count = 0;
-        for (int num : nums) {
-            int start = binarySearch(sortedKeys, lower - num);
-            for (int i = start; i < sortedKeys.size(); i++) {
-                int key = sortedKeys.get(i);
-                int sum = key + num;
-                if (sum > upper) {
-                    break;
-                }
-                if (sum < lower) {
-                    continue;
-                }
-                count += map.get(key);
+    public long countFairPairsAwesomeSolutionBinarySearchArray(int[] nums, int lower, int upper) {
+        Arrays.sort(nums);
+        long ans = 0;
+        for (int j = 0; j < nums.length; j++) {
+            int r = lowerBound(nums, j, upper - nums[j] + 1);
+            int l = lowerBound(nums, j, lower - nums[j]);
+            ans += r - l;
+        }
+        return ans;
+    }
+
+    private int lowerBound(int[] nums, int right, int target) {
+        int left = -1;
+        while (left + 1 < right) {
+            int mid = (left + right) >>> 1;
+            if (nums[mid] < target) {
+                left = mid;
+            } else {
+                right = mid;
             }
-            sortedKeys.add(binarySearch(sortedKeys, num), num);
-            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        return right;
+    }
+
+    public long countFairPairsWithBinarySearch(int[] nums, int lower, int upper) {
+        List<Integer> list = new ArrayList<>();
+        long count = 0;
+        for (int num : nums) {
+            int left = lowerBound(list, lower - num);
+            int right = upperBound(list, upper - num);
+            count += right - left;
+            int pos = lowerBound(list, num);
+            list.add(pos, num);
         }
         return count;
     }
 
-    private int binarySearch(List<Integer> list, int num) {
-        // 1 2 4 6
-        int lt = 0, rt = list.size() - 1;
-        while (lt <= rt) {
-            int mid = (lt + rt) >> 1;
-            if (list.get(mid) > num) {
-                rt = mid - 1;
-            } else if (list.get(mid) < num) {
-                lt = mid + 1;
+    private int lowerBound(List<Integer> list, int target) {
+        int left = 0, right = list.size() - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (list.get(mid) < target) {
+                left = mid + 1;
             } else {
-                return mid + 1;
+                right = mid - 1;
             }
         }
-        return lt;
-    }    
+        return left;
+    }
+
+    // 返回第一个 > target 的位置（upper_bound）
+    private int upperBound(List<Integer> list, int target) {
+        int left = 0, right = list.size() - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (list.get(mid) <= target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return left;
+    }
+
+    /**
+     * 二叉树展开为链表
+     */
+    public TreeNode flatten(TreeNode root) {
+
+    }
+
 }
