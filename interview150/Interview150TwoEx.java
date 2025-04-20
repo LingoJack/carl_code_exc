@@ -1601,6 +1601,67 @@ public class Interview150TwoEx {
      * 二叉树的层序遍历
      */
     public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                list.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 二叉搜索树的最小绝对差
+     */
+    public int getMinimumDifference(TreeNode root) {
+        minDiff = Integer.MAX_VALUE;
+        dfs4GetMinimunDifference(root);
+        return minDiff;
+    }
+
+    private int minDiff;
+
+    private void dfs4GetMinimunDifference(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        if (node.left != null) {
+            TreeNode ltTail = node.left;
+            while (ltTail.right != null) {
+                ltTail = ltTail.right;
+            }
+            minDiff = Math.min(minDiff, Math.abs(ltTail.val - node.val));
+            dfs4GetMinimunDifference(node.left);
+        }
+        if (node.right != null) {
+            TreeNode rtHead = node.right;
+            while (rtHead.left != null) {
+                rtHead = rtHead.left;
+            }
+            minDiff = Math.min(minDiff, Math.abs(rtHead.val - node.val));
+            dfs4GetMinimunDifference(node.right);
+        }
+    }
+
+    /**
+     * 二叉搜索树中第K小的元素
+     */
+    public int kthSmallest(TreeNode root, int k) {
         
     }
 }
