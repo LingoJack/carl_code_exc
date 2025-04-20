@@ -1508,5 +1508,19 @@ func getMinimumDifference(root *TreeNode) int {
 
 // 二叉搜索树中第K小的元素
 func kthSmallest(root *TreeNode, k int) int {
-
+	res := 0
+	var dfs func(node *TreeNode)
+	dfs = func(node *TreeNode) {
+		if node == nil {
+			return
+		}
+		dfs(node.Left)
+		k--
+		if k == 0 {
+			res = node.Val
+		}
+		dfs(node.Right)
+	}
+	dfs(root)
+	return res
 }

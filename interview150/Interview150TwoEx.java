@@ -1662,6 +1662,25 @@ public class Interview150TwoEx {
      * 二叉搜索树中第K小的元素
      */
     public int kthSmallest(TreeNode root, int k) {
+        this.k = k;
+        dfs4KthSmallest(root);
+        return res;
+    }
 
+    private int k;
+
+    private int res;
+
+    private void dfs4KthSmallest(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        dfs4KthSmallest(node.left);
+        this.k--;
+        if (this.k == 0) {
+            this.res = node.val;
+            return;
+        }
+        dfs4KthSmallest(node.right);
     }
 }
