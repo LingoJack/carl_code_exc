@@ -1662,6 +1662,6 @@ public class Interview150TwoEx {
      * 二叉搜索树中第K小的元素
      */
     public int kthSmallest(TreeNode root, int k) {
-        
+
     }
 }
