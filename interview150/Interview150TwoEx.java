@@ -1436,6 +1436,143 @@ public class Interview150TwoEx {
      * 二叉树中的最大路径和
      */
     public int maxPathSum(TreeNode root) {
+        maxSum = Integer.MIN_VALUE;
+        dfs(root);
+        return maxSum;
+    }
 
+    private int maxSum;
+
+    private int dfs(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = dfs(node.left);
+        int rt = dfs(node.right);
+        lt = lt > 0 ? lt : 0;
+        rt = rt > 0 ? rt : 0;
+        maxSum = Math.max(maxSum, node.val + lt + rt);
+        return node.val + Math.max(lt, rt);
+    }
+
+    /**
+     * 完全二叉树的节点个数
+     */
+    public int countNodes(TreeNode root) {
+        count = 0;
+        dfs4CountNodes(root);
+        return count;
+    }
+
+    private int count;
+
+    private void dfs4CountNodes(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        count++;
+        dfs4CountNodes(node.left);
+        dfs4CountNodes(node.right);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     * 层序遍历的解法
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (isAncestor(p, q)) {
+            return p;
+        }
+        if (isAncestor(q, p)) {
+            return q;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        if (root == null) {
+            return null;
+        }
+        queue.offer(root);
+        TreeNode ancestor = null;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (isAncestor(node, p) && isAncestor(node, q)) {
+                    ancestor = node;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return ancestor;
+    }
+
+    private boolean isAncestor(TreeNode ancestor, TreeNode node) {
+        if (ancestor == null) {
+            return false;
+        }
+        if (ancestor == node) {
+            return true;
+        }
+        return isAncestor(ancestor.left, node) || isAncestor(ancestor.right, node);
+    }
+
+    /**
+     * 二叉树的最近公共祖先
+     * DFS解法，十分巧妙
+     */
+    public TreeNode lowestCommonAncestorDFS(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return null;
+        }
+        if (root == p || root == q) {
+            return root;
+        }
+        TreeNode lt = lowestCommonAncestorDFS(root.left, p, q);
+        TreeNode rt = lowestCommonAncestorDFS(root.right, p, q);
+        if (lt == null && rt == null) {
+            return null;
+        } else if (lt != null && rt != null) {
+            return root;
+        }
+        return lt == null ? rt : lt;
+    }
+
+    /**
+     * 二叉树的右视图
+     */
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for(int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+                if (i == size - 1) {
+                    res.add(node.val);
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 二叉树的层平均值
+     */
+    public List<Double> averageOfLevels(TreeNode root) {
+        
     }
 }

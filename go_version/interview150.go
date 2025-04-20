@@ -1276,28 +1276,152 @@ func hasPathSum(root *TreeNode, targetSum int) bool {
 
 // 求根节点到叶子节点数字之和
 func sumNumbers(root *TreeNode) int {
-	sum = 0
+	sum := 0
+	var dfs func(node *TreeNode, pathSum int)
+	dfs = func(node *TreeNode, pathSum int) {
+		if node.Left == nil && node.Right == nil {
+			sum += node.Val + pathSum
+			return
+		}
+		pathSum = (pathSum + node.Val) * 10
+		if node.Left != nil {
+			dfs(node.Left, pathSum)
+		}
+		if node.Right != nil {
+			dfs(node.Right, pathSum)
+		}
+	}
 	dfs(root, 0)
 	return sum
 }
 
-var sum int
+// 二叉树中的最大路径和
+func maxPathSum(root *TreeNode) int {
+	maxSum := math.MinInt32
+	var dfs func(node *TreeNode) int
+	dfs = func(node *TreeNode) int {
+		if node == nil {
+			return 0
+		}
+		lt := max(0, dfs(node.Left))
+		rt := max(0, dfs(node.Right))
+		maxSum = max(maxSum, lt+rt+node.Val)
+		return node.Val + max(lt, rt)
+	}
+	dfs(root)
+	return maxSum
+}
 
-func dfs(node *TreeNode, pathSum int) {
-	if node.Left == nil && node.Right == nil {
-		sum += node.Val + pathSum
-		return
+// 完全二叉树的节点个数
+func countNodes(root *TreeNode) int {
+	var dfs func(node *TreeNode)
+	count := 0
+	dfs = func(node *TreeNode) {
+		if node == nil {
+			return
+		}
+		count++
+		dfs(node.Left)
+		dfs(node.Right)
 	}
-	pathSum = (pathSum + node.Val) * 10
-	if node.Left != nil {
-		dfs(node.Left, pathSum)
+	dfs(root)
+	return count
+}
+
+// 二叉树的最近公共祖先
+// 层序遍历的解法
+func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
+	var isAncestor func(ancestor *TreeNode, node *TreeNode) bool
+	isAncestor = func(ancestor, node *TreeNode) bool {
+		if ancestor == nil {
+			return false
+		}
+		if ancestor == node {
+			return true
+		}
+		return isAncestor(ancestor.Left, node) || isAncestor(ancestor.Right, node)
 	}
-	if node.Right != nil {
-		dfs(node.Right, pathSum)
+	if isAncestor(p, q) {
+		return p
+	}
+	if isAncestor(q, p) {
+		return q
+	}
+	var ancestor *TreeNode
+	queue := make([]*TreeNode, 0)
+	if root == nil {
+		return nil
+	}
+	queue = append(queue, root)
+	for len(queue) > 0 {
+		l := len(queue)
+		for i := 0; i < l; i++ {
+			node := queue[0]
+			queue = queue[1:]
+			if isAncestor(node, p) && isAncestor(node, q) {
+				ancestor = node
+			}
+			if node.Left != nil {
+				queue = append(queue, node.Left)
+			}
+			if node.Right != nil {
+				queue = append(queue, node.Right)
+			}
+		}
+	}
+	return ancestor
+}
+
+// 二叉树的最近公共祖先
+func lowestCommonAncestorDFS(root, p, q *TreeNode) *TreeNode {
+	if root == nil {
+		return nil
+	}
+	if root == p || root == q {
+		return root
+	}
+	lt := lowestCommonAncestorDFS(root.Left, p, q)
+	rt := lowestCommonAncestorDFS(root.Right, p, q)
+	if lt == nil && rt == nil {
+		return nil
+	} else if lt != nil && rt != nil {
+		return root
+	}
+	if rt == nil {
+		return lt
+	} else {
+		return rt
 	}
 }
 
-// 二叉树中的最大路径和
-func maxPathSum(root *TreeNode) int {
+// 二叉树的右视图
+func rightSideView(root *TreeNode) []int {
+	queue := make([]*TreeNode, 0)
+	if root == nil {
+		return nil
+	}
+	res := make([]int, 0)
+	queue = append(queue, root)
+	for len(queue) > 0 {
+		size := len(queue)
+		for i := 0; i < size; i++ {
+			node := queue[0]
+			queue = queue[1:]
+			if node.Left != nil {
+				queue = append(queue, node.Left)
+			}
+			if node.Right != nil {
+				queue = append(queue, node.Right)
+			}
+			if i == size-1 {
+				res = append(res, node.Val)
+			}
+		}
+	}
+	return res
+}
+
+// 二叉树的层平均值
+func averageOfLevels(root *TreeNode) []float64 {
 
 }
