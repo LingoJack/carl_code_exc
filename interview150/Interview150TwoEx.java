@@ -1683,4 +1683,77 @@ public class Interview150TwoEx {
         }
         dfs4KthSmallest(node.right);
     }
+
+    /**
+     * 验证二叉搜索树
+     * DFS解法
+     */
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        TreeNode lt = root.left;
+        while (lt != null && lt.right != null) {
+            lt = lt.right;
+        }
+        if (lt != null && lt.val >= root.val) {
+            return false;
+        }
+        TreeNode rt = root.right;
+        while (rt != null && rt.left != null) {
+            rt = rt.left;
+        }
+        if (rt != null && rt.val <= root.val) {
+            return false;
+        }
+        return isValidBST(root.left) && isValidBST(root.right);
+    }
+
+    /**
+     * 验证二叉搜索树
+     * BFS解法
+     */
+    public boolean isValidBSTWithBFS(TreeNode root) {
+        if (root == null) {
+            return false;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (!valid(node)) {
+                return false;
+            }
+            if (node.left != null) {
+                queue.offer(node.left);
+            }
+            if (node.right != null) {
+                queue.offer(node.right);
+            }
+        }
+        return true;
+    }
+
+    private boolean valid(TreeNode node) {
+        if (node == null) {
+            return true;
+        }
+        TreeNode ltTail = node.left, rtHead = node.right;
+        while (ltTail != null && ltTail.right != null) {
+            ltTail = ltTail.right;
+        }
+        while (rtHead != null && rtHead.left != null) {
+            rtHead = rtHead.left;
+        }
+        long lt = ltTail == null ? Long.MIN_VALUE : ltTail.val;
+        long rt = rtHead == null ? Long.MAX_VALUE : rtHead.val;
+        return (lt < node.val) && (node.val < rt);
+    }
+
+    /**
+     * 岛屿数量
+     */
+    public int numIslands(char[][] grid) {
+        
+    }
 }

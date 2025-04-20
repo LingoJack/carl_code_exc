@@ -1524,3 +1524,30 @@ func kthSmallest(root *TreeNode, k int) int {
 	dfs(root)
 	return res
 }
+
+// 验证二叉搜索树
+func isValidBST(root *TreeNode) bool {
+	if root == nil {
+		return true
+	}
+	lt := root.Left
+	for lt != nil && lt.Right != nil {
+		lt = lt.Right
+	}
+	if lt != nil && lt.Val >= root.Val {
+		return false
+	}
+	rt := root.Right
+	for rt != nil && rt.Left != nil {
+		rt = rt.Left
+	}
+	if rt != nil && rt.Val <= root.Val {
+		return false
+	}
+	return isValidBST(root.Left) && isValidBST(root.Right)
+}
+
+// 岛屿数量
+func numIslands(grid [][]byte) int {
+
+}
