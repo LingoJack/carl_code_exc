@@ -1754,6 +1754,87 @@ public class Interview150TwoEx {
      * 岛屿数量
      */
     public int numIslands(char[][] grid) {
+        int count = 0;
+        int row = grid.length, col = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (grid[i][j] == '0') {
+                    continue;
+                }
+                count++;
+                dfs(grid, i, j);
+            }
+        }
+        return count;
+    }
+
+    private void dfs(char[][] grid, int rowIdx, int colIdx) {
+        int row = grid.length, col = grid[0].length;
+        if (!(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col)) {
+            return;
+        }
+        if (grid[rowIdx][colIdx] != '1') {
+            return;
+        }
+        grid[rowIdx][colIdx] = '0';
+        dfs(grid, rowIdx - 1, colIdx);
+        dfs(grid, rowIdx + 1, colIdx);
+        dfs(grid, rowIdx, colIdx - 1);
+        dfs(grid, rowIdx, colIdx + 1);
+    }
+
+    /**
+     * 课程表
+     */
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        int[] inDegrees = new int[numCourses];
+        Map<Integer, List<Integer>> succeedCoursesMap = new HashMap<>();
+        for (int[] rel : prerequisites) {
+            inDegrees[rel[0]]++;
+            List<Integer> list = succeedCoursesMap.getOrDefault(rel[1], new ArrayList<>());
+            list.add(rel[0]);
+            succeedCoursesMap.put(rel[1], list);
+        }
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegrees[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        int valid = 0;
+        while (!queue.isEmpty()) {
+            Integer course = queue.poll();
+            valid++;
+            List<Integer> list = succeedCoursesMap.getOrDefault(course, new ArrayList<>());
+            for (Integer succeed : list) {
+                inDegrees[succeed]--;
+                if (inDegrees[succeed] == 0) {
+                    queue.offer(succeed);
+                }
+            }
+        }
+        return valid == numCourses;
+    }
+
+    /**
+     * 实现Trie（前缀树）
+     */
+    class Trie {
+
+        public Trie() {
+            
+        }
         
+        public void insert(String word) {
+            
+        }
+        
+        public boolean search(String word) {
+            
+        }
+        
+        public boolean startsWith(String prefix) {
+            
+        }
     }
 }

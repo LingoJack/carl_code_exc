@@ -1549,5 +1549,81 @@ func isValidBST(root *TreeNode) bool {
 
 // 岛屿数量
 func numIslands(grid [][]byte) int {
+	count := 0
+	row, col := len(grid), len(grid[0])
+	var dfs func(grid [][]byte, rowIdx, colIdx int)
+	dfs = func(grid [][]byte, rowIdx, colIdx int) {
+		if !(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col) {
+			return
+		}
+		if grid[rowIdx][colIdx] != '1' {
+			return
+		}
+		grid[rowIdx][colIdx] = '0'
+		dfs(grid, rowIdx-1, colIdx)
+		dfs(grid, rowIdx+1, colIdx)
+		dfs(grid, rowIdx, colIdx-1)
+		dfs(grid, rowIdx, colIdx+1)
+	}
+	for i := 0; i < row; i++ {
+		for j := 0; j < col; j++ {
+			if grid[i][j] == '0' {
+				continue
+			}
+			count++
+			dfs(grid, i, j)
+		}
+	}
+	return count
+}
+
+func canFinish(numCourses int, prerequisites [][]int) bool {
+	// 课程表
+	succeedCoursesMap := make(map[int][]int)
+	inDegrees := make([]int, numCourses)
+	for _, rel := range prerequisites {
+		inDegrees[rel[0]]++
+		succeedCoursesMap[rel[1]] = append(succeedCoursesMap[rel[1]], rel[0])
+	}
+	queue := make([]int, 0)
+	for course, inDegree := range inDegrees {
+		if inDegree == 0 {
+			queue = append(queue, course)
+		}
+	}
+	count := 0
+	for len(queue) > 0 {
+		course := queue[0]
+		queue = queue[1:]
+		count++
+		if list, exist := succeedCoursesMap[course]; exist {
+			for _, succeed := range list {
+				inDegrees[succeed]--
+				if inDegrees[succeed] == 0 {
+					queue = append(queue, succeed)
+				}
+			}
+		}
+	}
+	return count == numCourses
+}
+
+// 实现Trie（前缀树）
+type Trie struct {
+}
+
+func Constructor() Trie {
+
+}
+
+func (this *Trie) Insert(word string) {
+
+}
+
+func (this *Trie) Search(word string) bool {
+
+}
+
+func (this *Trie) StartsWith(prefix string) bool {
 
 }
