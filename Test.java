@@ -1049,4 +1049,45 @@ public class Test {
         }
         return res;
     }
+
+    /**
+     * 字节Tiktok一面
+     * 将数组分割成和相等的子数组，问可分割的子数组的个数最大是多少
+     */
+    public int valid(int[] nums) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        for (int partNum = nums.length; partNum >= 2; partNum--) {
+            if (sum % partNum != 0) {
+                continue;
+            }
+            int target = sum / partNum;
+            if (dfs(nums, target, 0, 0, partNum)) {
+                return partNum;
+            }
+        }
+        return 1;
+    }
+
+    private boolean dfs(int[] nums, int target, int start, int count, int needPartNum) {
+        if (start == nums.length) {
+            return count == needPartNum;
+        }
+        for (int i = start; i < nums.length; i++) {
+            if (check(nums, start, i, target)) {
+                return dfs(nums, target, i + 1, count + 1, needPartNum);
+            }
+        }
+        return false;
+    }
+
+    private boolean check(int[] nums, int start, int end, int target) {
+        int sum = 0;
+        for (int i = start; i <= end; i++) {
+            sum += nums[i];
+        }
+        return sum == target;
+    }
 }

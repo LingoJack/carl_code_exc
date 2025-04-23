@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
+import interview150.Interview150TwoEx.Trie.Node;
 import leetcodeHot100.link_list;
 
 public class Interview150TwoEx {
@@ -1821,20 +1822,59 @@ public class Interview150TwoEx {
      */
     class Trie {
 
+        private class Node {
+            char c;
+            Map<Character, Node> next;
+            boolean isEndOfWord;
+
+            public Node(char c) {
+                this.c = c;
+                this.next = new HashMap<>();
+                this.isEndOfWord = false;
+            }
+        }
+
+        private Node root;
+
+        Map<String, Boolean> map;
+
         public Trie() {
-            
+            this.root = new Node('0');
+            this.map = new HashMap<>();
         }
-        
+
         public void insert(String word) {
-            
+            map.put(word, true);
+            int len = word.length();
+            Node node = root;
+            for (int i = 0; i < len; i++) {
+                char c = word.charAt(i);
+                if (node.next.containsKey(c)) {
+                    node = node.next.get(c);
+                    continue;
+                }
+                Node newNode = new Node(c);
+                node.next.put(c, newNode);
+                node = node.next.get(c);
+            }
+            node.isEndOfWord = true;
         }
-        
+
         public boolean search(String word) {
-            
+            return map.containsKey(word);
         }
-        
+
         public boolean startsWith(String prefix) {
-            
+            Node node = root;
+            int len = prefix.length();
+            for (int i = 0; i < len; i++) {
+                char c = prefix.charAt(i);
+                if (!node.next.containsKey(c)) {
+                    return false;
+                }
+                node = node.next.get(c);
+            }
+            return node.isEndOfWord;
         }
     }
 }
