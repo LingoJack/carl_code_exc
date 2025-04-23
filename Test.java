@@ -1021,7 +1021,7 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        int[] nums = new int[] { 1, 2, 3 };
+        int[] nums = new int[] { 1, 1, 1, 1, 1, 10 };
         int upperBound = 4;
         System.out.println(new Test().cowGirlGem(upperBound, nums));
     }
@@ -1033,6 +1033,20 @@ public class Test {
      * 每次可以选择加上或减去nums[i]，求问能最小的绝对值
      */
     public int cowGirlGem(int upperBound, int[] nums) {
-        
+        Set<Integer> set = new HashSet<>();
+        set.add(0);
+        for (int i = 0; i < nums.length; i++) {
+            Set<Integer> newSet = new HashSet<>();
+            for (int sum : set) {
+                newSet.add(sum + nums[i]);
+                newSet.add(sum - nums[i]);
+            }
+            set = newSet;
+        }
+        int res = Integer.MAX_VALUE;
+        for (int sum : set) {
+            res = Math.min(Math.abs(sum), res);
+        }
+        return res;
     }
 }
