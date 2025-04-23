@@ -978,12 +978,6 @@ public class Test {
         return list;
     }
 
-    public static void main(String[] args) {
-        // int[] nums = new int[]{1, 2, 3, 4, 5, 6};
-        int[] nums = new int[] { 1, 11, 8, 14, 6, 13 };
-        System.out.println(new Test().isContinue(nums));
-    }
-
     /**
      * 拼多多一面
      * 一副扑克牌随机抽六张牌，判断是不是顺子（数字连在一起的，比如A23456），大小王可以当任意牌用
@@ -1024,5 +1018,21 @@ public class Test {
             }
         }
         return false;
+    }
+
+    public static void main(String[] args) {
+        int[] nums = new int[] { 1, 2, 3 };
+        int upperBound = 4;
+        System.out.println(new Test().cowGirlGem(upperBound, nums));
+    }
+
+    /**
+     * 牛妹的宝石
+     * nums，长度为len，上界为upperBound，对于[1, upperBound]中的数，nums中至少会出现一次
+     * 0 < upperBound <= len
+     * 每次可以选择加上或减去nums[i]，求问能最小的绝对值
+     */
+    public int cowGirlGem(int upperBound, int[] nums) {
+        
     }
 }
