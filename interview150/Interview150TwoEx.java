@@ -1874,7 +1874,51 @@ public class Interview150TwoEx {
                 }
                 node = node.next.get(c);
             }
-            return node.isEndOfWord;
+            return true;
         }
+    }
+
+    /**
+     * 电话号码的字母组合
+     */
+    public List<String> letterCombinations(String digits) {
+        char[][] map = new char[][] {
+                {},
+                {},
+                { 'a', 'b', 'c' },
+                { 'd', 'e', 'f' },
+                { 'g', 'h', 'i' },
+                { 'j', 'k', 'l' },
+                { 'm', 'n', 'o' },
+                { 'p', 'q', 'r', 's' },
+                { 't', 'u', 'v' },
+                { 'w', 'x', 'y', 'z' }
+        };
+        List<String> res = new ArrayList<>();
+        dfs(res, map, 0, digits, new StringBuilder());
+        return res;
+    }
+
+    private void dfs(List<String> res, char[][] map, int idx, String digit, StringBuilder sb) {
+        if (idx == digit.length()) {
+            if (sb.isEmpty()) {
+                return;
+            }
+            res.add(sb.toString());
+            return;
+        }
+        char[] chs = map[digit.charAt(idx) - '0'];
+        for (char c : chs) {
+            sb.append(c);
+            dfs(res, map, idx + 1, digit, sb);
+            sb.setLength(sb.length() - 1);
+        }
+    }
+
+    /**
+     * 组合
+     */
+    public List<List<Integer>> combine(int n, int k) {
+
     }
 }
