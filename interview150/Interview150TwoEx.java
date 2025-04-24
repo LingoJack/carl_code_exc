@@ -1920,24 +1920,19 @@ public class Interview150TwoEx {
      */
     public List<List<Integer>> combine(int n, int k) {
         List<List<Integer>> res = new ArrayList<>();
-        dfs(res, new ArrayList<>(), new boolean[n + 1], k, 1);
+        dfs(res, new ArrayList<>(), k, 1, n);
         return res;
     }
 
-    private void dfs(List<List<Integer>> res, List<Integer> list, boolean[] used, int k, int start) {
+    private void dfs(List<List<Integer>> res, List<Integer> list, int k, int start, int n) {
         if (list.size() == k) {
             res.add(new ArrayList<>(list));
             return;
         }
-        for (int i = start; i < used.length; i++) {
-            if (used[i]) {
-                continue;
-            }
-            used[i] = true;
+        for (int i = start; i <= n; i++) {
             list.add(i);
-            dfs(res, list, used, k, i + 1);
+            dfs(res, list, k, i + 1, n);
             list.remove(list.size() - 1);
-            used[i] = false;
         }
     }
 
@@ -1971,6 +1966,116 @@ public class Interview150TwoEx {
      * 组合总和
      */
     public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), candidates, target, 0);
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> res, List<Integer> list, int[] candidates, int target, int start) {
+        if (target == 0) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        if (start == candidates.length) {
+            return;
+        }
+        dfs(res, list, candidates, target, start + 1);
+        if (candidates[start] <= target) {
+            list.add(candidates[start]);
+            dfs(res, list, candidates, target - candidates[start], start);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    /**
+     * 括号生成
+     */
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        dfs(res, new StringBuilder(), n, n);
+        return res;
+    }
+
+    private void dfs(List<String> res, StringBuilder sb, int leftCount, int rightCount) {
+        if (leftCount == 0 && rightCount == 0) {
+            res.add(sb.toString());
+            return;
+        }
+        if (leftCount > 0) {
+            sb.append('(');
+            dfs(res, sb, leftCount - 1, rightCount);
+            sb.setLength(sb.length() - 1);
+        }
+        if (rightCount > leftCount) {
+            sb.append(')');
+            dfs(res, sb, leftCount, rightCount - 1);
+            sb.setLength(sb.length() - 1);
+        }
+    }
+
+    /**
+     * 单词搜索
+     */
+    public boolean exist(char[][] board, String word) {
+        int row = board.length, col = board[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (dfs(board, word, new boolean[row][col], 0, i, j)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(char[][] board, String word, boolean[][] used, int matchIdx, int rowIdx, int colIdx) {
+        if (matchIdx == word.length()) {
+            return true;
+        }
+        int row = board.length, col = board[0].length;
+        if (!(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col)) {
+            return false;
+        }
+        if (used[rowIdx][colIdx]) {
+            return false;
+        }
+        if (board[rowIdx][colIdx] != word.charAt(matchIdx)) {
+            return false;
+        }
+        used[rowIdx][colIdx] = true;
+        boolean res = dfs(board, word, used, matchIdx + 1, rowIdx + 1, colIdx)
+                || dfs(board, word, used, matchIdx + 1, rowIdx - 1, colIdx)
+                || dfs(board, word, used, matchIdx + 1, rowIdx, colIdx + 1)
+                || dfs(board, word, used, matchIdx + 1, rowIdx, colIdx - 1);
+        used[rowIdx][colIdx] = false;
+        return res;
+    }
+
+    /**
+     * 将有序数组转换为二叉搜索树
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+        if (nums == null) {
+            return null;
+        }
+        return dfs(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode dfs(int[] nums, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int mid = (start + end) >> 1;
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = dfs(nums, start, mid - 1);
+        root.right = dfs(nums, mid + 1, end);
+        return root;
+    }
+
+    /**
+     * 排序链表
+     */
+    public ListNode sortList(ListNode head) {
+
     }
 }
