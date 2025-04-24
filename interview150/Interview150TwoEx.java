@@ -1919,6 +1919,58 @@ public class Interview150TwoEx {
      * 组合
      */
     public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), new boolean[n + 1], k, 1);
+        return res;
+    }
 
+    private void dfs(List<List<Integer>> res, List<Integer> list, boolean[] used, int k, int start) {
+        if (list.size() == k) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = start; i < used.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(i);
+            dfs(res, list, used, k, i + 1);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    /**
+     * 全排列
+     */
+    public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), nums, new boolean[nums.length]);
+        return res;
+    }
+
+    private void dfs(List<List<Integer>> res, List<Integer> list, int[] nums, boolean[] used) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(nums[i]);
+            dfs(res, list, nums, used);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    /**
+     * 组合总和
+     */
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        
     }
 }
