@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
 import interview150.Interview150TwoEx.Trie.Node;
@@ -2121,6 +2123,46 @@ public class Interview150TwoEx {
      * 合并K个升序链表
      */
     public ListNode mergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode> priorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
+        for (ListNode list : lists) {
+            if (list == null) {
+                continue;
+            }
+            priorityQueue.offer(list);
+        }
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (!priorityQueue.isEmpty()) {
+            ListNode node = priorityQueue.poll();
+            last.next = node;
+            last = node;
+            if (node.next != null) {
+                priorityQueue.offer(node.next);
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 最大子数组和
+     */
+    public int maxSubArray(int[] nums) {
+        int sum = 0;
+        int max = nums[0];
+        for(int num : nums) {
+            if (sum < 0) {
+                sum = 0;
+            }
+            sum += num;
+            max = Math.max(max, sum);
+        }
+        return max;
+    }
+
+    /**
+     * 搜索插入位置
+     */
+    public int searchInsert(int[] nums, int target) {
 
     }
 }
