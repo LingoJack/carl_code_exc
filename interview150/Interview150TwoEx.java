@@ -2076,6 +2076,51 @@ public class Interview150TwoEx {
      * 排序链表
      */
     public ListNode sortList(ListNode head) {
+        // 由于需要递归调用sortList，故需要设置截止条件
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode[] frontAndBackHeads = splitList(head);
+        ListNode front = sortList(frontAndBackHeads[0]);
+        ListNode back = sortList(frontAndBackHeads[1]);
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (front != null || back != null) {
+            int frontVal = front == null ? Integer.MAX_VALUE : front.val;
+            int backVal = back == null ? Integer.MAX_VALUE : back.val;
+            if (frontVal < backVal) {
+                last.next = front;
+                last = front;
+                front = front.next;
+            } else {
+                last.next = back;
+                last = back;
+                back = back.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    private ListNode[] splitList(ListNode head) {
+        // 此处没有处理head为null的判断，故需要在sortList方法里确保head不为null
+        ListNode slow = head, fast = head;
+        ListNode last = null;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            last = slow;
+            slow = slow.next;
+        }
+        // 1 3 5 7 9
+        // s
+        // f
+        last.next = null;
+        return new ListNode[] { head, slow };
+    }
+
+    /**
+     * 合并K个升序链表
+     */
+    public ListNode mergeKLists(ListNode[] lists) {
 
     }
 }
