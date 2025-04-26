@@ -2163,6 +2163,17 @@ public class Interview150TwoEx {
      * 搜索插入位置
      */
     public int searchInsert(int[] nums, int target) {
-
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = lt + (rt - lt) / 2;
+            if (nums[mid] < target) {
+                lt = mid + 1;
+            } else if (nums[mid] > target) {
+                rt = mid - 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
     }
 }
