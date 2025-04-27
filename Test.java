@@ -1093,45 +1093,12 @@ public class Test {
     }
 
     /**
+     * WXG二面
      * 戳气球
+     * TODO
+     * 可以去看看灵神的题单
      */
     public int maxCoins(int[] nums) {
-        PriorityQueue<int[]> priorityQueue = new PriorityQueue<>((a, b) -> {
-            return Integer.compare(a[1], b[1]);
-        });
-        if (nums.length <= 2) {
-            int max = Integer.MIN_VALUE;
-            for (int num : nums) {
-                max = Math.max(max, num);
-            }
-            if (nums.length == 1) {
-                return nums[0];
-            }
-            return nums.length == 0 ? 1 : nums[0] * nums[nums.length - 1] + max;
-        }
-        for (int i = 1; i < nums.length - 1; i++) {
-            priorityQueue.offer(new int[] { i, nums[i] });
-        }
-        int res = 0;
-        boolean[] removed = new boolean[nums.length];
-        while (!priorityQueue.isEmpty()) {
-            int[] idxAndValue = priorityQueue.poll();
-            int idx = idxAndValue[0], val = idxAndValue[1];
-            int lt = idx - 1, rt = idx + 1;
-            while (lt >= 0 && removed[lt]) {
-                lt--;
-            }
-            while (rt < nums.length && removed[rt]) {
-                rt++;
-            }
-            int ltVal = lt >= 0 ? nums[lt] : 1;
-            int rtVal = rt < nums.length ? nums[rt] : 1;
-            removed[idx] = true;
-            System.out.printf("%d * %d * %d\n", ltVal, val, rtVal);
-            res += ltVal * val * rtVal;
-        }
-        int max = Math.max(nums[0], nums[nums.length - 1]);
-        res += nums[0] * nums[nums.length - 1] + max;
-        return res;
+        
     }
 }
