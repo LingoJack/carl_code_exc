@@ -2149,7 +2149,7 @@ public class Interview150TwoEx {
     public int maxSubArray(int[] nums) {
         int sum = 0;
         int max = nums[0];
-        for(int num : nums) {
+        for (int num : nums) {
             if (sum < 0) {
                 sum = 0;
             }
@@ -2175,5 +2175,23 @@ public class Interview150TwoEx {
             }
         }
         return lt;
+    }
+
+    /**
+     * 搜索二维矩阵
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length, col = matrix[0].length;
+        int i = 0, j = col - 1;
+        while (i >= 0 && i < row && j >= 0 && j < col) {
+            if (matrix[i][j] > target) {
+                j--;
+            } else if (matrix[i][j] < target) {
+                i++;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 }
