@@ -2290,6 +2290,24 @@ public class Interview150TwoEx {
      * 寻找旋转排序数组中的最小值
      */
     public int findMin(int[] nums) {
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < nums[rt]) {
+                rt = mid;
+            } else if (nums[mid] > nums[rt]) {
+                lt = mid + 1;
+            } else {
+                return nums[mid];
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 寻找两个正序数组的中位数
+     */
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
 
     }
 }
