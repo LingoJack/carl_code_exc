@@ -14,7 +14,6 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
-import interview150.Interview150TwoEx.Trie.Node;
 import leetcodeHot100.link_list;
 
 public class Interview150TwoEx {
@@ -2193,5 +2192,104 @@ public class Interview150TwoEx {
             }
         }
         return false;
+    }
+
+    /**
+     * 搜索旋转排序数组
+     * 没做出来，现在反倒做不出来了
+     * 核心是想到根据rt和mid的关系来
+     * 意识到左边侧的最小值一定大于右边最大值
+     */
+    public int search(int[] nums, int target) {
+        int len = nums.length;
+        int turnPoint = findTurnPoint(nums);
+        int r1 = binarySearch(nums, 0, turnPoint - 1, target);
+        int r2 = binarySearch(nums, turnPoint, len - 1, target);
+        if (r1 == -1 && r2 == -1) {
+            return -1;
+        }
+        return r1 == -1 ? r2 : r1;
+    }
+
+    private int findTurnPoint(int[] nums) {
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] > nums[rt]) {
+                lt = mid + 1;
+            } else if (nums[mid] < nums[rt]) {
+                rt = mid;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
+    }
+
+    private int binarySearch(int[] nums, int start, int end, int target) {
+        int lt = start, rt = end;
+        while (lt <= rt) {
+            int mid = lt + (rt - lt) / 2;
+            if (nums[mid] < target) {
+                lt = mid + 1;
+            } else if (nums[mid] > target) {
+                rt = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 在排序数组中查找元素的第一个和最后一个位置
+     */
+    public int[] searchRange(int[] nums, int target) {
+        if (!contain(nums, target)) {
+            return new int[] { -1, -1 };
+        }
+        int lt = searchFirstLarger(nums, target);
+        int rt = searchFirstLarger(nums, target + 1);
+        if (lt == -1) {
+            return new int[] { -1, -1 };
+        }
+        return new int[] { lt, rt - 1 };
+    }
+
+    private boolean contain(int[] nums, int target) {
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = (rt + lt) / 2;
+            if (nums[mid] > target) {
+                rt = mid - 1;
+            } else if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int searchFirstLarger(int[] nums, int target) {
+        int lt = 0, rt = nums.length - 1;
+        while (lt <= rt) {
+            int mid = (rt + lt) / 2;
+            if (nums[mid] > target) {
+                rt = mid - 1;
+            } else if (nums[mid] < target) {
+                lt = mid + 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 寻找旋转排序数组中的最小值
+     */
+    public int findMin(int[] nums) {
+
     }
 }
