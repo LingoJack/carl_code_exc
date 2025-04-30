@@ -2308,6 +2308,8 @@ public class Interview150TwoEx {
 
     /**
      * 寻找两个正序数组的中位数
+     * 感觉依旧还是没能解决问题
+     * 就是到底为什么这么写，这么写的底层逻辑没弄清楚，就不好记忆
      */
     public double findMedianSortedArrays(int[] nums1, int[] nums2) {
         int l1 = nums1.length, l2 = nums2.length;
@@ -2329,6 +2331,7 @@ public class Interview150TwoEx {
                 rt = mid;
             }
         }
+        // lt == rt
         int take2 = lt;
         int take1 = total - take2;
         if ((l1 + l2) % 2 == 0) {
@@ -2342,5 +2345,61 @@ public class Interview150TwoEx {
             int n2 = take2 == nums2.length ? Integer.MAX_VALUE : nums2[take2];
             return Math.min(n1, n2);
         }
+    }
+
+    /**
+     * 数组中第K个最大元素
+     * 快速选择算法会超时
+     * 还是得用堆来实现
+     */
+    public int findKthLargest(int[] nums, int k) {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        for (int num : nums) {
+            if (priorityQueue.size() < k) {
+                priorityQueue.offer(num);
+                continue;
+            }
+            if (num > priorityQueue.peek()) {
+                priorityQueue.poll();
+                priorityQueue.offer(num);
+            }
+        }
+        return priorityQueue.peek();
+    }
+
+    private int quickSorter(int[] nums, int start, int end) {
+        int slow = start, fast = start;
+        while (fast < end) {
+            if (nums[fast] < nums[end]) {
+                swap(nums, slow, fast);
+                slow++;
+            }
+            fast++;
+        }
+        swap(nums, slow, end);
+        return slow;
+    }
+
+    public int findKthLargestTimeExceed(int[] nums, int k) {
+        int lt = 0, rt = nums.length - 1;
+        k = nums.length - k;
+        while (lt <= rt) {
+            int idx = quickSorter(nums, lt, rt);
+            if (idx + 1 < k) {
+                lt = idx + 1;
+            } else if (idx + 1 > k) {
+                rt = idx - 1;
+            } else {
+                return nums[idx];
+            }
+        }
+        return nums[lt];
+    }
+
+    /**
+     * 数据流的中位数
+     */
+    class MedianFinder {
+        
     }
 }
