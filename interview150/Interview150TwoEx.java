@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+
 import interview150.Interview150TwoEx.LRUCache.CacheEntry;
 import leetcodeHot100.link_list;
 
@@ -2308,6 +2310,37 @@ public class Interview150TwoEx {
      * 寻找两个正序数组的中位数
      */
     public double findMedianSortedArrays(int[] nums1, int[] nums2) {
-
+        int l1 = nums1.length, l2 = nums2.length;
+        if (l1 < l2) {
+            return findMedianSortedArrays(nums2, nums1);
+        }
+        // 保证l2是更小的
+        int lt = 0, rt = l2;
+        // 0001111
+        // 0011
+        int total = (l1 + l2) >> 1;
+        while (lt < rt) {
+            int mid = (lt + rt) >> 1;
+            int idx2 = mid - 1;
+            int idx1 = total - mid - 1;
+            if (nums1[idx1] > nums2[idx2 + 1]) {
+                lt = mid + 1;
+            } else {
+                rt = mid;
+            }
+        }
+        int take2 = lt;
+        int take1 = total - take2;
+        if ((l1 + l2) % 2 == 0) {
+            int n1 = take1 == 0 ? Integer.MIN_VALUE : nums1[take1 - 1];
+            int n2 = take2 == 0 ? Integer.MIN_VALUE : nums2[take2 - 1];
+            int n3 = take1 == nums1.length ? Integer.MAX_VALUE : nums1[take1];
+            int n4 = take2 == nums2.length ? Integer.MAX_VALUE : nums2[take2];
+            return (Math.max(n1, n2) + Math.min(n3, n4)) / 2.0;
+        } else {
+            int n1 = take1 == nums1.length ? Integer.MAX_VALUE : nums1[take1];
+            int n2 = take2 == nums2.length ? Integer.MAX_VALUE : nums2[take2];
+            return Math.min(n1, n2);
+        }
     }
 }
