@@ -2520,13 +2520,20 @@ public class Interview150TwoEx {
 
     /**
      * 零钱兑换
+     * 一开始没审题
      */
     public int coinChange(int[] coins, int amount) {
-        // dp[i], 考虑到下标i的硬币为止能否凑够金额为j的组合
-        boolean[][] dp = new boolean[coins.length][amount + 1];
-        for(int i = 0; i < coins.length; i++) {
-            dp[i][0] = true;
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, amount + 1);
+        dp[0] = 0;
+        for (int i = 1; i <= amount; i++) {
+            for (int coin : coins) {
+                if (i - coin < 0) {
+                    continue;
+                }
+                dp[i] = Math.min(dp[i - coin] + 1, dp[i]);
+            }
         }
-        
+        return dp[amount] == amount + 1 ? -1 : dp[amount];
     }
 }
