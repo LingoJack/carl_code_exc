@@ -1033,7 +1033,7 @@ public class Test {
      * 0 < upperBound <= len
      * 每次可以选择加上或减去nums[i]，求问能最小的绝对值
      */
-    public int cowGirlGem(int upperBound, int[] nums) {
+    public int cowGirlGemBF(int upperBound, int[] nums) {
         Set<Integer> set = new HashSet<>();
         set.add(0);
         for (int i = 0; i < nums.length; i++) {
@@ -1099,6 +1099,38 @@ public class Test {
      * 可以去看看灵神的题单
      */
     public int maxCoins(int[] nums) {
+
+    }
+
+    /**
+     * 牛妹的宝石
+     * nums，长度为len，上界为upperBound，对于[1, upperBound]中的数，nums中至少会出现一次
+     * 0 < upperBound <= len
+     * 每次可以选择加上或减去nums[i]，求问能最小的绝对值
+     * 加以转化就是对于一个正整数数组，将内部的数分为两组，求这两组数的最小差值（大于等于0）
+     * 换句话说，我们可以计算数组的总和total，然后求出和最接近total/2的一组数，由于是整数，我们可以从total/2开始去寻找和为target的子数组
+     * 这里就会用到经典的背包问题
+     */
+    public int cowGirlGem(int upperBound, int[] nums) {
         
     }
+
+    /**
+     * 背包问题
+     * 01背包，数组中是否存在和为target的子序列
+     */
+    private boolean containsSum(int[] nums, int target) {
+
+    }
+
+    /**
+     * 最接近目标值的子序列和
+     * 尝试使用滑动窗口去做，lt，rt都从最左边开始，先排序一下
+     */
+    public int minAbsDifference(int[] nums, int goal) {
+        Arrays.sort(nums);
+        int lt = 0, rt = 0;
+
+    }
+    
 }
