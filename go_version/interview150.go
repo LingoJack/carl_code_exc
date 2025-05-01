@@ -1610,20 +1610,58 @@ func canFinish(numCourses int, prerequisites [][]int) bool {
 
 // 实现Trie（前缀树）
 type Trie struct {
+	cache map[string]bool
+	root  *TrieNode
 }
 
-func Constructor() Trie {
+type TrieNode struct {
+	ch          byte
+	next        map[byte]*TrieNode
+	isEndOfWord bool
+}
 
+func NewTrie() Trie {
+	return Trie{
+		cache: make(map[string]bool),
+		root: &TrieNode{
+			ch:          '0',
+			next:        make(map[byte]*TrieNode),
+			isEndOfWord: false,
+		},
+	}
 }
 
 func (this *Trie) Insert(word string) {
-
+	this.cache[word] = true
+	node := this.root
+	for _, c := range []byte(word) {
+		if nextNode, exist := node.next[c]; exist {
+			node = nextNode
+			continue
+		}
+		newNode := &TrieNode{
+			ch:   c,
+			next: make(map[byte]*TrieNode),
+		}
+		node.next[c] = newNode
+		node = newNode
+	}
+	node.isEndOfWord = true
 }
 
 func (this *Trie) Search(word string) bool {
-
+	_, e := this.cache[word]
+	return e
 }
 
 func (this *Trie) StartsWith(prefix string) bool {
-
+	node := this.root
+	for _, c := range []byte(prefix) {
+		if nextNode, exist := node.next[c]; exist {
+			node = nextNode
+			continue
+		}
+		return false
+	}
+	return true
 }

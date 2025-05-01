@@ -2536,4 +2536,36 @@ public class Interview150TwoEx {
         }
         return dp[amount] == amount + 1 ? -1 : dp[amount];
     }
+
+    /**
+     * 最长递增子序列
+     * 牌堆算法
+     */
+    public int lengthOfLIS(int[] nums) {
+        List<Integer> list = new ArrayList<>();
+        for (int num : nums) {
+            if (list.isEmpty() || list.get(list.size() - 1) < num) {
+                list.add(num);
+            } else {
+                list.set(binarySearch(list, num), num);
+            }
+        }
+        return list.size();
+    }
+
+    private int binarySearch(List<Integer> list, int target) {
+        int lt = 0, rt = list.size() - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            Integer num = list.get(mid);
+            if (num < target) {
+                lt = mid + 1;
+            } else if (num > target) {
+                rt = mid - 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
+    }
 }
