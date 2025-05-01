@@ -2400,6 +2400,65 @@ public class Interview150TwoEx {
      * 数据流的中位数
      */
     class MedianFinder {
-        
+        private PriorityQueue<Integer> lower = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+        private PriorityQueue<Integer> upper = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+
+        public MedianFinder() {
+
+        }
+
+        public void addNum(int num) {
+            if (lower.isEmpty() || num < lower.peek()) {
+                lower.offer(num);
+                if (lower.size() > upper.size() + 1) {
+                    upper.offer(lower.poll());
+                }
+            } else {
+                upper.offer(num);
+                if (upper.size() > lower.size()) {
+                    lower.offer(upper.poll());
+                }
+            }
+        }
+
+        public double findMedian() {
+            if ((lower.size() + upper.size()) % 2 == 1) {
+                return lower.peek();
+            } else {
+                return ((!lower.isEmpty() ? lower.peek() : 0) + (!upper.isEmpty() ? upper.peek() : 0)) / 2.0;
+            }
+        }
+    }
+
+    /**
+     * 只出现一次的数字
+     */
+    public int singleNumber(int[] nums) {
+        int res = 0;
+        for (int num : nums) {
+            res ^= num;
+        }
+        return res;
+    }
+
+    /**
+     * Pow(x,n)
+     */
+    public double myPow(double x, int n) {
+        if (n < 0) {
+            x = 1 / x;
+            if (n == Integer.MIN_VALUE) {
+                return x * myPow(x, -(n + 1));
+            }
+            n = -n;
+        }
+        if (n == 0) {
+            return 1;
+        }
+        if (n % 2 == 0) {
+            return myPow(x * x, n / 2);
+        } else {
+            return x * myPow(x * x, (n - 1) / 2);
+        }
     }
 }
