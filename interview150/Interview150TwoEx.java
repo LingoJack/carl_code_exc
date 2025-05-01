@@ -2568,4 +2568,199 @@ public class Interview150TwoEx {
         }
         return lt;
     }
+
+    /**
+     * 最小路径和
+     */
+    public int minPathSum(int[][] grid) {
+        int row = grid.length, col = grid[0].length;
+        int[][] dp = new int[row][col];
+        dp[0][0] = grid[0][0];
+        for (int i = 1; i < col; i++) {
+            dp[0][i] = dp[0][i - 1] + grid[0][i];
+        }
+        for (int i = 1; i < row; i++) {
+            dp[i][0] = dp[i - 1][0] + grid[i][0];
+        }
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
+            }
+        }
+        return dp[row - 1][col - 1];
+    }
+
+    /**
+     * 不同路径II
+     */
+    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        int row = obstacleGrid.length, col = obstacleGrid[0].length;
+        int[][] dp = new int[row][col];
+        for (int i = 0; i < col; i++) {
+            if (obstacleGrid[0][i] == 1) {
+                break;
+            }
+            dp[0][i] = 1;
+        }
+        for (int i = 0; i < row; i++) {
+            if (obstacleGrid[i][0] == 1) {
+                break;
+            }
+            dp[i][0] = 1;
+        }
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                if (obstacleGrid[i][j] == 1) {
+                    continue;
+                }
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[row - 1][col - 1];
+    }
+
+    /**
+     * 最长回文子串
+     */
+    public String longestPalindrome(String s) {
+        if (s.isEmpty()) {
+            return "";
+        }
+        int sLen = s.length();
+        boolean[][] dp = new boolean[sLen][sLen];
+        for (int i = 0; i < sLen; i++) {
+            dp[i][i] = true;
+        }
+        int offset = 0, maxLen = 1;
+        for (int len = 2; len <= sLen; len++) {
+            for (int start = 0; start < sLen - len + 1; start++) {
+                int end = start + len - 1;
+                if (len == 2) {
+                    dp[start][end] = s.charAt(start) == s.charAt(end);
+                } else {
+                    dp[start][end] = dp[start + 1][end - 1] && s.charAt(start) == s.charAt(end);
+                }
+                if (dp[start][end] && len > maxLen) {
+                    maxLen = len;
+                    offset = start;
+                }
+            }
+        }
+        return offset == -1 ? "" : s.substring(offset, offset + maxLen);
+    }
+
+    /**
+     * 编辑距离
+     */
+    public int minDistance(String word1, String word2) {
+        int l1 = word1.length(), l2 = word2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 0; i < l1 + 1; i++) {
+            dp[i][0] = i;
+        }
+        for (int i = 0; i < l2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(dp[i - 1][j], Math.min(dp[i][j - 1], dp[i - 1][j - 1])) + 1;
+                }
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 最多两笔交易的版本
+     * 定义买入的时候交易次数增加
+     */
+    public int maxProfitIII(int[] prices) {
+        int len = prices.length;
+        int k = 2;
+        // 定义买入的时候交易次数增加
+        int[][][] dp = new int[len][2][k + 1];
+        for (int trade = 0; trade <= k; trade++) {
+            dp[0][0][trade] = 0;
+            dp[0][1][trade] = trade == 1 ? -prices[0] : Integer.MIN_VALUE;
+        }
+        int res = 0;
+        for (int i = 1; i < len; i++) {
+            for (int trade = 0; trade <= k; trade++) {
+                dp[i][0][trade] = Math.max(dp[i - 1][0][trade], dp[i - 1][1][trade] + prices[i]);
+                dp[i][1][trade] = Math.max(dp[i - 1][1][trade],
+                        (trade >= 1 ? dp[i - 1][0][trade - 1] - prices[i] : Integer.MIN_VALUE));
+                if (dp[i][0][trade] > res) {
+                    res = dp[i][0][trade];
+                }
+                if (dp[i][1][trade] > res) {
+                    res = dp[i][1][trade];
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 最多两笔交易的版本
+     * 定义卖出的时候交易次数增加
+     */
+    public int maxProfitIIIAnotherDefinition(int[] prices) {
+        int len = prices.length;
+        int k = 2;
+        // 定义卖出的时候交易次数增加
+        int[][][] dp = new int[len][2][k + 1];
+        for (int trade = 0; trade <= k; trade++) {
+            dp[0][0][trade] = 0;
+            dp[0][1][trade] = trade == 0 ? -prices[0] : Integer.MIN_VALUE;
+        }
+        int res = 0;
+        for (int i = 1; i < len; i++) {
+            for (int trade = 0; trade <= k; trade++) {
+                dp[i][0][trade] = Math.max(dp[i - 1][0][trade],
+                        (trade >= 1 ? dp[i - 1][1][trade - 1] + prices[i] : Integer.MIN_VALUE));
+                dp[i][1][trade] = Math.max(dp[i - 1][1][trade], dp[i - 1][0][trade] - prices[i]);
+                if (dp[i][0][trade] > res) {
+                    res = dp[i][0][trade];
+                }
+                if (dp[i][1][trade] > res) {
+                    res = dp[i][1][trade];
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 买卖股票的最佳时机III
+     * 最多K笔交易的版本
+     */
+    public int maxProfitIV(int k, int[] prices) {
+        int len = prices.length;
+        // 定义买入的时候交易次数增加
+        // 如果定义卖出的时候交易次数增加，应该怎么做
+        int[][][] dp = new int[len][2][k + 1];
+        for (int trade = 0; trade <= k; trade++) {
+            dp[0][0][trade] = 0;
+            dp[0][1][trade] = trade == 1 ? -prices[0] : Integer.MIN_VALUE;
+        }
+        int res = 0;
+        for (int i = 1; i < len; i++) {
+            for (int trade = 1; trade <= k; trade++) {
+                dp[i][0][trade] = Math.max(dp[i - 1][0][trade], dp[i - 1][1][trade] + prices[i]);
+                dp[i][1][trade] = Math.max(dp[i - 1][1][trade], dp[i - 1][0][trade - 1] - prices[i]);
+                if (dp[i][0][trade] > res) {
+                    res = dp[i][0][trade];
+                }
+                if (dp[i][1][trade] > res) {
+                    res = dp[i][1][trade];
+                }
+            }
+        }
+        return res;
+    }
 }
