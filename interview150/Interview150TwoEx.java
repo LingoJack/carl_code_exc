@@ -2461,4 +2461,72 @@ public class Interview150TwoEx {
             return x * myPow(x * x, (n - 1) / 2);
         }
     }
+
+    /**
+     * 爬楼梯
+     */
+    public int climbStairs(int n) {
+        int[] dp = new int[n + 1];
+        dp[0] = 0;
+        dp[1] = 1;
+        if (dp.length >= 3) {
+            dp[2] = 2;
+        }
+        for (int i = 3; i <= n; i++) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+        return dp[n];
+    }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
+        // 考虑到第i家为止可以获得的最大金额
+        int[] dp = new int[nums.length];
+        dp[0] = nums[0];
+        if (nums.length == 1) {
+            return nums[0];
+        }
+        dp[1] = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < nums.length; i++) {
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+        }
+        return dp[nums.length - 1];
+    }
+
+    /**
+     * 单词拆分
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int len = s.length();
+        // dp[i]表示到下标i-1为止能否被拆分
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        // leetcode
+        // leet code
+        for (int i = 0; i < len; i++) {
+            for (String word : wordDict) {
+                int wordLen = word.length();
+                int start = i - wordLen + 1;
+                if (start < 0) {
+                    continue;
+                }
+                dp[i + 1] = dp[i + 1] || (dp[start] && s.substring(start, Math.min(len, start + wordLen)).equals(word));
+            }
+        }
+        return dp[len];
+    }
+
+    /**
+     * 零钱兑换
+     */
+    public int coinChange(int[] coins, int amount) {
+        // dp[i], 考虑到下标i的硬币为止能否凑够金额为j的组合
+        boolean[][] dp = new boolean[coins.length][amount + 1];
+        for(int i = 0; i < coins.length; i++) {
+            dp[i][0] = true;
+        }
+        
+    }
 }
