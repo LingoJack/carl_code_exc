@@ -1112,7 +1112,7 @@ public class Test {
      * 这里就会用到经典的背包问题
      */
     public int cowGirlGem(int upperBound, int[] nums) {
-        
+
     }
 
     /**
@@ -1120,17 +1120,35 @@ public class Test {
      * 01背包，数组中是否存在和为target的子序列
      */
     private boolean containsSum(int[] nums, int target) {
-
+        int len = nums.length;
+        boolean[][] dp = new boolean[len + 1][target + 1];
+        for (int i = 0; i < len + 1; i++) {
+            dp[i][0] = true;
+        }
+        for (int i = 1; i < len + 1; i++) {
+            for (int j = 0; j <= target; j++) {
+                if (j >= nums[i - 1]) {
+                    dp[i][j] = dp[i - 1][j - nums[i - 1]];
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+        return dp[len][target];
     }
 
     /**
      * 最接近目标值的子序列和
      * 尝试使用滑动窗口去做，lt，rt都从最左边开始，先排序一下
+     * 使用滑动窗口是做不了这题的，因为就算是排序之后，滑窗要求必须相邻的才能组合
+     * 而这个子序列是不相邻的也可以的
+     * 比如：
+     * 2 4 6 8 20
+     * target = 10
+     * 就是找不到答案
      */
     public int minAbsDifference(int[] nums, int goal) {
-        Arrays.sort(nums);
-        int lt = 0, rt = 0;
 
     }
-    
+
 }
