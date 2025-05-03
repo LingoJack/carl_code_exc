@@ -27,6 +27,8 @@ public class rolling_window {
     /**
      * 和相同的二元子数组
      * 滑动窗口解法
+     * 核心就是对于每一个idx的元素，都去寻找两个边界值，一个是第一个小于goal的，一个是第一个小于等于goal的
+     * 这两个边界之间的元素个数就是该idx元素下满足的组合个数，加入count即可
      */
     public int numSubarraysWithSumWithRollingWindow(int[] nums, int goal) {
         int len = nums.length;
