@@ -1093,15 +1093,6 @@ public class Test {
     }
 
     /**
-     * WXG二面
-     * 戳气球
-     * 可以去看看灵神的题单
-     */
-    public int maxCoins(int[] nums) {
-
-    }
-
-    /**
      * 牛妹的宝石
      * nums，长度为len，上界为upperBound，对于[1, upperBound]中的数，nums中至少会出现一次
      * 0 < upperBound <= len
@@ -1220,5 +1211,72 @@ public class Test {
             }
         }
         return sums;
+    }
+
+    /**
+     * WXG二面
+     * 没做出来，这里需要逆向思维
+     * 戳气球
+     * 这里核心是想到应该把移除气球的过程倒过来
+     * 想成增加气球
+     */
+    public int maxCoins(int[] nums) {
+        int len = nums.length;
+        // 预处理之后的数组
+        int[] preprocess = new int[len + 2];
+        for (int i = 1; i <= len; i++) {
+            preprocess[i] = nums[i - 1];
+        }
+        preprocess[0] = preprocess[len + 1] = 1;
+        // (i, j)​​在开区间 (i, j) 内戳气球能获得的最大硬币数​​
+        int[][] record = new int[len + 2][len + 2];
+        for (int i = 0; i <= len + 1; i++) {
+            Arrays.fill(record[i], -1);
+        }
+        return getMaxCoins(preprocess, record, 0, len + 1);
+    }
+
+    public int getMaxCoins(int[] preprocess, int[][] record, int left, int right) {
+        if (left >= right - 1) {
+            return 0;
+        }
+        if (record[left][right] != -1) {
+            return record[left][right];
+        }
+        for (int i = left + 1; i < right; i++) {
+            int sum = preprocess[left] * preprocess[i] * preprocess[right];
+            sum += getMaxCoins(preprocess, record, left, i) + getMaxCoins(preprocess, record, i, right);
+            record[left][right] = Math.max(record[left][right], sum);
+        }
+        return record[left][right];
+    }
+
+    /**
+     * 戳气球
+     * 动态规划解法
+     */
+    public int maxCoinsWithDp(int[] nums) {
+        int len = nums.length;
+        // dp[i][j]为戳破开区间(i,j)里所有气球后所能获得的最大硬币数量
+        int[][] dp = new int[len + 2][len + 2];
+        int[] preprocess = new int[len + 2];
+        preprocess[0] = preprocess[len + 1] = 1;
+        for (int i = 1; i <= len; i++) {
+            preprocess[i] = nums[i - 1];
+        }
+        for (int interval = 2; interval <= len + 1; interval++) {
+            // (start, end)
+            // 枚举起点
+            for (int start = 0; start + interval <= len + 1; start++) {
+                int end = start + interval;
+                // 枚举最后一个被戳破的气球 k
+                for (int k = start + 1; k < end; k++) {
+                    int sum = preprocess[start] * preprocess[k] * preprocess[end];
+                    sum += dp[start][k] + dp[k][end];
+                    dp[start][end] = Math.max(dp[start][end], sum);
+                }
+            }
+        }
+        return dp[0][len + 1];
     }
 }
