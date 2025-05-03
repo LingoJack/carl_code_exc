@@ -1110,9 +1110,31 @@ public class Test {
      * 加以转化就是对于一个正整数数组，将内部的数分为两组，求这两组数的最小差值（大于等于0）
      * 换句话说，我们可以计算数组的总和total，然后求出和最接近total/2的一组数，由于是整数，我们可以从total/2开始去寻找和为target的子数组
      * 这里就会用到经典的背包问题
+     * 这个思路是我自己想出来的，十分不错
      */
     public int cowGirlGem(int upperBound, int[] nums) {
-
+        int total = 0;
+        for (int num : nums) {
+            total += num;
+        }
+        int target = total / 2;
+        boolean[] dp = new boolean[target + 1];
+        dp[0] = true;
+        for (int num : nums) {
+            for (int j = target; j >= num; j--) {
+                if (dp[j - num]) {
+                    dp[j] = true;
+                }
+            }
+        }
+        int maxSum = 0;
+        for (int j = target; j >= 0; j--) {
+            if (dp[j]) {
+                maxSum = j;
+                break;
+            }
+        }
+        return total - 2 * maxSum;
     }
 
     /**
@@ -1146,6 +1168,8 @@ public class Test {
      * 2 4 6 8 20
      * target = 10
      * 就是找不到答案
+     * 这边的核心思路就是：
+     * 分成左右两个部分，然后分别去求左右两部分的所有子序列，去做一个组合
      */
     public int minAbsDifference(int[] nums, int goal) {
         int len = nums.length;
@@ -1157,29 +1181,34 @@ public class Test {
         for (int i = len / 2; i < len; i++) {
             right.add(nums[i]);
         }
-        List<Integer> leftSums = generateSubsetSums(left);
-        List<Integer> rightSums = generateSubsetSums(right);
-        Collections.sort(rightSums);
-        int minDiff = Integer.MAX_VALUE;
-        for (int sum : leftSums) {
-            int target = goal - sum;
-            int idx = Collections.binarySearch(rightSums, target);
+        List<Integer> ltSumList = generateSubsetSums(left);
+        List<Integer> rtSumList = generateSubsetSums(right);
+        Collections.sort(rtSumList);
+        int res = Integer.MAX_VALUE;
+        for (int ltSum : ltSumList) {
+            int targetRtSum = goal - ltSum;
+            // Collections.binarySearch对于不存在的，会返回该插入位置的负数值
+            int idx = Collections.binarySearch(rtSumList, targetRtSum);
             if (idx >= 0) {
+                // binarySearch返回的是非负数，说明是存在的
                 return 0;
             } else {
+                // 得到真正的该插入的位置
+                // binarySearch返回的是 -(insertPoint)-1 = -(insertPoint + 1)
                 idx = -idx - 1;
                 if (idx > 0) {
-                    minDiff = Math.min(minDiff, Math.abs(sum + rightSums.get(idx - 1) - goal));
+                    res = Math.min(res, Math.abs(ltSum + rtSumList.get(idx - 1) - goal));
                 }
-                if (idx < rightSums.size()) {
-                    minDiff = Math.min(minDiff, Math.abs(sum + rightSums.get(idx) - goal));
+                if (idx < rtSumList.size()) {
+                    res = Math.min(res, Math.abs(ltSum + rtSumList.get(idx) - goal));
                 }
             }
-            if (minDiff == 0) {
+            // 检测是否能提前返回
+            if (res == 0) {
                 break;
             }
         }
-        return minDiff;
+        return res;
     }
 
     private List<Integer> generateSubsetSums(List<Integer> left) {
