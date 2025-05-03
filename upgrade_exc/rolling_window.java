@@ -1,4 +1,4 @@
-package lingshen_question_list;
+package upgrade_exc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +29,25 @@ public class rolling_window {
      * 滑动窗口解法
      */
     public int numSubarraysWithSumWithRollingWindow(int[] nums, int goal) {
-        
+        int len = nums.length;
+        int idx = 0;
+        int slow = 0, fast = 0;
+        int slowSum = 0, fastSum = 0;
+        int count = 0;
+        while(idx < len) {
+            slowSum += nums[idx];
+            while (slow <= idx && slowSum > goal) {
+                slowSum -= nums[slow];
+                slow++;
+            }
+            fastSum += nums[idx];
+            while (fast <= idx && fastSum >= goal) {
+                fastSum -= nums[fast];
+                fast++;
+            }
+            count += fast - slow;
+            idx++;
+        }
+        return count;
     }
 }
