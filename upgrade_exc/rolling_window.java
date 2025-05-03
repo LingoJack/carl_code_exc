@@ -34,7 +34,7 @@ public class rolling_window {
         int slow = 0, fast = 0;
         int slowSum = 0, fastSum = 0;
         int count = 0;
-        while(idx < len) {
+        while (idx < len) {
             slowSum += nums[idx];
             while (slow <= idx && slowSum > goal) {
                 slowSum -= nums[slow];
