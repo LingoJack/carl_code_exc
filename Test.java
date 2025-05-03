@@ -1148,7 +1148,49 @@ public class Test {
      * 就是找不到答案
      */
     public int minAbsDifference(int[] nums, int goal) {
-
+        int len = nums.length;
+        List<Integer> left = new ArrayList<>();
+        List<Integer> right = new ArrayList<>();
+        for (int i = 0; i < len / 2; i++) {
+            left.add(nums[i]);
+        }
+        for (int i = len / 2; i < len; i++) {
+            right.add(nums[i]);
+        }
+        List<Integer> leftSums = generateSubsetSums(left);
+        List<Integer> rightSums = generateSubsetSums(right);
+        Collections.sort(rightSums);
+        int minDiff = Integer.MAX_VALUE;
+        for (int sum : leftSums) {
+            int target = goal - sum;
+            int idx = Collections.binarySearch(rightSums, target);
+            if (idx >= 0) {
+                return 0;
+            } else {
+                idx = -idx - 1;
+                if (idx > 0) {
+                    minDiff = Math.min(minDiff, Math.abs(sum + rightSums.get(idx - 1) - goal));
+                }
+                if (idx < rightSums.size()) {
+                    minDiff = Math.min(minDiff, Math.abs(sum + rightSums.get(idx) - goal));
+                }
+            }
+            if (minDiff == 0) {
+                break;
+            }
+        }
+        return minDiff;
     }
 
+    private List<Integer> generateSubsetSums(List<Integer> left) {
+        ArrayList<Integer> sums = new ArrayList<>();
+        sums.add(0);
+        for (int num : left) {
+            int size = sums.size();
+            for (int i = 0; i < size; i++) {
+                sums.add(sums.get(i) + num);
+            }
+        }
+        return sums;
+    }
 }
