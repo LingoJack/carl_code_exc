@@ -1,6 +1,8 @@
 package upgrade_exc;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * dfs.java, dfs_record.java, dp.java是同一系列题目的不同写法
@@ -92,6 +94,22 @@ public class dfs {
      * 统计打字方案数
      */
     public int countTexts(String pressedKeys) {
+        return dfs4CountTexts(pressedKeys, 0);
+    }
 
+    private int dfs4CountTexts(String pressedKeys, int idx) {
+        int len = pressedKeys.length();
+        if (idx == len) {
+            return 0;
+        }
+        int count = 1;
+        int repl = idx;
+        int base = 1;
+        while (repl >= 1 && pressedKeys.charAt(repl) == pressedKeys.charAt(repl - 1)) {
+            repl--;
+            base++;
+            count;
+        }
+        return dfs4CountTexts(pressedKeys, idx + 1) + count;
     }
 }
