@@ -2,6 +2,10 @@ package upgrade_exc;
 
 import java.util.Arrays;
 
+/**
+ * dfs.java, dfs_record.java, dp.java是同一系列题目的不同写法
+ * 都参照灵茶山艾府的dp题单：https://leetcode.cn/discuss/post/3581838/fen-xiang-gun-ti-dan-dong-tai-gui-hua-ru-007o/
+ */
 public class dfs_record {
 
     /**
@@ -77,5 +81,39 @@ public class dfs_record {
         }
         record[target] = count;
         return count;
+    }
+
+    /**
+     * 统计构造好字符串的方案数
+     */
+    public int countGoodStrings(int low, int high, int zero, int one) {
+        int[] record = new int[high + 1];
+        Arrays.fill(record, -1);
+        return dfs4CountGoodStrings(low, high, zero, one, 0, record);
+    }
+
+    private int dfs4CountGoodStrings(int low, int high, int zero, int one, int len, int[] record) {
+        int count = 0;
+        if (len > high) {
+            return 0;
+        }
+        if (record[len] >= 0) {
+            return record[len];
+        }
+        if (len >= low) {
+            count++;
+        }
+        count += dfs4CountGoodStrings(low, high, zero, one, len + one, record);
+        count += dfs4CountGoodStrings(low, high, zero, one, len + zero, record);
+        count %= 1_000_000_007;
+        record[len] = count;
+        return count;
+    }
+
+    /**
+     * 统计打字方案数
+     */
+    public int countTexts(String pressedKeys) {
+
     }
 }
