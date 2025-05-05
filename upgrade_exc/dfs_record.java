@@ -180,6 +180,20 @@ public class dfs_record {
      * 打家劫舍II
      */
     public int robII(int[] nums) {
-        
+        int[] record = new int[nums.length + 1];
+        Arrays.fill(record, -1);
+        return dfs4RobII(nums, 0, record);
+    }
+
+    private int dfs4RobII(int[] nums, int idx, int[] record) {
+        if (idx >= nums.length + 1) {
+            return 0;
+        }
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        int res = Math.max(dfs4RobII(nums, idx + 1, record), dfs4RobII(nums, idx + 2, record) + nums[idx % nums.length]);
+        record[idx] = res;
+        return res;
     }
 }
