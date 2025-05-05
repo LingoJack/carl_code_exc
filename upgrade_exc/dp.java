@@ -74,6 +74,21 @@ public class dp {
      * 统计打字方案数
      */
     public int countTexts(String pressedKeys) {
-        
+        int len = pressedKeys.length();
+        // dp[i] 长度为i的字符串的打字方案数
+        int[] dp = new int[len + 1];
+        dp[0] = 1;
+        for (int i = 1; i <= len; i++) {
+            char digit = pressedKeys.charAt(i - 1);
+            int limit = (digit == '7' || digit == '9') ? 4 : 3;
+            dp[i] = 0;
+            for (int delta = 0; delta < limit && i - delta >= 1; delta++) {
+                if (pressedKeys.charAt(i - delta - 1) != digit) {
+                    break;
+                }
+                dp[i] = (dp[i] + dp[i - delta - 1]) % 1_000_000_007;
+            }
+        }
+        return dp[len];
     }
 }
