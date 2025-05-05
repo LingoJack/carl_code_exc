@@ -1665,3 +1665,58 @@ func (this *Trie) StartsWith(prefix string) bool {
 	}
 	return true
 }
+
+// 施咒的最大总伤害
+func maximumTotalDamage(powers []int) int64 {
+	sumMap := make(map[int]int64)
+	for _, power := range powers {
+		sumMap[power] += int64(power)
+	}
+	sortedPowers := make([]int, 0, len(sumMap))
+	for power := range sumMap {
+		sortedPowers = append(sortedPowers, power)
+	}
+	sort.Ints(sortedPowers)
+	n := len(sortedPowers)
+	if n == 0 {
+		return 0
+	}
+	if n == 1 {
+		return sumMap[sortedPowers[0]]
+	}
+	dp := make([]int64, n)
+	dp[0] = sumMap[sortedPowers[0]]
+	if sortedPowers[1]-sortedPowers[0] < 3 {
+		if dp[0] > sumMap[sortedPowers[1]] {
+			dp[1] = dp[0]
+		} else {
+			dp[1] = sumMap[sortedPowers[1]]
+		}
+	} else {
+		dp[1] = dp[0] + sumMap[sortedPowers[1]]
+	}
+	if n >= 3 {
+		option1 := dp[0]
+		if sortedPowers[2]-sortedPowers[0] >= 3 {
+			option1 += sumMap[sortedPowers[2]]
+		}
+		option2 := dp[1]
+		if sortedPowers[2]-sortedPowers[1] >= 3 {
+			option2 += sumMap[sortedPowers[2]]
+		}
+		dp[2] = max(max(option1, option2), sumMap[sortedPowers[2]])
+	}
+	for i := 3; i < n; i++ {
+		lastSelectablePower := i - 1
+		for lastSelectablePower >= 0 && sortedPowers[i]-sortedPowers[lastSelectablePower] < 3 {
+			lastSelectablePower--
+		}
+		selectCurrent := int64(0)
+		if lastSelectablePower >= 0 {
+			selectCurrent += dp[lastSelectablePower]
+		}
+		selectCurrent += sumMap[sortedPowers[i]]
+		dp[i] = max(selectCurrent, dp[i-1])
+	}
+	return dp[n-1]
+}

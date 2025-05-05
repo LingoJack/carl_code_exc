@@ -6,7 +6,7 @@ import java.util.Arrays;
  * dfs.java, dfs_record.java, dp.java是同一系列题目的不同写法
  * 都参照灵茶山艾府的dp题单：https://leetcode.cn/discuss/post/3581838/fen-xiang-gun-ti-dan-dong-tai-gui-hua-ru-007o/
  */
-public class dp {
+public class dp_exc {
 
     /**
      * 爬楼梯
