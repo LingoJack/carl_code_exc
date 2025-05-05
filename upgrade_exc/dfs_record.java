@@ -114,6 +114,30 @@ public class dfs_record {
      * 统计打字方案数
      */
     public int countTexts(String pressedKeys) {
+        int[] record = new int[pressedKeys.length() + 1];
+        Arrays.fill(record, -1);
+        return dfs4CountTexts(pressedKeys, 0, record);
+    }
 
+    private int dfs4CountTexts(String pressedKeys, int idx, int[] record) {
+        int len = pressedKeys.length();
+        if (idx == len) {
+            return 1;
+        }
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        char digit = pressedKeys.charAt(idx);
+        int limit = (digit == '7' || digit == '9') ? 4 : 3;
+        int count = 0;
+        for (int delta = 0; delta < limit && idx + delta < len; delta++) {
+            if (pressedKeys.charAt(idx + delta) == digit) {
+                count = (count + dfs4CountTexts(pressedKeys, idx + delta + 1, record)) % 1_000_000_007;
+            } else {
+                break;
+            }
+        }
+        record[idx] = count;
+        return count;
     }
 }

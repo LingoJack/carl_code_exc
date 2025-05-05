@@ -92,24 +92,26 @@ public class dfs {
 
     /**
      * 统计打字方案数
+     * 没做出来
      */
     public int countTexts(String pressedKeys) {
         return dfs4CountTexts(pressedKeys, 0);
     }
 
     private int dfs4CountTexts(String pressedKeys, int idx) {
-        int len = pressedKeys.length();
-        if (idx == len) {
-            return 0;
+        if (idx == pressedKeys.length()) {
+            return 1;
         }
-        int count = 1;
-        int repl = idx;
-        int base = 1;
-        while (repl >= 1 && pressedKeys.charAt(repl) == pressedKeys.charAt(repl - 1)) {
-            repl--;
-            base++;
-            count;
+        char digit = pressedKeys.charAt(idx);
+        int limit = (digit == '7' || digit == '9') ? 4 : 3;
+        int count = 0;
+        for (int i = 0; i < limit && idx + i < pressedKeys.length(); i++) {
+            if (pressedKeys.charAt(idx + i) == digit) {
+                count = (count + dfs4CountTexts(pressedKeys, idx + i + 1)) % 1_000_000_007;
+            } else {
+                break;
+            }
         }
-        return dfs4CountTexts(pressedKeys, idx + 1) + count;
+        return count;
     }
 }
