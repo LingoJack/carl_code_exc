@@ -140,4 +140,46 @@ public class dfs_record {
         record[idx] = count;
         return count;
     }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
+        int[] record = new int[nums.length + 1];
+        Arrays.fill(record, -1);
+        return dfs4Rob(nums, 0, record);
+    }
+
+    // 这个是一个典型的记忆化存储的错误，根源就是入参有idx，sum两个变量，这里record却只以idx为key
+    private int dfs4RobError(int[] nums, int idx, int sum, int[] record) {
+        if (idx >= nums.length) {
+            return sum;
+        }
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        int res = Math.max(dfs4RobError(nums, idx + 1, sum, record),
+                dfs4RobError(nums, idx + 2, sum + nums[idx], record));
+        record[idx] = res;
+        return res;
+    }
+
+    private int dfs4Rob(int[] nums, int idx, int[] record) {
+        if (idx >= nums.length) {
+            return 0;
+        }
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        int res = Math.max(dfs4Rob(nums, idx + 1, record), dfs4Rob(nums, idx + 2, record) + nums[idx]);
+        record[idx] = res;
+        return res;
+    }
+
+    /**
+     * 打家劫舍II
+     */
+    public int robII(int[] nums) {
+        
+    }
 }

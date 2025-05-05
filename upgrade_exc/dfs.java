@@ -110,4 +110,18 @@ public class dfs {
         }
         return dfs4CountTexts(pressedKeys, idx + 1) * count;
     }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
+        return dfs4Rob(nums, 0, 0);
+    }
+
+    private int dfs4Rob(int[] nums, int idx, int sum) {
+        if (idx >= nums.length) {
+            return 0;
+        }
+        return Math.max(dfs4Rob(nums, idx + 1, sum), dfs4Rob(nums, idx + 2, sum + nums[idx]));
+    }
 }
