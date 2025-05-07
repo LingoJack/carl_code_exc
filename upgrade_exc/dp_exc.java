@@ -91,4 +91,19 @@ public class dp_exc {
         }
         return dp[len];
     }
+
+    /**
+     * 解决智力问题
+     */
+    public long mostPoints(int[][] questions) {
+        int len = questions.length;
+        long[] dp = new long[len + 1];
+        for (int i = len - 1; i >= 0; --i) {
+            int next = i + questions[i][1] + 1;
+            long take = questions[i][0] + (next < len ? dp[next] : 0);
+            long skip = dp[i + 1];
+            dp[i] = Math.max(take, skip);
+        }
+        return dp[0];
+    }
 }

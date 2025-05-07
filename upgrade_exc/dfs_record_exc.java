@@ -289,6 +289,22 @@ public class dfs_record_exc {
      * 解决智力问题
      */
     public long mostPoints(int[][] questions) {
-        
+        long[] record = new long[questions.length + 1];
+        Arrays.fill(record, -1);
+        return dfs(questions, 0, record);
+    }
+
+    private long dfs(int[][] questions, int idx, long[] record) {
+        int len = questions.length;
+        if (idx >= len) {
+            return 0;
+        }
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        long res = Math.max(questions[idx][0] + dfs(questions, idx + questions[idx][1] + 1, record),
+                dfs(questions, idx + 1, record));
+        record[idx] = res;
+        return res;
     }
 }
