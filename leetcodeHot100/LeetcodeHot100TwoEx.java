@@ -14,7 +14,7 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 
-public class LeetcodeHot00TwoEx {
+public class LeetcodeHot100TwoEx {
 
     /**
      * 全排列
@@ -853,7 +853,7 @@ public class LeetcodeHot00TwoEx {
     }
 
     public static void main(String[] args) {
-        LeetcodeHot00TwoEx l = new LeetcodeHot00TwoEx();
+        LeetcodeHot100TwoEx l = new LeetcodeHot100TwoEx();
         MyQueue myQueue = l.new MyQueue();
         myQueue.offer(1);
         myQueue.offer(2);
