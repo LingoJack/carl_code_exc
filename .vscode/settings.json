@@ -4,6 +4,7 @@
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.acceptSuggestionOnEnter": "smart",
     "editor.suggestSelection": "recentlyUsedByPrefix",
+    "editor.fontFamily": "Monaco, Menlo",
     "editor.cursorBlinking": "expand",
     "editor.cursorSmoothCaretAnimation": "off",
     "workbench.list.smoothScrolling": true,
