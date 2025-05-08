@@ -319,6 +319,6 @@ public class dfs_record_exc {
         if (idx == nums.length) {
             return 0;
         }
-        
+
     }
 }
