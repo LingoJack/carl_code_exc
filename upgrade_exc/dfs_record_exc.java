@@ -307,4 +307,18 @@ public class dfs_record_exc {
         record[idx] = res;
         return res;
     }
+
+    /**
+     * 最大子数组和
+     */
+    public int maxSubArray(int[] nums) {
+
+    }
+
+    private int dfs(int[] nums, int idx, int sum) {
+        if (idx == nums.length) {
+            return 0;
+        }
+        
+    }
 }
