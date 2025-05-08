@@ -312,13 +312,25 @@ public class dfs_record_exc {
      * 最大子数组和
      */
     public int maxSubArray(int[] nums) {
-
+        this.max = Integer.MIN_VALUE;
+        int[] record = new int[nums.length];
+        Arrays.fill(record, -1);
+        dfs(nums, nums.length - 1, record);
+        return max;
     }
 
-    private int dfs(int[] nums, int idx, int sum) {
-        if (idx == nums.length) {
+    private int max;
+
+    private int dfs(int[] nums, int idx, int[] record) {
+        if (idx < 0) {
             return 0;
         }
-
+        if (record[idx] >= 0) {
+            return record[idx];
+        }
+        int res = Math.max(dfs(nums, idx - 1, record) + nums[idx], nums[idx]);
+        record[idx] = res;
+        max = Math.max(max, res);
+        return res;
     }
 }
