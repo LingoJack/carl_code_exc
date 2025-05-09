@@ -103,6 +103,19 @@ public class LeetcodeHot100FourEx {
      * 移动零
      */
     public void moveZeroes(int[] nums) {
-        
+        int slow = 0, fast = 0;
+        while (fast < nums.length) {
+            if (nums[fast] != 0) {
+                swap(nums, slow, fast);
+                slow++;
+            }
+            fast++;
+        }
+    }
+
+    private void swap(int[] nums, int a, int b) {
+        int t = nums[a];
+        nums[a] = nums[b];
+        nums[b] = t;
     }
 }
