@@ -98,4 +98,11 @@ public class LeetcodeHot100FourEx {
         });
         return max[0];
     }
+
+    /**
+     * 移动零
+     */
+    public void moveZeroes(int[] nums) {
+        
+    }
 }
