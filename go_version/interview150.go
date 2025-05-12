@@ -1720,3 +1720,27 @@ func maximumTotalDamage(powers []int) int64 {
 	}
 	return dp[n-1]
 }
+
+// 最大子数组和
+func maxSubArray(nums []int) (maxSubArraySum int) {
+	maxSubArraySum = math.MinInt32
+	var dfs func(nums []int, idx int, record []int) int
+	dfs = func(nums []int, idx int, record []int) int {
+		if idx < 0 {
+			return 0
+		}
+		if record[idx] >= 0 {
+			return record[idx]
+		}
+		res := max(dfs(nums, idx-1, record)+nums[idx], nums[idx])
+		record[idx] = res
+		maxSubArraySum = max(maxSubArraySum, res)
+		return res
+	}
+	record := make([]int, len(nums))
+	for i := range record {
+		record[i] = -1
+	}
+	dfs(nums, len(nums)-1, record)
+	return
+}
