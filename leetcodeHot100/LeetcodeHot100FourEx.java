@@ -1,7 +1,9 @@
 package leetcodeHot100;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -123,6 +125,81 @@ public class LeetcodeHot100FourEx {
      * 盛最多水的容器
      */
     public int maxArea(int[] height) {
-        
+        int lt = 0, rt = height.length - 1;
+        int max = 0;
+        while (lt < rt) {
+            int wid = rt - lt;
+            int hei = Math.min(height[lt], height[rt]);
+            max = Math.max(max, wid * hei);
+            if (height[lt] < height[rt]) {
+                lt++;
+            } else {
+                rt--;
+            }
+        }
+        return max;
+    }
+
+    /**
+     * 三数之和
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);
+        int len = nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        int first = 0;
+        while (first < len) {
+            int target = -nums[first];
+            int second = first + 1;
+            int third = len - 1;
+            while (second < third) {
+                int sum = nums[second] + nums[third];
+                if (sum < target) {
+                    second++;
+                    while (second < len - 1 && second > first && nums[second] == nums[second - 1]) {
+                        second++;
+                    }
+                } else if (sum > target) {
+                    third--;
+                    while (third > 1 && third < len - 1 && nums[third] == nums[third + 1]) {
+                        third--;
+                    }
+                } else {
+                    res.add(List.of(nums[first], nums[second], nums[third]));
+                    second++;
+                    while (second < len - 1 && second > first && nums[second] == nums[second - 1]) {
+                        second++;
+                    }
+                }
+            }
+            first++;
+            while (first < len && first > 0 && nums[first] == nums[first - 1]) {
+                first++;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 接雨水
+     * 单调栈解法
+     */
+    public int trap(int[] height) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int res = 0;
+        for (int i = 0; i < height.length; i++) {
+            while (!stack.isEmpty() && height[stack.peek()] < height[i]) {
+                int j = stack.pop();
+                if (stack.isEmpty()) {
+                    break;
+                }
+                int k = stack.peek();
+                int wid = i - k - 1;
+                int hei = Math.min(height[i], height[k]) - height[j];
+                res += wid * hei;
+            }
+            stack.push(i);
+        }
+        return res;
     }
 }
