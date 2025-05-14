@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -201,5 +202,161 @@ public class LeetcodeHot100FourEx {
             stack.push(i);
         }
         return res;
+    }
+
+    /**
+     * 找到字符串中所有字母异位词
+     * 这次写太久了
+     * 最近算法水平下降的太厉害了
+     * 才仅仅一个月没有刷
+     * 果然之前还是靠的肌肉记忆？
+     * 今天是2025.5.14，上一次提交已经是2025.2.28了
+     * 之前是用动态的滑动窗口做的，缩小窗口的逻辑是窗口的大小大于等于pLen
+     * 现在使用的是固定滑窗的逻辑
+     */
+    public List<Integer> findAnagrams(String s, String p) {
+        int sLen = s.length(), pLen = p.length();
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> have = new HashMap<>();
+        for (char c : p.toCharArray()) {
+            need.put(c, need.getOrDefault(c, 0) + 1);
+        }
+        int valid = 0;
+        int lt = 0, rt = 0;
+        List<Integer> res = new ArrayList<>();
+        for (; rt < pLen && rt < sLen; rt++) {
+            char c = s.charAt(rt);
+            if (!need.containsKey(c)) {
+                continue;
+            }
+            have.put(c, have.getOrDefault(c, 0) + 1);
+            if (need.get(c).equals(have.get(c))) {
+                valid++;
+                if (valid == need.size()) {
+                    res.add(lt);
+                }
+            }
+        }
+        while (rt < sLen) {
+            char rc = s.charAt(rt++);
+            if (need.containsKey(rc)) {
+                have.put(rc, have.getOrDefault(rc, 0) + 1);
+                if (need.get(rc).equals(have.get(rc))) {
+                    valid++;
+                }
+            }
+            char lc = s.charAt(lt++);
+            if (need.containsKey(lc)) {
+                if (need.get(lc).equals(have.get(lc))) {
+                    valid--;
+                }
+                have.put(lc, have.getOrDefault(lc, 0) - 1);
+            }
+            if (valid == need.size()) {
+                res.add(lt);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 和为K的子数组
+     */
+    public int subarraySum(int[] nums, int k) {
+        int len = nums.length;
+        int[] prefix = new int[len];
+        prefix[0] = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            prefix[i] = prefix[i - 1] + nums[i];
+        }
+        // 前缀和及其出现的次数
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 1);
+        int count = 0;
+        for (int i = 0; i < prefix.length; i++) {
+            // prefix[i] - x = k
+            count += map.getOrDefault(prefix[i] - k, 0);
+            map.put(prefix[i], map.getOrDefault(prefix[i], 0) + 1);
+        }
+        return count;
+    }
+
+    /**
+     * 滑动窗口的最大值
+     * 这题的核心还是要意识到：
+     * 单调队列维护的是当前窗口以及之前的窗口内的最大值
+     */
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int len = nums.length;
+        Deque<Integer> queue = new ArrayDeque<>();
+        int[] res = new int[(len - 1) - (k - 1) + 1];
+        for (int i = 0; i < len; i++) {
+            // 维持单调队列的单调递减的特性
+            while (!queue.isEmpty() && nums[queue.peekLast()] <= nums[i]) {
+                queue.pollLast();
+            }
+            queue.offerLast(i);
+            // 判断是否在窗口范围内
+            if (i >= k - 1) {
+                while (i - queue.peekFirst() + 1 > k) {
+                    queue.pollFirst();
+                }
+                res[i - k + 1] = nums[queue.peek()];
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 最大子数组和
+     */
+    public int maxSubArray(int[] nums) {
+        int max = nums[0];
+        int sum = 0;
+        for(int num : nums) {
+            if (sum < 0) {
+                sum = 0;
+            }
+            sum += num;
+            max = Math.max(max, sum);
+        }
+        return max;
+    }
+
+    /**
+     * 合并区间
+     */
+    public int[][] merge(int[][] intervals) {
+        PriorityQueue<int[]> priorityQueue = new PriorityQueue<>((a, b) -> {
+            return a[0] == b[0] ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
+        });
+        for(int[] interval : intervals) {
+            priorityQueue.offer(interval);
+        }
+        Deque<int[]> stack = new ArrayDeque<>();
+        while (!priorityQueue.isEmpty()) {
+            int[] interval = priorityQueue.poll();
+            if (!stack.isEmpty()) {
+                int[] last = stack.peek();
+                if (last[1] >= interval[0]) {
+                    stack.pop();
+                    interval = new int[] {last[0], Math.max(last[1], interval[1])};
+                }
+            }
+            stack.push(interval);
+        }
+        int size = stack.size();
+        int[][] res = new int[size][2];
+        for(int i = 0; i < size; i++) {
+            res[i] = stack.pop();
+        }
+        return res;
+    }
+
+    /**
+     * 轮转数组
+     */
+    public void rotate(int[] nums, int k) {
+
     }
 }
