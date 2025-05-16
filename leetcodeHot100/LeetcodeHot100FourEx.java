@@ -313,7 +313,7 @@ public class LeetcodeHot100FourEx {
     public int maxSubArray(int[] nums) {
         int max = nums[0];
         int sum = 0;
-        for(int num : nums) {
+        for (int num : nums) {
             if (sum < 0) {
                 sum = 0;
             }
@@ -330,7 +330,7 @@ public class LeetcodeHot100FourEx {
         PriorityQueue<int[]> priorityQueue = new PriorityQueue<>((a, b) -> {
             return a[0] == b[0] ? Integer.compare(a[1], b[1]) : Integer.compare(a[0], b[0]);
         });
-        for(int[] interval : intervals) {
+        for (int[] interval : intervals) {
             priorityQueue.offer(interval);
         }
         Deque<int[]> stack = new ArrayDeque<>();
@@ -340,14 +340,14 @@ public class LeetcodeHot100FourEx {
                 int[] last = stack.peek();
                 if (last[1] >= interval[0]) {
                     stack.pop();
-                    interval = new int[] {last[0], Math.max(last[1], interval[1])};
+                    interval = new int[] { last[0], Math.max(last[1], interval[1]) };
                 }
             }
             stack.push(interval);
         }
         int size = stack.size();
         int[][] res = new int[size][2];
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             res[i] = stack.pop();
         }
         return res;
@@ -357,6 +357,6 @@ public class LeetcodeHot100FourEx {
      * 轮转数组
      */
     public void rotate(int[] nums, int k) {
-        
+
     }
 }
