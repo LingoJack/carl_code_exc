@@ -733,6 +733,7 @@ public class LeetcodeHot100FourEx {
     /**
      * 两两交换链表中的节点
      * 做太久了
+     * Tag: Redo
      */
     public ListNode swapPairs(ListNode head) {
         ListNode dummy = new ListNode(0, head);
@@ -751,6 +752,9 @@ public class LeetcodeHot100FourEx {
                 fast = fast.next;
                 count++;
             }
+            if (count < k) {
+                break;
+            }
             ListNode nextGroupStart = fast;
             ListNode last = null;
             while (slow != nextGroupStart) {
@@ -765,5 +769,50 @@ public class LeetcodeHot100FourEx {
             groupStart = nextGroupStart;
         }
         return dummy.next;
+    }
+
+    /**
+     * K个一组翻转链表
+     */
+    public ListNode reverseKGroup(ListNode head, int k) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode prevGroupEnd = dummy;
+        ListNode groupStart = head;
+        // 1 2 3 4
+        // s
+        // f
+        while (groupStart != null) {
+            ListNode slow = groupStart, fast = groupStart;
+            int count = 0;
+            ListNode groupEnd = null;
+            while (count < k && fast != null) {
+                groupEnd = fast;
+                fast = fast.next;
+                count++;
+            }
+            if (count < k) {
+                break;
+            }
+            ListNode nextGroupStart = fast;
+            ListNode last = null;
+            while (slow != nextGroupStart) {
+                ListNode next = slow.next;
+                slow.next = last;
+                last = slow;
+                slow = next;
+            }
+            prevGroupEnd.next = groupEnd;
+            groupStart.next = nextGroupStart;
+            prevGroupEnd = groupStart;
+            groupStart = nextGroupStart;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 随机链表的复制
+     */
+    public Node copyRandomList(Node head) {
+        
     }
 }
