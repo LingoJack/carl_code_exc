@@ -14,6 +14,8 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import leetcodeHot100.LeetcodeHot100FourEx.copyRandomListSolution.Node;
+
 public class LeetcodeHot100FourEx {
 
     /**
@@ -812,7 +814,86 @@ public class LeetcodeHot100FourEx {
     /**
      * 随机链表的复制
      */
-    public Node copyRandomList(Node head) {
+    public class copyRandomListSolution {
+        class Node {
+            int val;
+            Node next;
+            Node random;
+
+            public Node(int val) {
+                this.val = val;
+                this.next = null;
+                this.random = null;
+            }
+
+            public Node copyRandomList(Node head) {
+                Map<Node, Node> map = new HashMap<>();
+                Node node = head;
+                while (node != null) {
+                    map.put(node, new Node(node.val));
+                    node = node.next;
+                }
+                node = head;
+                while (node != null) {
+                    Node mirrorNode = map.get(node);
+                    mirrorNode.next = map.get(node.next);
+                    mirrorNode.random = map.get(node.random);
+                    node = node.next;
+                }
+                return map.get(head);
+            }
+        }
+    }
+
+    /**
+     * 排序链表
+     */
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode[] spilt = spilt(head);
+        ListNode lt = sortList(spilt[0]);
+        ListNode rt = sortList(spilt[1]);
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (lt != null || rt != null) {
+            int lv = lt == null ? Integer.MAX_VALUE : lt.val;
+            int rv = rt == null ? Integer.MAX_VALUE : rt.val;
+            if (lv < rv) {
+                last.next = lt;
+                last = lt;
+                lt = lt.next;
+            } else {
+                last.next = rt;
+                last = rt;
+                rt = rt.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    private ListNode[] spilt(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        ListNode slow = head, fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        // 1 2 3 4
+        // s
+        // f
+        ListNode secondHead = slow.next;
+        slow.next = null;
+        return new ListNode[] { head, secondHead };
+    }
+
+    /**
+     * 合并K个升序链表
+     */
+    public ListNode mergeKLists(ListNode[] lists) {
         
     }
 }
