@@ -732,6 +732,7 @@ public class LeetcodeHot100FourEx {
 
     /**
      * 两两交换链表中的节点
+     * 做太久了
      */
     public ListNode swapPairs(ListNode head) {
         ListNode dummy = new ListNode(0, head);
@@ -740,9 +741,9 @@ public class LeetcodeHot100FourEx {
         ListNode groupStart = head;
         // 1 2 3 4
         // s
-        //     f
+        // f
         while (groupStart != null) {
-            ListNode slow =  groupStart, fast = groupStart;
+            ListNode slow = groupStart, fast = groupStart;
             int count = 0;
             ListNode groupEnd = null;
             while (count < k && fast != null) {
@@ -750,22 +751,19 @@ public class LeetcodeHot100FourEx {
                 fast = fast.next;
                 count++;
             }
-            if (fast == null) {
-                break;
-            }
-            ListNode nextGroupStart = fast.next;
+            ListNode nextGroupStart = fast;
             ListNode last = null;
             while (slow != nextGroupStart) {
-               ListNode next = slow.next;
-               slow.next = last;
-               last = slow;
-               slow = next;
+                ListNode next = slow.next;
+                slow.next = last;
+                last = slow;
+                slow = next;
             }
             prevGroupEnd.next = groupEnd;
             groupStart.next = nextGroupStart;
+            prevGroupEnd = groupStart;
             groupStart = nextGroupStart;
-            prevGroupEnd = groupEnd;
-        }   
+        }
         return dummy.next;
     }
 }
