@@ -503,6 +503,20 @@ public class LeetcodeHot100FourEx {
      * 旋转图像
      */
     public void rotate(int[][] matrix) {
-
+        int row = matrix.length, col = matrix[0].length;
+        for (int j = 0; j < col; j++) {
+            for (int i = 0; 2 * i < row; i++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[row - 1 - i][j];
+                matrix[row - 1 - i][j] = t;
+            }
+        }
+        for(int i = 0; i < row; i++) {
+            for(int j = 0; j <= i; j++) {
+                int t = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = t;
+            }
+        }
     }
 }
