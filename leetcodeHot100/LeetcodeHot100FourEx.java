@@ -357,6 +357,152 @@ public class LeetcodeHot100FourEx {
      * 轮转数组
      */
     public void rotate(int[] nums, int k) {
+        // 1 2 3 4 5 6 7 k=3
+        // 5 6 7 1 2 3 4
+        int len = nums.length;
+        k %= len;
+        reverse(nums, 0, len - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, len - 1);
+    }
+
+    private void reverse(int[] nums, int start, int end) {
+        int lt = start, rt = end;
+        while (lt < rt) {
+            int t = nums[lt];
+            nums[lt] = nums[rt];
+            nums[rt] = t;
+            lt++;
+            rt--;
+        }
+    }
+
+    /**
+     * 除自身以外的数组的乘积
+     */
+    public int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] prefix = new int[len];
+        int[] suffix = new int[len];
+        prefix[0] = nums[0];
+        for (int i = 1; i < len; i++) {
+            prefix[i] = prefix[i - 1] * nums[i];
+        }
+        suffix[len - 1] = nums[len - 1];
+        for (int i = len - 2; i >= 0; i--) {
+            suffix[i] = suffix[i + 1] * nums[i];
+        }
+        int[] res = new int[len];
+        for (int i = 0; i < len; i++) {
+            int lt = i == 0 ? 1 : prefix[i - 1];
+            int rt = (i == len - 1) ? 1 : suffix[i + 1];
+            res[i] = lt * rt;
+        }
+        return res;
+    }
+
+    /**
+     * 缺失的第一个正数
+     */
+    public int firstMissingPositive(int[] nums) {
+        int len = nums.length;
+        boolean[] exist = new boolean[len + 1];
+        for (int num : nums) {
+            if (num < len + 1 && num > 0) {
+                exist[num] = true;
+            }
+        }
+        for (int i = 1; i < len + 1; i++) {
+            if (!exist[i]) {
+                return i;
+            }
+        }
+        return len + 1;
+    }
+
+    /**
+     * 矩阵置零
+     */
+    public void setZeroes(int[][] matrix) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        boolean[] zeroRow = new boolean[row];
+        boolean[] zeroCol = new boolean[col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (matrix[i][j] == 0) {
+                    zeroRow[i] = true;
+                    zeroCol[j] = true;
+                }
+            }
+        }
+        for (int i = 0; i < row; i++) {
+            if (zeroRow[i]) {
+                for (int j = 0; j < col; j++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        for (int j = 0; j < col; j++) {
+            if (zeroCol[j]) {
+                for (int i = 0; i < row; i++) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * 螺旋矩阵
+     */
+    public List<Integer> spiralOrder(int[][] matrix) {
+        List<Integer> res = new ArrayList<>();
+        int row = matrix.length, col = matrix[0].length;
+        int upBound = 0, downBound = row - 1;
+        int ltBound = 0, rtBound = col - 1;
+        int count = row * col;
+        int rowIdx = 0;
+        int colIdx = 0;
+        while (true) {
+            for (int i = ltBound; i <= rtBound; i++) {
+                res.add(matrix[rowIdx][i]);
+                colIdx = i;
+                if (--count == 0) {
+                    return res;
+                }
+            }
+            upBound++;
+            for (int i = upBound; i <= downBound; i++) {
+                res.add(matrix[i][colIdx]);
+                rowIdx = i;
+                if (--count == 0) {
+                    return res;
+                }
+            }
+            rtBound--;
+            for (int i = rtBound; i >= ltBound; i--) {
+                res.add(matrix[rowIdx][i]);
+                colIdx = i;
+                if (--count == 0) {
+                    return res;
+                }
+            }
+            downBound--;
+            for (int i = downBound; i >= upBound; i--) {
+                res.add(matrix[i][colIdx]);
+                rowIdx = i;
+                if (--count == 0) {
+                    return res;
+                }
+            }
+            ltBound++;
+        }
+    }
+
+    /**
+     * 旋转图像
+     */
+    public void rotate(int[][] matrix) {
 
     }
 }
