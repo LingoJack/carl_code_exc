@@ -511,12 +511,261 @@ public class LeetcodeHot100FourEx {
                 matrix[row - 1 - i][j] = t;
             }
         }
-        for(int i = 0; i < row; i++) {
-            for(int j = 0; j <= i; j++) {
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j <= i; j++) {
                 int t = matrix[i][j];
                 matrix[i][j] = matrix[j][i];
                 matrix[j][i] = t;
             }
         }
+    }
+
+    /**
+     * 搜索二维矩阵II
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length, col = matrix[0].length;
+        int rowIdx = 0, colIdx = col - 1;
+        while (true) {
+            if (!(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col)) {
+                break;
+            }
+            int val = matrix[rowIdx][colIdx];
+            if (val > target) {
+                colIdx--;
+            } else if (val < target) {
+                rowIdx++;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 相交链表
+     */
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        int lenA = 0, lenB = 0;
+        ListNode node = headA;
+        while (node != null) {
+            lenA++;
+            node = node.next;
+        }
+        node = headB;
+        while (node != null) {
+            lenB++;
+            node = node.next;
+        }
+        ListNode slowHead, longHead;
+        if (lenA > lenB) {
+            slowHead = headB;
+            longHead = headA;
+        } else {
+            slowHead = headA;
+            longHead = headB;
+        }
+        int diff = Math.abs(lenA - lenB);
+        while (diff > 0) {
+            longHead = longHead.next;
+            diff--;
+        }
+        while (slowHead != null && longHead != null) {
+            if (slowHead == longHead) {
+                return slowHead;
+            }
+            slowHead = slowHead.next;
+            longHead = longHead.next;
+        }
+        return null;
+    }
+
+    /**
+     * 反转链表
+     */
+    public ListNode reverseList(ListNode head) {
+        ListNode node = head;
+        ListNode last = null;
+        while (node != null) {
+            ListNode next = node.next;
+            node.next = last;
+            last = node;
+            node = next;
+        }
+        return last;
+    }
+
+    /**
+     * 回文链表
+     */
+    public boolean isPalindrome(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        ListNode last = null;
+        ListNode secondHead = slow;
+        while (secondHead != null) {
+            ListNode next = secondHead.next;
+            secondHead.next = last;
+            last = secondHead;
+            secondHead = next;
+        }
+        ListNode match1 = last;
+        ListNode match2 = head;
+        while (match1 != match2 && match1 != null && match2 != null) {
+            if (match1.val != match2.val) {
+                return false;
+            }
+            match1 = match1.next;
+            match2 = match2.next;
+        }
+        return true;
+    }
+
+    /**
+     * 环形链表
+     */
+    public boolean hasCycle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 环形链表II
+     */
+    public ListNode detectCycle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (slow == fast) {
+                ListNode node = head;
+                while (node != slow) {
+                    node = node.next;
+                    slow = slow.next;
+                }
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 合并两个有序链表
+     */
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (list1 != null || list2 != null) {
+            int v1 = list1 == null ? Integer.MAX_VALUE : list1.val;
+            int v2 = list2 == null ? Integer.MAX_VALUE : list2.val;
+            if (v2 < v1) {
+                last.next = list2;
+                last = list2;
+                list2 = list2.next;
+            } else {
+                last.next = list1;
+                last = list1;
+                list1 = list1.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 两数相加
+     */
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode();
+        ListNode node = dummy;
+        ListNode n1 = l1, n2 = l2;
+        int carry = 0;
+        while (n1 != null || n2 != null || carry != 0) {
+            int o1 = n1 == null ? 0 : n1.val;
+            int o2 = n2 == null ? 0 : n2.val;
+            int sum = o1 + o2 + carry;
+            carry = sum / 10;
+            sum %= 10;
+            ListNode newNode = new ListNode(sum);
+            node.next = newNode;
+            node = newNode;
+            if (n1 != null) {
+                n1 = n1.next;
+            }
+            if (n2 != null) {
+                n2 = n2.next;
+            }
+        }
+        return dummy.next;
+    }
+
+    /**
+     * 删除链表的倒数第N个结点
+     */
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        int count = 0;
+        ListNode slow = head, fast = head;
+        while (fast != null) {
+            fast = fast.next;
+            count++;
+        }
+        ListNode dummy = new ListNode(0, head);
+        ListNode last = dummy;
+        while (count > n) {
+            count--;
+            last = slow;
+            slow = slow.next;
+        }
+        last.next = slow.next;
+        slow.next = null;
+        return dummy.next;
+    }
+
+    /**
+     * 两两交换链表中的节点
+     */
+    public ListNode swapPairs(ListNode head) {
+        ListNode dummy = new ListNode(0, head);
+        ListNode prevGroupEnd = dummy;
+        int k = 2;
+        ListNode groupStart = head;
+        // 1 2 3 4
+        // s
+        //     f
+        while (groupStart != null) {
+            ListNode slow =  groupStart, fast = groupStart;
+            int count = 0;
+            ListNode groupEnd = null;
+            while (count < k && fast != null) {
+                groupEnd = fast;
+                fast = fast.next;
+                count++;
+            }
+            if (fast == null) {
+                break;
+            }
+            ListNode nextGroupStart = fast.next;
+            ListNode last = null;
+            while (slow != nextGroupStart) {
+               ListNode next = slow.next;
+               slow.next = last;
+               last = slow;
+               slow = next;
+            }
+            prevGroupEnd.next = groupEnd;
+            groupStart.next = nextGroupStart;
+            groupStart = nextGroupStart;
+            prevGroupEnd = groupEnd;
+        }   
+        return dummy.next;
     }
 }
