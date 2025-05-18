@@ -894,6 +894,41 @@ public class LeetcodeHot100FourEx {
      * 合并K个升序链表
      */
     public ListNode mergeKLists(ListNode[] lists) {
-        
+        PriorityQueue<ListNode> priorityQueue = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
+        for (ListNode head : lists) {
+            if (head == null) {
+                continue;
+            }
+            priorityQueue.offer(head);
+        }
+        ListNode dummy = new ListNode();
+        ListNode last = dummy;
+        while (!priorityQueue.isEmpty()) {
+            ListNode node = priorityQueue.poll();
+            if (node.next != null) {
+                priorityQueue.offer(node.next);
+            }
+            last.next = node;
+            last = node;
+        }
+        return dummy.next;
+    }
+
+    /**
+     * LRU缓存
+     */
+    class LRUCache {
+
+        public LRUCache(int capacity) {
+
+        }
+
+        public int get(int key) {
+
+        }
+
+        public void put(int key, int value) {
+
+        }
     }
 }
