@@ -1013,4 +1013,40 @@ public class LeetcodeHot100FourEx {
         list.add(node.val);
         inorder(node.right, list);
     }
+
+    /**
+     * 二叉树的最大深度
+     */
+    public int maxDepth(TreeNode root) {
+        return getHeight(root);
+    }
+
+    private int getHeight(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return Math.max(getHeight(node.left), getHeight(node.right)) + 1;
+    }
+
+    /**
+     * 翻转二叉树
+     */
+    public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+        TreeNode t = root.left;
+        root.left = root.right;
+        root.right = t;
+        invertTree(root.left);
+        invertTree(root.right);
+        return root;
+    }
+
+    /**
+     * 对称二叉树
+     */
+    public boolean isSymmetric(TreeNode root) {
+        
+    }
 }
