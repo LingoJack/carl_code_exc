@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import leetcodeHot100.LeetcodeHot100FourEx.copyRandomListSolution.Node;
+import upgrade_exc.dfs_exc;
 
 public class LeetcodeHot100FourEx {
 
@@ -999,6 +1000,17 @@ public class LeetcodeHot100FourEx {
      * 二叉树的中序遍历
      */
     public List<Integer> inorderTraversal(TreeNode root) {
-        
+        List<Integer> list = new ArrayList<>();
+        inorder(root, list);
+        return list;
+    }
+
+    private void inorder(TreeNode node, List<Integer> list) {
+        if (node == null) {
+            return;
+        }
+        inorder(node.left, list);
+        list.add(node.val);
+        inorder(node.right, list);
     }
 }
