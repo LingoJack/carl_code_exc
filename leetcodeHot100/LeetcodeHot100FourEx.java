@@ -1047,6 +1047,29 @@ public class LeetcodeHot100FourEx {
      * 对称二叉树
      */
     public boolean isSymmetric(TreeNode root) {
+        if (root == null) {
+            return false;
+        }
+        return valid(root.left, root.right);
+    }
+
+    private boolean valid(TreeNode lt, TreeNode rt) {
+        if (lt == null && rt == null) {
+            return true;
+        }
+        if (lt != null && rt != null) {
+            if (lt.val != rt.val) {
+                return false;
+            }
+            return valid(lt.right, rt.left) && valid(lt.left, rt.right);
+        }
+        return false;
+    }
+
+    /**
+     * 二叉树的直径
+     */
+    public int diameterOfBinaryTree(TreeNode root) {
         
     }
 }
