@@ -919,16 +919,86 @@ public class LeetcodeHot100FourEx {
      */
     class LRUCache {
 
-        public LRUCache(int capacity) {
+        private class Node {
+            private int key;
+            private int val;
+            private Node next;
+            private Node prev;
 
+            public Node(int key, int val) {
+                this.key = key;
+                this.val = val;
+            }
+        }
+
+        private Map<Integer, Node> map;
+
+        private Node head;
+
+        private Node tail;
+
+        private int capacity;
+
+        public LRUCache(int capacity) {
+            this.map = new HashMap<>();
+            this.capacity = capacity;
+            this.head = new Node(0, 0);
+            this.tail = new Node(0, 0);
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
         }
 
         public int get(int key) {
-
+            if (map.containsKey(key)) {
+                Node node = map.get(key);
+                node.prev.next = node.next;
+                node.next.prev = node.prev;
+                node.next = null;
+                node.prev = null;
+                node.next = this.head.next;
+                node.prev = this.head;
+                this.head.next.prev = node;
+                this.head.next = node;
+                return node.val;
+            }
+            return -1;
         }
 
         public void put(int key, int value) {
-
+            if (map.containsKey(key)) {
+                Node node = map.get(key);
+                node.prev.next = node.next;
+                node.next.prev = node.prev;
+                node.next = null;
+                node.prev = null;
+                node.next = this.head.next;
+                node.prev = this.head;
+                this.head.next.prev = node;
+                this.head.next = node;
+                node.val = value;
+                return;
+            }
+            Node node = new Node(key, value);
+            node.next = this.head.next;
+            node.prev = this.head;
+            this.head.next.prev = node;
+            this.head.next = node;
+            map.put(key, node);
+            if (map.size() > this.capacity) {
+                Node removedNode = this.tail.prev;
+                removedNode.prev.next = removedNode.next;
+                removedNode.next.prev = removedNode.prev;
+                removedNode.next = null;
+                removedNode.prev = null;
+                map.remove(removedNode.key);
+            }
         }
+    }
+
+    /**
+     * 二叉树的中序遍历
+     */
+    public List<Integer> inorderTraversal(TreeNode root) {
+        
     }
 }
