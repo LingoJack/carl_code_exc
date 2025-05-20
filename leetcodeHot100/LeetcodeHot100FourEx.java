@@ -1100,7 +1100,7 @@ public class LeetcodeHot100FourEx {
         while (!queue.isEmpty()) {
             int size = queue.size();
             List<Integer> list = new ArrayList<>();
-            for(int i = 0; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 TreeNode node = queue.poll();
                 list.add(node.val);
                 if (node.left != null) {
@@ -1201,6 +1201,35 @@ public class LeetcodeHot100FourEx {
      * 二叉搜索树中第K小的元素
      */
     public int kthSmallest(TreeNode root, int k) {
+        this.count = 0;
+        this.k = k;
+        inorder4kthSmallest(root);
+        return res;
+    }
+
+    private void inorder4kthSmallest(TreeNode node) {
+        if (node == null || count > k) {
+            return;
+        }
+        inorder4kthSmallest(node.left);
+        count++;
+        if (count == k) {
+            res = node.val;
+            return;
+        }
+        inorder4kthSmallest(node.right);
+    }
+
+    private int res;
+
+    private int count;
+
+    private int k;
+
+    /**
+     * 二叉树的右视图
+     */
+    public List<Integer> rightSideView(TreeNode root) {
 
     }
 }
