@@ -1070,6 +1070,97 @@ public class LeetcodeHot100FourEx {
      * 二叉树的直径
      */
     public int diameterOfBinaryTree(TreeNode root) {
-        
+        maxDiameter = 0;
+        dfs4DiameterOfBinaryTree(root);
+        return maxDiameter;
+    }
+
+    private int maxDiameter;
+
+    private int dfs4DiameterOfBinaryTree(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int ltHeight = dfs4DiameterOfBinaryTree(node.left);
+        int rtHeight = dfs4DiameterOfBinaryTree(node.right);
+        maxDiameter = Math.max(maxDiameter, ltHeight + rtHeight);
+        return Math.max(ltHeight, rtHeight) + 1;
+    }
+
+    /**
+     * 二叉树的层序遍历
+     */
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            List<Integer> list = new ArrayList<>();
+            for(int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                list.add(node.val);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 将有序数组转换为二叉搜索树
+     */
+    public TreeNode sortedArrayToBST(int[] nums) {
+        return buildTree(nums, 0, nums.length - 1);
+    }
+
+    private TreeNode buildTree(int[] nums, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        int mid = (start + end) >> 1;
+        TreeNode root = new TreeNode(nums[mid]);
+        root.left = buildTree(nums, start, mid - 1);
+        root.right = buildTree(nums, mid + 1, end);
+        return root;
+    }
+
+    /**
+     * 验证二叉树
+     */
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return false;
+        }
+
+    }
+
+    private boolean dfs(TreeNode node) {
+        if (node == null) {
+            return true;
+        }
+        TreeNode mark = node;
+        while (mark.left != null) {
+            mark = mark.left;
+        }
+        if (mark.val > node.val) {
+            return false;
+        }
+        mark = node;
+        while (mark.right != null) {
+            mark = mark.right;
+        }
+        if (mark.val < node.val) {
+            return false;
+        }
+        return dfs(node.left) && dfs(node.right);
     }
 }
