@@ -1135,32 +1135,72 @@ public class LeetcodeHot100FourEx {
 
     /**
      * 验证二叉树
+     * 还有另外一种思路就是，二叉搜索树的中序遍历是严格递增的
+     * 所以我们可以铜鼓二叉搜索树来验证BST
      */
     public boolean isValidBST(TreeNode root) {
         if (root == null) {
             return false;
         }
-
+        return validBST(root);
     }
 
-    private boolean dfs(TreeNode node) {
-        if (node == null) {
+    private boolean validBST(TreeNode root) {
+        if (root == null) {
             return true;
         }
-        TreeNode mark = node;
-        while (mark.left != null) {
-            mark = mark.left;
+        TreeNode node = null;
+        if (root.left != null) {
+            node = root.left;
+            while (node.right != null) {
+                node = node.right;
+            }
+            if (node.val >= root.val) {
+                return false;
+            }
         }
-        if (mark.val > node.val) {
-            return false;
+        if (root.right != null) {
+            node = root.right;
+            while (node.left != null) {
+                node = node.left;
+            }
+            if (node.val <= root.val) {
+                return false;
+            }
         }
-        mark = node;
-        while (mark.right != null) {
-            mark = mark.right;
+        return validBST(root.left) && validBST(root.right);
+    }
+
+    /**
+     * 验证二叉搜索树
+     */
+    public boolean isValidBSTWithInorderTravsal(TreeNode root) {
+        last = null;
+        valid = true;
+        inorderValid(root);
+        return valid;
+    }
+
+    private void inorderValid(TreeNode node) {
+        if (node == null || !valid) {
+            return;
         }
-        if (mark.val < node.val) {
-            return false;
+        inorderValid(node.left);
+        if (last != null && last >= node.val) {
+            valid = false;
         }
-        return dfs(node.left) && dfs(node.right);
+        last = node.val;
+        inorderValid(node.right);
+    }
+
+    private Integer last;
+
+    private boolean valid;
+
+    /**
+     * 二叉搜索树中第K小的元素
+     */
+    public int kthSmallest(TreeNode root, int k) {
+
     }
 }
