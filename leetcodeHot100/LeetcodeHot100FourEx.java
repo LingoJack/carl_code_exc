@@ -1278,6 +1278,26 @@ public class LeetcodeHot100FourEx {
      * 从前序和中序遍历序列构造二叉树
      */
     public TreeNode buildTree(int[] preorder, int[] inorder) {
-
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < inorder.length; i++) {
+            map.put(inorder[i], i);
+        }
+        return buildTree(preorder, map, 0, inorder.length - 1);
     }
+
+    private int preorderIdx = 0;
+
+    private TreeNode buildTree(int[] preorder, Map<Integer, Integer> map, int start, int end) {
+        if (end < start) {
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preorderIdx]);
+        preorderIdx++;
+        int idx = map.get(root.val);
+        root.left = buildTree(preorder, map, start, idx - 1);
+        root.right = buildTree(preorder, map, idx + 1, end);
+        return root;
+    }
+
+    
 }
