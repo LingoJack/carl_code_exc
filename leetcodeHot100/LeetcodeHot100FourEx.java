@@ -1230,6 +1230,54 @@ public class LeetcodeHot100FourEx {
      * 二叉树的右视图
      */
     public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (i == size - 1) {
+                    res.add(node.val);
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 二叉树展开为链表
+     */
+    public void flatten(TreeNode root) {
+        TreeNode node = root;
+        while (node != null) {
+            if (node.left != null) {
+                TreeNode right = node.right;
+                TreeNode ltMax = node.left;
+                while (ltMax != null && ltMax.right != null) {
+                    ltMax = ltMax.right;
+                }
+                node.right = node.left;
+                node.left = null;
+                ltMax.right = right;
+            }
+            node = node.right;
+        }
+    }
+
+    /**
+     * 从前序和中序遍历序列构造二叉树
+     */
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
 
     }
 }
