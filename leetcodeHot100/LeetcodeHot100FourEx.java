@@ -1299,5 +1299,10 @@ public class LeetcodeHot100FourEx {
         return root;
     }
 
-    
+    /**
+     * 路径总和III
+     */
+    public int pathSum(TreeNode root, int targetSum) {
+
+    }
 }
