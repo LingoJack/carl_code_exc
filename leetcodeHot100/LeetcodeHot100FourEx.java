@@ -1301,8 +1301,44 @@ public class LeetcodeHot100FourEx {
 
     /**
      * 路径总和III
+     * 没做出来
+     * 和前缀树有关
+     * 这里和第三次的hot100练习一样，用的不是最佳解法
+     * 这里我用二叉树的层序遍历来做
+     * 确实很多东西，只有过了一段时间再来做，才知道哪些是真的会了，哪些是肌肉记忆
      */
     public int pathSum(TreeNode root, int targetSum) {
-        
+        if (root == null) {
+            return 0;
+        }
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                startFromRoot(node, targetSum);
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return pathCount;
+    }
+
+    private int pathCount = 0;
+
+    private void startFromRoot(TreeNode root, long target) {
+        if (root == null) {
+            return;
+        }
+        if (root.val == target) {
+            pathCount++;
+        }
+        startFromRoot(root.left, target - root.val);
+        startFromRoot(root.right, target - root.val);
     }
 }
