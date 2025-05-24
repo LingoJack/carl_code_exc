@@ -1341,4 +1341,36 @@ public class LeetcodeHot100FourEx {
         startFromRoot(root.left, target - root.val);
         startFromRoot(root.right, target - root.val);
     }
+
+    /**
+     * 路径总和III
+     */
+    public int pathSumWithPrefixSumCountMap(TreeNode root, int targetSum) {
+        Map<Long, Integer> map = new HashMap<>();
+        map.put(0l, 1);
+        dfs4PathSumWithPrefixSumCountMap(root, map, targetSum, 0);
+        return count4PathSumWithPrefixSumCountMap;
+    }
+
+    private int count4PathSumWithPrefixSumCountMap = 0;
+
+    private void dfs4PathSumWithPrefixSumCountMap(TreeNode node, Map<Long, Integer> map, int target, long curSum) {
+        if (node == null) {
+            return;
+        }
+        curSum += node.val;
+        // i - x = target
+        // x == i - target
+        count4PathSumWithPrefixSumCountMap += map.getOrDefault(curSum - target, 0);
+        map.put(curSum, map.getOrDefault(curSum, 0) + 1);
+        dfs4PathSumWithPrefixSumCountMap(node.left, map, target, curSum);
+        map.put(curSum, map.getOrDefault(curSum, 0) - 1);
+        map.put(curSum, map.getOrDefault(curSum, 0) + 1);
+        dfs4PathSumWithPrefixSumCountMap(node.right, map, target, curSum);
+        map.put(curSum, map.getOrDefault(curSum, 0) - 1);
+    }
+
+    /**
+     * 
+     */
 }
