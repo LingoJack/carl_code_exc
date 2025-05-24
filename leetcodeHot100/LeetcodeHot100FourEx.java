@@ -1371,6 +1371,72 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 
+     * 二叉树的最近公共祖先
      */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (isAncestor(p, q)) {
+            return p;
+        } else if (isAncestor(q, p)) {
+            return q;
+        }
+        if (root == null) {
+            return null;
+        }
+        TreeNode res = null;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (isAncestor(node, p) && isAncestor(node, q)) {
+                    res = node;
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+        return res;
+    }
+
+    private boolean isAncestor(TreeNode ancestor, TreeNode node) {
+        if (ancestor == null) {
+            return false;
+        }
+        if (ancestor == node) {
+            return true;
+        }
+        return isAncestor(ancestor.left, node) || isAncestor(ancestor.right, node);
+    }
+
+    /**
+     * 二叉树中的最大路径和
+     */
+    public int maxPathSum(TreeNode root) {
+        dfs4MaxPathSum(root);
+        return maxPathSum;
+    }
+
+    private int maxPathSum = Integer.MIN_VALUE;
+
+    private int dfs4MaxPathSum(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int lt = dfs4MaxPathSum(node.left);
+        int rt = dfs4MaxPathSum(node.right);
+        maxPathSum = Math.max(maxPathSum, lt + node.val + rt);
+        return Math.max(0, Math.max(lt, rt) + node.val);
+    }
+
+    /**
+     * 岛屿数量
+     */
+    public int numIslands(char[][] grid) {
+
+    }
 }
