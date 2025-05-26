@@ -1472,27 +1472,55 @@ public class LeetcodeHot100FourEx {
      * 腐烂的橘子
      */
     public int orangesRotting(int[][] grid) {
-        int minute = 0;
+        int minute = -1;
         Deque<int[]> queue = new ArrayDeque<>();
         int row = grid.length, col = grid[0].length;
+        int freshCount = 0;
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
-                queue.offer(new int[] { i, j });
+                if (grid[i][j] == 2) {
+                    queue.offer(new int[] { i, j });
+                } else if (grid[i][j] == 1) {
+                    freshCount++;
+                }
             }
         }
+        if (freshCount == 0) {
+            return 0;
+        }
+        int[][] dirs = new int[][] {
+                { 1, 0 },
+                { -1, 0 },
+                { 0, 1 },
+                { 0, -1 }
+        };
         while (!queue.isEmpty()) {
             int size = queue.size();
             for (int i = 0; i < size; i++) {
                 int[] idx = queue.poll();
                 int x = idx[0], y = idx[1];
-                if (validScope(row, col, x - 1, y)) {
-                    
+                for (int[] dir : dirs) {
+                    int rowIdx = x + dir[0], colIdx = y + dir[1];
+                    if (validScope(grid, row, col, rowIdx, colIdx)) {
+                        queue.offer(new int[] { rowIdx, colIdx });
+                        freshCount--;
+                    }
                 }
             }
+            minute++;
         }
+        return freshCount == 0 ? minute : -1;
     }
 
-    private boolean validScope(int[][] grid ,int row, int col, int rowIdx, int colIdx) {
-        return (rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col) && (grid[rowIdx][colIdx] == 1);
+    private boolean validScope(int[][] grid, int row, int col, int rowIdx, int colIdx) {
+        boolean res = (rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col) && (grid[rowIdx][colIdx] == 1);
+        if (res) {
+            grid[rowIdx][colIdx] = 2;
+        }
+        return res;
     }
+
+    /**
+     * 
+     */
 }
