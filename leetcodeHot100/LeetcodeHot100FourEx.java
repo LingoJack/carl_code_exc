@@ -1521,6 +1521,43 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 
+     * 课程表
      */
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        int[] in = new int[numCourses];
+        for (int[] rel : prerequisites) {
+            in[rel[0]]++;
+            List<Integer> list = map.getOrDefault(rel[1], new ArrayList<>());
+            ;
+            list.add(rel[0]);
+            map.put(rel[1], list);
+        }
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < numCourses; i++) {
+            if (in[i] == 0) {
+                queue.offer(i);
+            }
+        }
+        int valid = 0;
+        while (!queue.isEmpty()) {
+            Integer course = queue.poll();
+            valid++;
+            List<Integer> list = map.getOrDefault(course, new ArrayList<>());
+            for (int nextCourse : list) {
+                in[nextCourse]--;
+                if (in[nextCourse] == 0) {
+                    queue.offer(nextCourse);
+                }
+            }
+        }
+        return valid == numCourses;
+    }
+
+    /**
+     * 全排列
+     */
+    public List<List<Integer>> permute(int[] nums) {
+
+    }
 }
