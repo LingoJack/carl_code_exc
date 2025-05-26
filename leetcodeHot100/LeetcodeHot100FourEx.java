@@ -1437,6 +1437,62 @@ public class LeetcodeHot100FourEx {
      * 岛屿数量
      */
     public int numIslands(char[][] grid) {
+        int row = grid.length, col = grid[0].length;
+        int count = 0;
+        boolean[][] visited = new boolean[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (grid[i][j] == '1' && !visited[i][j]) {
+                    count++;
+                    dfs(grid, visited, i, j);
+                }
+            }
+        }
+        return count;
+    }
 
+    private void dfs(char[][] grid, boolean[][] visited, int rowIdx, int colIdx) {
+        int row = grid.length, col = grid[0].length;
+        if (!(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col)) {
+            return;
+        }
+        if (visited[rowIdx][colIdx]) {
+            return;
+        }
+        visited[rowIdx][colIdx] = true;
+        if (grid[rowIdx][colIdx] == '1') {
+            dfs(grid, visited, rowIdx + 1, colIdx);
+            dfs(grid, visited, rowIdx - 1, colIdx);
+            dfs(grid, visited, rowIdx, colIdx + 1);
+            dfs(grid, visited, rowIdx, colIdx - 1);
+        }
+    }
+
+    /**
+     * 腐烂的橘子
+     */
+    public int orangesRotting(int[][] grid) {
+        int minute = 0;
+        Deque<int[]> queue = new ArrayDeque<>();
+        int row = grid.length, col = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                queue.offer(new int[] { i, j });
+            }
+        }
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                int[] idx = queue.poll();
+                int x = idx[0], y = idx[1];
+                if (validScope(row, col, x - 1, y)) {
+                    
+                }
+            }
+        }
+    }
+
+    private boolean validScope(int[][] grid ,int row, int col, int rowIdx, int colIdx) {
+        return (rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col) && (grid[rowIdx][colIdx] == 1);
     }
 }
