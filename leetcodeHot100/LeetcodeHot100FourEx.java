@@ -1558,6 +1558,27 @@ public class LeetcodeHot100FourEx {
      * 全排列
      */
     public List<List<Integer>> permute(int[] nums) {
+        int len = nums.length;
+        boolean[] used = new boolean[len];
+        List<List<Integer>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), used, nums);
+        return res;
+    }
 
+    private void dfs(List<List<Integer>> res, List<Integer> list, boolean[] used, int[] nums) {
+        if (list.size() == nums.length) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for(int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+            used[i] = true;
+            list.add(nums[i]);
+            dfs(res, list, used, nums);
+            list.remove(list.size() - 1);
+            used[i] = false;
+        }
     }
 }
