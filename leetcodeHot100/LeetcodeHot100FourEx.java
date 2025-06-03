@@ -1733,6 +1733,70 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 
+     * 分割回文串
      */
+    public List<List<String>> partition(String s) {
+        List<List<String>> res = new ArrayList<>();
+        dfs(res, new ArrayList<>(), s, 0);
+        return res;
+    }
+
+    private void dfs(List<List<String>> res, List<String> list, String s, int start) {
+        int len = s.length();
+        if (start == len) {
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for (int end = start; end < len; end++) {
+            if (valid(s, start, end)) {
+                list.add(s.substring(start, end + 1));
+                dfs(res, list, s, end + 1);
+                list.remove(list.size() - 1);
+            }
+        }
+    }
+
+    private boolean valid(String s, int start, int end) {
+        while (start < end) {
+            if (s.charAt(start) != s.charAt(end)) {
+                return false;
+            }
+            start++;
+            end--;
+        }
+        return true;
+    }
+
+    /**
+     * N皇后
+     */
+    public List<List<String>> solveNQueens(int n) {
+        boolean[][] board = new boolean[n][n];
+        List<List<String>> res = new ArrayList<>();
+
+    }
+
+    private void dfs(List<List<String>> res, boolean[][] board, int rowIdx) {
+        int row = board.length, col = board[0].length;
+        if (rowIdx == row) {
+            StringBuilder sb = new StringBuilder();
+            List<String> list = new ArrayList<>();
+            for (int i = 0; i < row; i++) {
+                sb.setLength(0);
+                for (int j = 0; j < col; j++) {
+                    sb.append(board[i][j] ? 'Q' : '.');
+                }
+                list.add(sb.toString());
+            }
+            res.add(list);
+            return;
+        }
+        for (int i = 0; i < col; i++) {
+
+        }
+    }
+
+    private boolean valid(boolean[][] board, int i, int j) {
+
+    }
 }
