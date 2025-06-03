@@ -1696,6 +1696,39 @@ public class LeetcodeHot100FourEx {
      * 单词搜索
      */
     public boolean exist(char[][] board, String word) {
-        
+        int row = board.length, col = board[0].length;
+        boolean[][] visited = new boolean[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (dfs(board, word, 0, i, j, visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(char[][] board, String word, int idx, int rowIdx, int colIdx, boolean[][] visited) {
+        int len = word.length();
+        int row = board.length, col = board[0].length;
+        if (idx == len) {
+            return true;
+        }
+        if (!(rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col)) {
+            return false;
+        }
+        if (visited[rowIdx][colIdx]) {
+            return false;
+        }
+        if (board[rowIdx][colIdx] != word.charAt(idx)) {
+            return false;
+        }
+        visited[rowIdx][colIdx] = true;
+        boolean res = dfs(board, word, idx + 1, rowIdx + 1, colIdx, visited)
+                || dfs(board, word, idx + 1, rowIdx - 1, colIdx, visited)
+                || dfs(board, word, idx + 1, rowIdx, colIdx + 1, visited)
+                || dfs(board, word, idx + 1, rowIdx, colIdx - 1, visited);
+        visited[rowIdx][colIdx] = false;
+        return res;
     }
 }
