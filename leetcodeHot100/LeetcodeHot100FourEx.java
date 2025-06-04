@@ -1773,7 +1773,8 @@ public class LeetcodeHot100FourEx {
     public List<List<String>> solveNQueens(int n) {
         boolean[][] board = new boolean[n][n];
         List<List<String>> res = new ArrayList<>();
-
+        dfs(res, board, 0);
+        return res;
     }
 
     private void dfs(List<List<String>> res, boolean[][] board, int rowIdx) {
@@ -1792,11 +1793,44 @@ public class LeetcodeHot100FourEx {
             return;
         }
         for (int i = 0; i < col; i++) {
-
+            if (valid(board, rowIdx, i)) {
+                board[rowIdx][i] = true;
+                dfs(res, board, rowIdx + 1);
+                board[rowIdx][i] = false;
+            }
         }
     }
 
     private boolean valid(boolean[][] board, int i, int j) {
-
+        int row = board.length, col = board[0].length;
+        if (!(i >= 0 && i < row && j >= 0 && j < col)) {
+            return false;
+        }
+        int x = i, y = j;
+        while (x >= 0) {
+            if (board[x][y]) {
+                return false;
+            }
+            x--;
+        }
+        x = i;
+        y = j;
+        while ((x >= 0 && y >= 0)) {
+            if (board[x][y]) {
+                return false;
+            }
+            x--;
+            y--;
+        }
+        x = i;
+        y = j;
+        while ((x >= 0 && y < col)) {
+            if (board[x][y]) {
+                return false;
+            }
+            x--;
+            y++;
+        }
+        return true;
     }
 }
