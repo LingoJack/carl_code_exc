@@ -1833,4 +1833,49 @@ public class LeetcodeHot100FourEx {
         }
         return true;
     }
+
+    /**
+     * 搜索插入位置
+     */
+    public int searchInsert(int[] nums, int target) {
+        int len = nums.length;
+        int lt = 0, rt = len - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < target) {
+                lt = mid + 1;
+            } else if (nums[mid] > target) {
+                rt = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 搜索二维矩阵
+     */
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length, col = matrix[0].length;
+        int rowIdx = 0, colIdx = col - 1;
+        while (rowIdx >= 0 && rowIdx < row && colIdx >= 0 && colIdx < col) {
+            int num = matrix[rowIdx][colIdx];
+            if (num > target) {
+                colIdx--;
+            } else if (num < target) {
+                rowIdx++;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 在排序数组中的查找元素的第一个和最后一个位置
+     */
+    public int[] searchRange(int[] nums, int target) {
+
+    }
 }
