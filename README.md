@@ -156,9 +156,12 @@
 (3) 是否存在问题：
 1.无
 
-2025-06-04
+2025-06-05
 (1) 今日内容：
-1.
+1. 改cam_diff解json包报错的Bug
+2. 增加udp_client的过滤、多转发能力，写对应的说明文档
+3. 增加udp_client的配置时间段搜索能力。由于cls对单次查询结果有999的limit限制，对于时间区间过长的项，拆成三秒每批执行
+4. 修改cam_diff_udp_client, cam_diff_client流水线配置使tag标签符合规范
 (2) 明日计划：
 1. 
 (3) 是否存在问题：
@@ -297,3 +300,7 @@ def parse_apis(api_string):
     return apis
 我告诉你，tdw的返回数据格式是tsv的，比如我查询select count(1) from interface_doc_db.`tdw_record` where product = '%s' and interface = '%s'
 这是res的打印结果：['1\t2710703044\t21.7.221.99\tcvm\tDescribeAddresses\t{"version":0,"eventId":1748563162,"timestamp":1748563162,"interface":{"interfaceName":"logic.cam.sigAndAuth","para":{"mode":2,"new_check_resource":1,"resource":"qcs::cvm:bj:uin\\/2710703044:eip\\/*","ownerUin":"2710703044","sub_condition":[],"uin":"2710703044","action":"cvm:DescribeAddresses"}}}\t{"version":"0","componentName":"mall_logic","timestamp":"0","eventId":1748563162,"returnValue":0,"returnCode":0,"returnMessage":"permission verify","data":{"ownerUin":2710703044,"uin":2710703044,"ownerAppid":0,"ownerUinStr":"2710703044","uinStr":"2710703044","ownerAppidStr":"0","keyType":0,"keySource":0,"formatString":"","stringToSign":"","permissionDetail":[],"transferDetail":[],"debugInfo":[],"accountArea":0}}\tNULL\t2025-05-30 18:33:53\t2025-05-30 18:33:53']，请你完成我的需求
+
+使用AI写代码，我会先看需求是否复杂：
+1. 简单的，只说重要的信息：比如用什么语言写，要做到什么，要求输出一个function然后修改
+2. 略微复杂的，一般会新建一个Prompt文件，在内部给出输入输出和简单介绍需求，然后给AI处理，比如
