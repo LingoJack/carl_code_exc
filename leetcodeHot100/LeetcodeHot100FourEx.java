@@ -1876,6 +1876,73 @@ public class LeetcodeHot100FourEx {
      * 在排序数组中的查找元素的第一个和最后一个位置
      */
     public int[] searchRange(int[] nums, int target) {
+        int len = nums.length;
+        if (len == 0) {
+            return new int[] { -1, -1 };
+        }
+        int lt = bs(nums, target);
+        int rt = bs(nums, target + 1);
+        return new int[] { (lt < len && nums[lt] == target ? lt : -1),
+                (rt - 1 >= 0 && nums[rt - 1] == target ? rt - 1 : -1) };
+    }
 
+    private int bs(int[] nums, int target) {
+        int len = nums.length;
+        int lt = 0, rt = len - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            int num = nums[mid];
+            if (num > target) {
+                rt = mid - 1;
+            } else if (num < target) {
+                lt = mid + 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 搜索旋转排序数组
+     * 没做出来，不会找转折点
+     * 思路差不多，关键是用rt和mid去比
+     */
+    public int search(int[] nums, int target) {
+        int turnPoint = findTurnPoint(nums);
+        int lt = binarySearch(nums, 0, turnPoint - 1, target);
+        int rt = binarySearch(nums, turnPoint, nums.length - 1, target);
+        return lt == -1 ? rt : lt;
+    }
+
+    private int findTurnPoint(int[] nums) {
+        int len = nums.length;
+        // 找转折点，其实就是找值最小的点
+        int lt = 0, rt = len - 1;
+        while (lt < rt) {
+            int mid = (lt + rt) >> 1;
+            int num = nums[mid];
+            if (nums[rt] >= num) {
+                rt = mid;
+            } else {
+                lt = mid + 1;
+            }
+        }
+        return lt;
+    }
+
+    private int binarySearch(int[] nums, int start, int end, int target) {
+        int lt = start, rt = end;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < target) {
+                lt = mid + 1;
+            } else if (nums[mid] > target) {
+                rt = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
     }
 }
