@@ -1945,4 +1945,70 @@ public class LeetcodeHot100FourEx {
         }
         return -1;
     }
+
+    /**
+     * 寻找旋转排序数组中的最小值
+     */
+    public int findMin(int[] nums) {
+        int len = nums.length;
+        int lt = 0, rt = len - 1;
+        while (lt < rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < nums[rt]) {
+                rt = mid;
+            } else if (nums[mid] > nums[rt]) {
+                lt = mid + 1;
+            } else {
+                lt = mid;
+            }
+        }
+        return nums[lt];
+    }
+
+    /**
+     * 有效的括号
+     */
+    public boolean isValid(String s) {
+        Map<Character, Character> map = new HashMap<>();
+        map.put(')', '(');
+        map.put('}', '{');
+        map.put(']', '[');
+        Deque<Character> stack = new ArrayDeque<>();
+        for (char c : s.toCharArray()) {
+            if (c == '(' || c == '{' || c == '[') {
+                stack.push(c);
+                continue;
+            }
+            if (stack.isEmpty() || stack.pop() != map.get(c)) {
+                return false;
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    /**
+     * 最小栈
+     */
+    class MinStack {
+
+        public MinStack() {
+
+        }
+
+        public void push(int val) {
+
+        }
+
+        public void pop() {
+
+        }
+
+        public int top() {
+
+        }
+
+        public int getMin() {
+
+        }
+    }
 }
