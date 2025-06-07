@@ -169,140 +169,16 @@
 1. 当前实现中，client的过滤是在cls端（鉴权日志）实现的，即通过query查询条件过滤，在action等字段的过滤中，cls端会因为字段没有建立索引而报错无法检索
 2. 由于当前过滤的实现依赖cls日志检索条件，uin字段（long类型）无法完全支持模糊查询，比如支持"*"，但不支持"1*"、"*1"、"*1*"
 
-
-
-1. 修改Prompt，跑接口分类分级的文档数据
-2. 修改cam_diff服务，增加北极星接入和多地址转发和某些字段的匹配逻辑，完善脚本
-3. cam_diff服务增加一个udp_client，负责在开启时候从五分钟前开始读从cls读日志打成udp包发到cam_diff
-
-CREATE DATASOURCE `interface_doc_db` WITH (
-datasource=jdbc, 
-url=`jdbc:supersql:datasource:url='jdbc:mysql://30.46.139.169:3306/interface_doc_db?characterEncoding=utf8&connectTimeout=30000';driver='com.mysql.jdbc.Driver';jarPath='./supersql-drivers.zip/mysql'`,
-driver=`com.tencent.supersql.connector.SuperSqlDataSourceDriver`,
-username=conf, 
-password=`2j5O62RRV5aIeGLp`,
-catalog=interface_doc_db,
-type=mysql)
+2025-06-06
+(1) 今日内容：
+1. 解决了昨天的问题，完成了udp_client的过滤功能
+2. 参加「风险SQL治理&SQL注入防护」主题沙龙
+3. 修改cam_log，使之可以配置指定到cam_diff的比例
+4. 修改cam_log，使之具备热重启的能力ing...
+(2) 明日计划：
+1. 测试对cam_log的改动是否生效
+(3) 是否存在问题：
+1. 无
 
 
 
-
-请用python。现在是这样，我希望从数据库表tdw_record中查询出数据是否大于10（根据product和interface），如果小于10，那么就拿product和interface去数仓查数据，然后插入到表中。
-这是mysql数据库tdw_record的建表sql：
-CREATE TABLE `tdw_record` (
-                            `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-                            `uin` bigint DEFAULT NULL COMMENT '用户ID',
-                            `client_ip` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '客户IP',
-                            `product` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品',
-                            `interface` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '接口',
-                            `request` text COLLATE utf8mb4_unicode_ci COMMENT '请求数据',
-                            `response` text COLLATE utf8mb4_unicode_ci COMMENT '响应数据',
-                            `tdbank_impl_date` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '导入日期',
-                            `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                            `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-                            PRIMARY KEY (`id`),
-                            KEY `idx_tdbank_impl_date` (`tdbank_impl_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='tdw记录表';
-，代码我已经写了一些，可以给你参考：
-def TDW_PL(tdw, argv):
-    for product, interface in fetch_interface_list():
-        sql = """
-            select uin, cientip, product, interface, request, response, mode
-            from csig_cam::sig_auth_comm_log
-            where tdbank_imp_date > '2025050110' 
-              and tdbank_imp_date < '20250503018'
-              and product = '%s'
-              and interface = '%s'
-            limit 10
-        """
-        sql = sql % (product, interface)
-        tdw.WriteLog(sql)
-        res = tdw.execute(sql)
-        tdw.WriteLog(res)
-
-def select_interface(product, interface):
-    sql = """
-        select count(1) from interface_doc_db.`tdw_record` where product = '%s' and interface = '%s'
-    """
-     # sql = sql % (product, interface)
-    res = tdw.execute(sql)
-    tdw.WriteLog(res)
-
-def fetch_interface_list():
-    non_cloud_apis = """
-        cvm:ResetInstances
-        cvm:CheckSecurityGroupPolicyRedundancy
-        cvm:DescribeInstancesOfferingsV3
-        cvm:DescribeInstanceTypeQuotaV3
-        cvm:DescribeZonesV3
-        cvm:InquiryInstancePriceHour
-        cvm:InquiryPriceAllocateHostsV3
-        cvm:DescribeInstanceMainInfo
-        cvm:DescribeInstanceStatisticsV3
-        cvm:DescribeKeyPairsV3
-        cvm:InquiryInstanceBandwidthConfig
-        cvm:InquiryInstanceOrOSConfig
-        cvm:InquiryPriceResetInstancesTypeV3
-        cvm:DescribeDiskConfigQuota
-        cvm:DescribeDiskFeatures
-        cvm:DescribeDiskInitializationUserData
-        cvm:DescribeDisksDeniedActions
-        cvm:DescribeSnapshotGroupsDeniedActions
-        cvm:DescribeSnapshotsDeniedActions
-        cvm:GetSnapOverview
-        cvm:DescribeInstanceTypeSalesConfig
-        cvm:InquirePriceModifyDiskBackupQuota
-        cvm:InquirePriceModifyDiskExtraPerformance
-        cvm:InquirePriceRefundDisks
-        cvm:InquiryPriceCreateDisks
-        cvm:InquiryPriceModifyDiskAttributes
-        cvm:InquiryPriceModifyDisksChargeType
-        cvm:InquiryPriceRenewDisks
-        cvm:InquiryPriceResizeDisk
-        cvm:ModifyInstanceFamiliesAttribute
-        cvm:SwitchParameterCreateDisks
-        cvm:SwitchParameterModifyDiskAttributes
-        cvm:SwitchParameterModifyDiskChargeType
-        cvm:SwitchParameterModifyDiskExtraPerformance
-        cvm:SwitchParameterRenewDisks
-        cvm:SwitchParameterResizeDisk
-        cvm:DescribeCbsOperationLogs
-        cvm:ModifyInstanceTypeSalesConfig
-        cvm:ModifyDiskRollbackType
-    """
-
-    cloud_apis = """
-        cvm:DescribeInstanceBanInfo
-        cvm:DescribeAddresses
-        cvm:ReleaseAddresses
-        cvm:AssociateAddress
-        cvm:DisassociateAddress
-        cvm:RenewAddresses
-        cvm:ModifyAddressesBandwidth
-        cvm:StopInstances
-        cvm:TerminateInstances
-        cvm:DescribeInstances
-        cvm:DescribeInstancesStatus
-        cvm:ResetInstance
-        cvm:DescribeImages
-        cvm:AllocateAddresses
-    """
-
-    return parse_apis(non_cloud_apis) + parse_apis(cloud_apis)
-
-
-def parse_apis(api_string):
-    """Parse API string and return formatted list of (product, interface) tuples"""
-    apis = []
-    for line in api_string.strip().split('\n'):
-        line = line.strip()
-        if line:
-            product, interface = line.split(':')
-            apis.append((product.strip(), interface.strip()))  # Using tuple instead of list
-    return apis
-我告诉你，tdw的返回数据格式是tsv的，比如我查询select count(1) from interface_doc_db.`tdw_record` where product = '%s' and interface = '%s'
-这是res的打印结果：['1\t2710703044\t21.7.221.99\tcvm\tDescribeAddresses\t{"version":0,"eventId":1748563162,"timestamp":1748563162,"interface":{"interfaceName":"logic.cam.sigAndAuth","para":{"mode":2,"new_check_resource":1,"resource":"qcs::cvm:bj:uin\\/2710703044:eip\\/*","ownerUin":"2710703044","sub_condition":[],"uin":"2710703044","action":"cvm:DescribeAddresses"}}}\t{"version":"0","componentName":"mall_logic","timestamp":"0","eventId":1748563162,"returnValue":0,"returnCode":0,"returnMessage":"permission verify","data":{"ownerUin":2710703044,"uin":2710703044,"ownerAppid":0,"ownerUinStr":"2710703044","uinStr":"2710703044","ownerAppidStr":"0","keyType":0,"keySource":0,"formatString":"","stringToSign":"","permissionDetail":[],"transferDetail":[],"debugInfo":[],"accountArea":0}}\tNULL\t2025-05-30 18:33:53\t2025-05-30 18:33:53']，请你完成我的需求
-
-使用AI写代码，我会先看需求是否复杂：
-1. 简单的，只说重要的信息：比如用什么语言写，要做到什么，要求输出一个function然后修改
-2. 略微复杂的，一般会新建一个Prompt文件，在内部给出输入输出和简单介绍需求，然后给AI处理，比如
