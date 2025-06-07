@@ -1991,24 +1991,103 @@ public class LeetcodeHot100FourEx {
      */
     class MinStack {
 
-        public MinStack() {
+        private Deque<Integer> stack;
 
+        private Deque<Integer> minStack;
+
+        public MinStack() {
+            this.stack = new ArrayDeque<>();
+            this.minStack = new ArrayDeque<>();
         }
 
         public void push(int val) {
-
+            stack.push(val);
+            if (minStack.isEmpty() || val <= minStack.peek()) {
+                minStack.push(val);
+            }
         }
 
         public void pop() {
-
+            int val = stack.pop();
+            if (minStack.peek() == val) {
+                minStack.pop();
+            }
         }
 
         public int top() {
-
+            return stack.peek();
         }
 
         public int getMin() {
-
+            return minStack.peek();
         }
+    }
+
+    /**
+     * 字符串解码
+     */
+    public String decodeString(String s) {
+        Deque<Integer> numStack = new ArrayDeque<>();
+        Deque<Character> charStack = new ArrayDeque<>();
+        StringBuilder sb = new StringBuilder();
+        char[] chs = s.toCharArray();
+        for (int i = 0; i < chs.length; i++) {
+            char c = chs[i];
+            if (c == ']') {
+                while (!charStack.isEmpty() && charStack.peek() != '[') {
+                    sb.append(charStack.pop());
+                }
+                sb.reverse();
+                charStack.pop();
+                Integer times = numStack.isEmpty() ? 1 : numStack.pop();
+                String repl = sb.toString();
+                sb.setLength(0);
+                sb.repeat(repl, times);
+                for (char nc : sb.toString().toCharArray()) {
+                    charStack.push(nc);
+                }
+                sb.setLength(0);
+            } else if (c >= '0' && c <= '9') {
+                int repl = i;
+                if (i + 1 < chs.length && chs[i + 1] >= '0' && chs[i + 1] <= '9') {
+                    continue;
+                }
+                while (repl >= 0 && chs[repl] >= '0' && chs[repl] <= '9') {
+                    sb.append(chs[repl]);
+                    repl--;
+                }
+                String numStr = sb.reverse().toString();
+                numStack.push(Integer.parseInt(numStr));
+                sb.setLength(0);
+            } else {
+                charStack.push(c);
+            }
+        }
+        charStack.forEach(c -> sb.append(c));
+        return sb.reverse().toString();
+    }
+
+    /**
+     * 每日温度
+     */
+    public int[] dailyTemperatures(int[] temperatures) {
+        int len = temperatures.length;
+        int[] res = new int[len];
+        Deque<Integer> stack = new ArrayDeque<>();
+        for(int i = 0; i < len; i++) {
+            while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
+                int coolerDayIdx = stack.pop();
+                res[coolerDayIdx] = i - coolerDayIdx;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
+
+    /**
+     * 柱状图中的最大矩形
+     */
+    public int largestRectangleArea(int[] heights) {
+        
     }
 }
