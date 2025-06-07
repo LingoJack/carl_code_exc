@@ -526,7 +526,7 @@ public class LeetcodeHot100FourEx {
     /**
      * 搜索二维矩阵II
      */
-    public boolean searchMatrix(int[][] matrix, int target) {
+    public boolean searchMatrixAnother(int[][] matrix, int target) {
         int row = matrix.length, col = matrix[0].length;
         int rowIdx = 0, colIdx = col - 1;
         while (true) {
