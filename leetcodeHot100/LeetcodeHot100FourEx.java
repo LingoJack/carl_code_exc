@@ -2076,7 +2076,7 @@ public class LeetcodeHot100FourEx {
         int len = temperatures.length;
         int[] res = new int[len];
         Deque<Integer> stack = new ArrayDeque<>();
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
                 int coolerDayIdx = stack.pop();
                 res[coolerDayIdx] = i - coolerDayIdx;
@@ -2093,7 +2093,7 @@ public class LeetcodeHot100FourEx {
         Deque<Integer> stack = new ArrayDeque<>();
         int len = heights.length;
         int[] res = new int[len];
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
                 int j = stack.pop();
                 int w = i - j;
@@ -2101,6 +2101,112 @@ public class LeetcodeHot100FourEx {
             }
             stack.push(i);
         }
-        
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = len - j;
+            res[j] += w * heights[j];
+        }
+        for (int i = len - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                int w = j - i - 1;
+                res[j] += w * heights[j];
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = j - (-1) - 1;
+            res[j] += w * heights[j];
+        }
+        int max = 0;
+        for (int num : res) {
+            max = Math.max(max, num);
+        }
+        return max;
+    }
+
+    /**
+     * 数组中第K个最大元素
+     */
+    public int findKthLargest(int[] nums, int k) {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        for (int num : nums) {
+            if (priorityQueue.size() >= k) {
+                if (num <= priorityQueue.peek()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(num);
+        }
+        return priorityQueue.peek();
+    }
+
+    /**
+     * 前K个高频元素
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int num : nums) {
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        PriorityQueue<Map.Entry<Integer, Integer>> priorityQueue = new PriorityQueue<>((a, b) -> {
+            return Integer.compare(a.getValue(), b.getValue());
+        });
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (priorityQueue.size() >= k) {
+                if (entry.getValue() <= priorityQueue.peek().getValue()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(entry);
+        }
+        int[] res = new int[k];
+        for (int i = k - 1; i >= 0; i--) {
+            res[i] = priorityQueue.poll().getKey();
+        }
+        return res;
+    }
+
+    /**
+     * 数据流的中位数
+     */
+    class MedianFinder {
+
+        private PriorityQueue<Integer> lowwer;
+
+        private PriorityQueue<Integer> upper;
+
+        public MedianFinder() {
+            this.lowwer = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+            this.upper = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        }
+
+        public void addNum(int num) {
+            if (lowwer.isEmpty() || num <= lowwer.peek()) {
+                lowwer.offer(num);
+                if (lowwer.size() > upper.size() + 1) {
+                    upper.offer(lowwer.poll());
+                }
+            } else {
+                upper.offer(num);
+                if (lowwer.size() < upper.size()) {
+                    lowwer.offer(upper.poll());
+                }
+            }
+        }
+
+        public double findMedian() {
+            return (upper.size() + lowwer.size()) % 2 == 0 ? (upper.peek() + lowwer.peek()) / 2.0 : lowwer.peek();
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     */
+    public int maxProfit(int[] prices) {
+
     }
 }
