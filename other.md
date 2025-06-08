@@ -257,3 +257,175 @@ WHERE
 
 
 
+1. 修改Prompt，跑接口分类分级的文档数据
+2. 修改cam_diff服务，增加北极星接入和多地址转发和某些字段的匹配逻辑，完善脚本
+3. cam_diff服务增加一个udp_client，负责在开启时候从五分钟前开始读从cls读日志打成udp包发到cam_diff
+
+CREATE DATASOURCE `interface_doc_db` WITH (
+datasource=jdbc, 
+url=`jdbc:supersql:datasource:url='jdbc:mysql://30.46.139.169:3306/interface_doc_db?characterEncoding=utf8&connectTimeout=30000';driver='com.mysql.jdbc.Driver';jarPath='./supersql-drivers.zip/mysql'`,
+driver=`com.tencent.supersql.connector.SuperSqlDataSourceDriver`,
+username=conf, 
+password=`2j5O62RRV5aIeGLp`,
+catalog=interface_doc_db,
+type=mysql)
+
+
+
+
+请用python。现在是这样，我希望从数据库表tdw_record中查询出数据是否大于10（根据product和interface），如果小于10，那么就拿product和interface去数仓查数据，然后插入到表中。
+这是mysql数据库tdw_record的建表sql：
+CREATE TABLE `tdw_record` (
+                            `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+                            `uin` bigint DEFAULT NULL COMMENT '用户ID',
+                            `client_ip` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '客户IP',
+                            `product` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '产品',
+                            `interface` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '接口',
+                            `request` text COLLATE utf8mb4_unicode_ci COMMENT '请求数据',
+                            `response` text COLLATE utf8mb4_unicode_ci COMMENT '响应数据',
+                            `tdbank_impl_date` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '导入日期',
+                            `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                            `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                            PRIMARY KEY (`id`),
+                            KEY `idx_tdbank_impl_date` (`tdbank_impl_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='tdw记录表';
+，代码我已经写了一些，可以给你参考：
+def TDW_PL(tdw, argv):
+    for product, interface in fetch_interface_list():
+        sql = """
+            select uin, cientip, product, interface, request, response, mode
+            from csig_cam::sig_auth_comm_log
+            where tdbank_imp_date > '2025050110' 
+              and tdbank_imp_date < '20250503018'
+              and product = '%s'
+              and interface = '%s'
+            limit 10
+        """
+        sql = sql % (product, interface)
+        tdw.WriteLog(sql)
+        res = tdw.execute(sql)
+        tdw.WriteLog(res)
+
+def select_interface(product, interface):
+    sql = """
+        select count(1) from interface_doc_db.`tdw_record` where product = '%s' and interface = '%s'
+    """
+     # sql = sql % (product, interface)
+    res = tdw.execute(sql)
+    tdw.WriteLog(res)
+
+def fetch_interface_list():
+    non_cloud_apis = """
+        cvm:ResetInstances
+        cvm:CheckSecurityGroupPolicyRedundancy
+        cvm:DescribeInstancesOfferingsV3
+        cvm:DescribeInstanceTypeQuotaV3
+        cvm:DescribeZonesV3
+        cvm:InquiryInstancePriceHour
+        cvm:InquiryPriceAllocateHostsV3
+        cvm:DescribeInstanceMainInfo
+        cvm:DescribeInstanceStatisticsV3
+        cvm:DescribeKeyPairsV3
+        cvm:InquiryInstanceBandwidthConfig
+        cvm:InquiryInstanceOrOSConfig
+        cvm:InquiryPriceResetInstancesTypeV3
+        cvm:DescribeDiskConfigQuota
+        cvm:DescribeDiskFeatures
+        cvm:DescribeDiskInitializationUserData
+        cvm:DescribeDisksDeniedActions
+        cvm:DescribeSnapshotGroupsDeniedActions
+        cvm:DescribeSnapshotsDeniedActions
+        cvm:GetSnapOverview
+        cvm:DescribeInstanceTypeSalesConfig
+        cvm:InquirePriceModifyDiskBackupQuota
+        cvm:InquirePriceModifyDiskExtraPerformance
+        cvm:InquirePriceRefundDisks
+        cvm:InquiryPriceCreateDisks
+        cvm:InquiryPriceModifyDiskAttributes
+        cvm:InquiryPriceModifyDisksChargeType
+        cvm:InquiryPriceRenewDisks
+        cvm:InquiryPriceResizeDisk
+        cvm:ModifyInstanceFamiliesAttribute
+        cvm:SwitchParameterCreateDisks
+        cvm:SwitchParameterModifyDiskAttributes
+        cvm:SwitchParameterModifyDiskChargeType
+        cvm:SwitchParameterModifyDiskExtraPerformance
+        cvm:SwitchParameterRenewDisks
+        cvm:SwitchParameterResizeDisk
+        cvm:DescribeCbsOperationLogs
+        cvm:ModifyInstanceTypeSalesConfig
+        cvm:ModifyDiskRollbackType
+    """
+
+    cloud_apis = """
+        cvm:DescribeInstanceBanInfo
+        cvm:DescribeAddresses
+        cvm:ReleaseAddresses
+        cvm:AssociateAddress
+        cvm:DisassociateAddress
+        cvm:RenewAddresses
+        cvm:ModifyAddressesBandwidth
+        cvm:StopInstances
+        cvm:TerminateInstances
+        cvm:DescribeInstances
+        cvm:DescribeInstancesStatus
+        cvm:ResetInstance
+        cvm:DescribeImages
+        cvm:AllocateAddresses
+    """
+
+    return parse_apis(non_cloud_apis) + parse_apis(cloud_apis)
+
+
+def parse_apis(api_string):
+    """Parse API string and return formatted list of (product, interface) tuples"""
+    apis = []
+    for line in api_string.strip().split('\n'):
+        line = line.strip()
+        if line:
+            product, interface = line.split(':')
+            apis.append((product.strip(), interface.strip()))  # Using tuple instead of list
+    return apis
+我告诉你，tdw的返回数据格式是tsv的，比如我查询select count(1) from interface_doc_db.`tdw_record` where product = '%s' and interface = '%s'
+这是res的打印结果：['1\t2710703044\t21.7.221.99\tcvm\tDescribeAddresses\t{"version":0,"eventId":1748563162,"timestamp":1748563162,"interface":{"interfaceName":"logic.cam.sigAndAuth","para":{"mode":2,"new_check_resource":1,"resource":"qcs::cvm:bj:uin\\/2710703044:eip\\/*","ownerUin":"2710703044","sub_condition":[],"uin":"2710703044","action":"cvm:DescribeAddresses"}}}\t{"version":"0","componentName":"mall_logic","timestamp":"0","eventId":1748563162,"returnValue":0,"returnCode":0,"returnMessage":"permission verify","data":{"ownerUin":2710703044,"uin":2710703044,"ownerAppid":0,"ownerUinStr":"2710703044","uinStr":"2710703044","ownerAppidStr":"0","keyType":0,"keySource":0,"formatString":"","stringToSign":"","permissionDetail":[],"transferDetail":[],"debugInfo":[],"accountArea":0}}\tNULL\t2025-05-30 18:33:53\t2025-05-30 18:33:53']，请你完成我的需求
+
+使用AI写代码，我会先看需求是否复杂：
+1. 简单的，只说重要的信息：比如用什么语言写，要做到什么，要求输出一个function然后修改
+2. 略微复杂的，一般会新建一个Prompt文件，在内部给出输入输出和简单介绍需求，然后给AI处理，比如
+
+
+「风险SQL治理&SQL注入防护」主题沙龙
+风险sql的定义：
+锁执行耗时
+锁等待时间风险
+扫描行数风险
+
+sql风险 = 单sql执行成本 *  并发
+
+
+Sql执行成本：
+- 扫描的数据量、锁资源占用
+- 排序连接聚合等工作量大
+
+优化：
+1. 索引优化：无索引导致全表扫描、低效索引导致扫描了大量不需要的数据
+2. sql改造：
+    1. 单sql返回大量数据
+    2. 单sql更新、删除了大量数据
+    3. count，distinct等针对大数据量进行计数、去重、聚合
+    4. 深分页
+
+并发：
+1. 云API调用
+    - 云API限频
+    - 内部API限频
+    - 慢SQL自动限流
+    - 慢SQL手工限流 
+2. 内部API调用
+
+选择度
+
+ICP，index condition pushdown， 索引下推
+
+大sql拆分，在业务层聚合，好处是可以减少主从同步的时间，减少锁等待的时间
+

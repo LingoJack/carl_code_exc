@@ -14,6 +14,8 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.print.DocFlavor.INPUT_STREAM;
+
 import leetcodeHot100.LeetcodeHot100FourEx.copyRandomListSolution.Node;
 import upgrade_exc.dfs_exc;
 
@@ -526,7 +528,7 @@ public class LeetcodeHot100FourEx {
     /**
      * 搜索二维矩阵II
      */
-    public boolean searchMatrix(int[][] matrix, int target) {
+    public boolean searchMatrixAnother(int[][] matrix, int target) {
         int row = matrix.length, col = matrix[0].length;
         int rowIdx = 0, colIdx = col - 1;
         while (true) {
@@ -1944,5 +1946,299 @@ public class LeetcodeHot100FourEx {
             }
         }
         return -1;
+    }
+
+    /**
+     * 寻找旋转排序数组中的最小值
+     */
+    public int findMin(int[] nums) {
+        int len = nums.length;
+        int lt = 0, rt = len - 1;
+        while (lt < rt) {
+            int mid = (lt + rt) >> 1;
+            if (nums[mid] < nums[rt]) {
+                rt = mid;
+            } else if (nums[mid] > nums[rt]) {
+                lt = mid + 1;
+            } else {
+                lt = mid;
+            }
+        }
+        return nums[lt];
+    }
+
+    /**
+     * 有效的括号
+     */
+    public boolean isValid(String s) {
+        Map<Character, Character> map = new HashMap<>();
+        map.put(')', '(');
+        map.put('}', '{');
+        map.put(']', '[');
+        Deque<Character> stack = new ArrayDeque<>();
+        for (char c : s.toCharArray()) {
+            if (c == '(' || c == '{' || c == '[') {
+                stack.push(c);
+                continue;
+            }
+            if (stack.isEmpty() || stack.pop() != map.get(c)) {
+                return false;
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    /**
+     * 最小栈
+     */
+    class MinStack {
+
+        private Deque<Integer> stack;
+
+        private Deque<Integer> minStack;
+
+        public MinStack() {
+            this.stack = new ArrayDeque<>();
+            this.minStack = new ArrayDeque<>();
+        }
+
+        public void push(int val) {
+            stack.push(val);
+            if (minStack.isEmpty() || val <= minStack.peek()) {
+                minStack.push(val);
+            }
+        }
+
+        public void pop() {
+            int val = stack.pop();
+            if (minStack.peek() == val) {
+                minStack.pop();
+            }
+        }
+
+        public int top() {
+            return stack.peek();
+        }
+
+        public int getMin() {
+            return minStack.peek();
+        }
+    }
+
+    /**
+     * 字符串解码
+     */
+    public String decodeString(String s) {
+        Deque<Integer> numStack = new ArrayDeque<>();
+        Deque<Character> charStack = new ArrayDeque<>();
+        StringBuilder sb = new StringBuilder();
+        char[] chs = s.toCharArray();
+        for (int i = 0; i < chs.length; i++) {
+            char c = chs[i];
+            if (c == ']') {
+                while (!charStack.isEmpty() && charStack.peek() != '[') {
+                    sb.append(charStack.pop());
+                }
+                sb.reverse();
+                charStack.pop();
+                Integer times = numStack.isEmpty() ? 1 : numStack.pop();
+                String repl = sb.toString();
+                sb.setLength(0);
+                sb.repeat(repl, times);
+                for (char nc : sb.toString().toCharArray()) {
+                    charStack.push(nc);
+                }
+                sb.setLength(0);
+            } else if (c >= '0' && c <= '9') {
+                int repl = i;
+                if (i + 1 < chs.length && chs[i + 1] >= '0' && chs[i + 1] <= '9') {
+                    continue;
+                }
+                while (repl >= 0 && chs[repl] >= '0' && chs[repl] <= '9') {
+                    sb.append(chs[repl]);
+                    repl--;
+                }
+                String numStr = sb.reverse().toString();
+                numStack.push(Integer.parseInt(numStr));
+                sb.setLength(0);
+            } else {
+                charStack.push(c);
+            }
+        }
+        charStack.forEach(c -> sb.append(c));
+        return sb.reverse().toString();
+    }
+
+    /**
+     * 每日温度
+     */
+    public int[] dailyTemperatures(int[] temperatures) {
+        int len = temperatures.length;
+        int[] res = new int[len];
+        Deque<Integer> stack = new ArrayDeque<>();
+        for (int i = 0; i < len; i++) {
+            while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
+                int coolerDayIdx = stack.pop();
+                res[coolerDayIdx] = i - coolerDayIdx;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
+
+    /**
+     * 柱状图中的最大矩形
+     */
+    public int largestRectangleArea(int[] heights) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int len = heights.length;
+        int[] res = new int[len];
+        for (int i = 0; i < len; i++) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                int w = i - j;
+                res[j] += w * heights[j];
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = len - j;
+            res[j] += w * heights[j];
+        }
+        for (int i = len - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                int w = j - i - 1;
+                res[j] += w * heights[j];
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = j - (-1) - 1;
+            res[j] += w * heights[j];
+        }
+        int max = 0;
+        for (int num : res) {
+            max = Math.max(max, num);
+        }
+        return max;
+    }
+
+    /**
+     * 数组中第K个最大元素
+     */
+    public int findKthLargest(int[] nums, int k) {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        for (int num : nums) {
+            if (priorityQueue.size() >= k) {
+                if (num <= priorityQueue.peek()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(num);
+        }
+        return priorityQueue.peek();
+    }
+
+    /**
+     * 前K个高频元素
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int num : nums) {
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        PriorityQueue<Map.Entry<Integer, Integer>> priorityQueue = new PriorityQueue<>((a, b) -> {
+            return Integer.compare(a.getValue(), b.getValue());
+        });
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (priorityQueue.size() >= k) {
+                if (entry.getValue() <= priorityQueue.peek().getValue()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(entry);
+        }
+        int[] res = new int[k];
+        for (int i = k - 1; i >= 0; i--) {
+            res[i] = priorityQueue.poll().getKey();
+        }
+        return res;
+    }
+
+    /**
+     * 数据流的中位数
+     */
+    class MedianFinder {
+
+        private PriorityQueue<Integer> lowwer;
+
+        private PriorityQueue<Integer> upper;
+
+        public MedianFinder() {
+            this.lowwer = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+            this.upper = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        }
+
+        public void addNum(int num) {
+            if (lowwer.isEmpty() || num <= lowwer.peek()) {
+                lowwer.offer(num);
+                if (lowwer.size() > upper.size() + 1) {
+                    upper.offer(lowwer.poll());
+                }
+            } else {
+                upper.offer(num);
+                if (lowwer.size() < upper.size()) {
+                    lowwer.offer(upper.poll());
+                }
+            }
+        }
+
+        public double findMedian() {
+            return (upper.size() + lowwer.size()) % 2 == 0 ? (upper.peek() + lowwer.peek()) / 2.0 : lowwer.peek();
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     * 没做出最优解
+     */
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], -prices[i]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     * 最优解
+     */
+    public int maxProfitAwesomeSolution(int[] prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        for (int price : prices) {
+            if (price < minPrice) {
+                minPrice = price;
+            } else {
+                maxProfit = Math.max(price - minPrice, maxProfit);
+            }
+        }
+        return maxProfit;
+    }
+
+    /**
+     * 跳跃游戏
+     */
+    public boolean canJump(int[] nums) {
+
     }
 }
