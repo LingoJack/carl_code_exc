@@ -14,6 +14,8 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.print.DocFlavor.INPUT_STREAM;
+
 import leetcodeHot100.LeetcodeHot100FourEx.copyRandomListSolution.Node;
 import upgrade_exc.dfs_exc;
 
@@ -2088,6 +2090,17 @@ public class LeetcodeHot100FourEx {
      * 柱状图中的最大矩形
      */
     public int largestRectangleArea(int[] heights) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int len = heights.length;
+        int[] res = new int[len];
+        for(int i = 0; i < len; i++) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                int w = i - j;
+                res[j] += w * heights[j];
+            }
+            stack.push(i);
+        }
         
     }
 }
