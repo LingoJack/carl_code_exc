@@ -2225,7 +2225,7 @@ public class LeetcodeHot100FourEx {
     public int maxProfitAwesomeSolution(int[] prices) {
         int minPrice = Integer.MAX_VALUE;
         int maxProfit = 0;
-        for(int price : prices) {
+        for (int price : prices) {
             if (price < minPrice) {
                 minPrice = price;
             } else {
@@ -2236,6 +2236,9 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 
+     * 跳跃游戏
      */
+    public boolean canJump(int[] nums) {
+
+    }
 }
