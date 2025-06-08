@@ -2205,8 +2205,33 @@ public class LeetcodeHot100FourEx {
 
     /**
      * 买卖股票的最佳时机
+     * 没做出最优解
      */
     public int maxProfit(int[] prices) {
+        int len = prices.length;
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], -prices[i]);
+        }
+        return dp[len - 1][0];
+    }
 
+    /**
+     * 买卖股票的最佳时机
+     * 最优解
+     */
+    public int maxProfitAwesomeSolution(int[] prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        for(int price : prices) {
+            if (price < minPrice) {
+                minPrice = price;
+            } else {
+                maxProfit = Math.max(price - minPrice, maxProfit);
+            }
+        }
+        return maxProfit;
     }
 }
