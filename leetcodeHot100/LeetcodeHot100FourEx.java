@@ -2239,6 +2239,63 @@ public class LeetcodeHot100FourEx {
      * 跳跃游戏
      */
     public boolean canJump(int[] nums) {
+        int maxScope = 0;
+        for (int i = 0; i <= maxScope; i++) {
+            maxScope = Math.max(maxScope, i + nums[i]);
+            if (maxScope >= nums.length - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 跳跃游戏II
+     * 非最优解
+     * 这个是dp解法
+     */
+    public int jump(int[] nums) {
+        int len = nums.length;
+        int[] dp = new int[len];
+        Arrays.fill(dp, len + 1);
+        dp[0] = 0;
+        for (int i = 0; i < len; i++) {
+            for (int delta = 0; delta <= nums[i]; delta++) {
+                if (i + delta >= len) {
+                    continue;
+                }
+                dp[i + delta] = Math.min(dp[i] + 1, dp[i + delta]);
+            }
+        }
+        return dp[len - 1];
+    }
+
+    /**
+     * 跳跃游戏II
+     * 最优解
+     * 计算个格子所能到达的最远的地方
+     * 然后由于每一step都至少走一步，所以直接遍历到最远的直到可达到最后一个就是最快的
+     */
+    public int jumpBetterSolution(int[] nums) {
+        int[] farest = new int[nums.length];
+        int max = 0;
+        for (int i = 0; i < nums.length; i++) {
+            max = Math.max(max, i + nums[i]);
+            farest[i] = max;
+        }
+        int step = 0;
+        int scope = 0;
+        while (scope < nums.length - 1) {
+            step++;
+            scope = farest[scope];
+        }
+        return step;
+    }
+
+    /**
+     * 划分字母区间
+     */
+    public List<Integer> partitionLabels(String s) {
 
     }
 }
