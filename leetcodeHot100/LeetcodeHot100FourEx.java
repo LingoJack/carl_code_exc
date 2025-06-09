@@ -2296,6 +2296,32 @@ public class LeetcodeHot100FourEx {
      * 划分字母区间
      */
     public List<Integer> partitionLabels(String s) {
+        int len = s.length();
+        int[] lastIdx = new int[26];
+        char[] chs = s.toCharArray();
+        for (int i = 0; i < len; i++) {
+            lastIdx[chs[i] - 'a'] = i;
+        }
+        int scope = 0;
+        int start = 0;
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            if (scope == 0) {
+                start = i;
+            }
+            scope = Math.max(scope, lastIdx[chs[i] - 'a']);
+            if (i == scope) {
+                res.add(scope - start + 1);
+                scope = 0;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 爬楼梯
+     */
+    public int climbStairs(int n) {
 
     }
 }
