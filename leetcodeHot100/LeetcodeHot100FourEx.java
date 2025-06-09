@@ -2355,7 +2355,7 @@ public class LeetcodeHot100FourEx {
      * 打家劫舍
      */
     public int rob(int[] nums) {
-        return 0;
+
     }
 
     /**
@@ -2410,4 +2410,6 @@ public class LeetcodeHot100FourEx {
         }
         return lt;
     }
+
+    
 }
