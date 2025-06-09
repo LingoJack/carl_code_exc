@@ -2322,6 +2322,46 @@ public class LeetcodeHot100FourEx {
      * 爬楼梯
      */
     public int climbStairs(int n) {
+        int[] record = new int[n + 1];
+        Arrays.fill(record, -1);
+        return climbStairs(record, n);
+    }
+
+    public int climbStairs(int[] record, int n) {
+        if (n == 1 || n == 2) {
+            return n;
+        }
+        if (record[n] >= 0) {
+            return record[n];
+        }
+        int res = climbStairs(record, n - 1) + climbStairs(record, n - 2);
+        record[n] = res;
+        return res;
+    }
+
+    /**
+     * 杨辉三角
+     */
+    public List<List<Integer>> generate(int numRows) {
+        int[][] dp = new int[numRows][numRows];
+        List<List<Integer>> res = new ArrayList<>();
+        dp[0][0] = 1;
+        res.add(List.of(1));
+        for (int i = 1; i < numRows; i++) {
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j <= i; j++) {
+                dp[i][j] = (j >= 1 ? dp[i - 1][j - 1] : 0) + dp[i - 1][j];
+                list.add(dp[i][j]);
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
 
     }
 }
