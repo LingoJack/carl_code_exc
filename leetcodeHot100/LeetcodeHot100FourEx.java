@@ -2379,9 +2379,35 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 最长递增子序列 
+     * 最长递增子序列
      */
     public int lengthOfLIS(int[] nums) {
-        
+        List<Integer> list = new ArrayList<>();
+        for (int num : nums) {
+            int size = list.size();
+            int insertPos = bs(list, num);
+            if (insertPos >= size) {
+                list.add(num);
+            } else {
+                list.set(insertPos, num);
+            }
+        }
+        return list.size();
+    }
+
+    private int bs(List<Integer> list, int target) {
+        int lt = 0, rt = list.size() - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            int num = list.get(mid);
+            if (num > target) {
+                rt = mid - 1;
+            } else if (num < target) {
+                lt = mid + 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
     }
 }
