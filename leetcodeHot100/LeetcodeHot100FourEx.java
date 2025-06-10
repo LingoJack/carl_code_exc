@@ -2377,4 +2377,11 @@ public class LeetcodeHot100FourEx {
         }
         return dp[len];
     }
+
+    /**
+     * 最长递增子序列 
+     */
+    public int lengthOfLIS(int[] nums) {
+        
+    }
 }
