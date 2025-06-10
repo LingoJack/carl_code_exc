@@ -2355,6 +2355,26 @@ public class LeetcodeHot100FourEx {
      * 打家劫舍
      */
     public int rob(int[] nums) {
-        
+
+    }
+
+    /**
+     * 单词拆分
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int size = wordDict.size();
+        int len = s.length();
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        for (int i = 1; i < len + 1; i++) {
+            for (int j = 0; j < size; j++) {
+                String word = wordDict.get(j);
+                int wLen = word.length();
+                int end = i - 1;
+                int start = end - wLen + 1;
+                dp[i] = dp[i] || (i - wLen >= 0 && dp[i - wLen] && word.equals(s.substring(start, start + wLen)));
+            }
+        }
+        return dp[len];
     }
 }
