@@ -2455,6 +2455,6 @@ public class LeetcodeHot100FourEx {
      * 乘积最大子数组
      */
     public int maxProduct(int[] nums) {
-        
+        int len = nums.length;
     }
 }
