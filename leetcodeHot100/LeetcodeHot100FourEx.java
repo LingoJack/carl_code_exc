@@ -2355,7 +2355,31 @@ public class LeetcodeHot100FourEx {
      * 打家劫舍
      */
     public int rob(int[] nums) {
+        int len = nums.length;
+        int[] dp = new int[len];
+        dp[0] = nums[0];
+        if (len < 2) {
+            return dp[len - 1];
+        }
+        dp[1] = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < len; i++) {
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+        }
+        return dp[len - 1];
+    }
 
+    /**
+     * 完全平方数
+     */
+    public int numSquares(int n) {
+        int[] dp = new int[n + 1];
+        for (int i = 1; i < n + 1; i++) {
+            dp[i] = n + 1;
+            for (int j = 1; j * j <= i; j++) {
+                dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+            }
+        }
+        return dp[n];
     }
 
     /**
@@ -2411,5 +2435,11 @@ public class LeetcodeHot100FourEx {
         return lt;
     }
 
-    
+    /**
+     * 零钱兑换
+     */
+    public int coinChange(int[] coins, int amount) {
+
+    }
+        
 }
