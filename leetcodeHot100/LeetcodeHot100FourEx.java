@@ -10,14 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.print.DocFlavor.INPUT_STREAM;
-
-import leetcodeHot100.LeetcodeHot100FourEx.copyRandomListSolution.Node;
-import upgrade_exc.dfs_exc;
 
 public class LeetcodeHot100FourEx {
 
@@ -2076,7 +2069,7 @@ public class LeetcodeHot100FourEx {
         int len = temperatures.length;
         int[] res = new int[len];
         Deque<Integer> stack = new ArrayDeque<>();
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             while (!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]) {
                 int coolerDayIdx = stack.pop();
                 res[coolerDayIdx] = i - coolerDayIdx;
@@ -2093,7 +2086,7 @@ public class LeetcodeHot100FourEx {
         Deque<Integer> stack = new ArrayDeque<>();
         int len = heights.length;
         int[] res = new int[len];
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
                 int j = stack.pop();
                 int w = i - j;
@@ -2101,6 +2094,367 @@ public class LeetcodeHot100FourEx {
             }
             stack.push(i);
         }
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = len - j;
+            res[j] += w * heights[j];
+        }
+        for (int i = len - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] > heights[i]) {
+                int j = stack.pop();
+                int w = j - i - 1;
+                res[j] += w * heights[j];
+            }
+            stack.push(i);
+        }
+        while (!stack.isEmpty()) {
+            int j = stack.pop();
+            int w = j - (-1) - 1;
+            res[j] += w * heights[j];
+        }
+        int max = 0;
+        for (int num : res) {
+            max = Math.max(max, num);
+        }
+        return max;
+    }
+
+    /**
+     * 数组中第K个最大元素
+     */
+    public int findKthLargest(int[] nums, int k) {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        for (int num : nums) {
+            if (priorityQueue.size() >= k) {
+                if (num <= priorityQueue.peek()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(num);
+        }
+        return priorityQueue.peek();
+    }
+
+    /**
+     * 前K个高频元素
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int num : nums) {
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        PriorityQueue<Map.Entry<Integer, Integer>> priorityQueue = new PriorityQueue<>((a, b) -> {
+            return Integer.compare(a.getValue(), b.getValue());
+        });
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            if (priorityQueue.size() >= k) {
+                if (entry.getValue() <= priorityQueue.peek().getValue()) {
+                    continue;
+                }
+                priorityQueue.poll();
+            }
+            priorityQueue.offer(entry);
+        }
+        int[] res = new int[k];
+        for (int i = k - 1; i >= 0; i--) {
+            res[i] = priorityQueue.poll().getKey();
+        }
+        return res;
+    }
+
+    /**
+     * 数据流的中位数
+     */
+    class MedianFinder {
+
+        private PriorityQueue<Integer> lowwer;
+
+        private PriorityQueue<Integer> upper;
+
+        public MedianFinder() {
+            this.lowwer = new PriorityQueue<>((a, b) -> Integer.compare(b, a));
+            this.upper = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        }
+
+        public void addNum(int num) {
+            if (lowwer.isEmpty() || num <= lowwer.peek()) {
+                lowwer.offer(num);
+                if (lowwer.size() > upper.size() + 1) {
+                    upper.offer(lowwer.poll());
+                }
+            } else {
+                upper.offer(num);
+                if (lowwer.size() < upper.size()) {
+                    lowwer.offer(upper.poll());
+                }
+            }
+        }
+
+        public double findMedian() {
+            return (upper.size() + lowwer.size()) % 2 == 0 ? (upper.peek() + lowwer.peek()) / 2.0 : lowwer.peek();
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     * 没做出最优解
+     */
+    public int maxProfit(int[] prices) {
+        int len = prices.length;
+        int[][] dp = new int[len][2];
+        dp[0][1] = -prices[0];
+        for (int i = 1; i < len; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], -prices[i]);
+        }
+        return dp[len - 1][0];
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     * 最优解
+     */
+    public int maxProfitAwesomeSolution(int[] prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        for (int price : prices) {
+            if (price < minPrice) {
+                minPrice = price;
+            } else {
+                maxProfit = Math.max(price - minPrice, maxProfit);
+            }
+        }
+        return maxProfit;
+    }
+
+    /**
+     * 跳跃游戏
+     */
+    public boolean canJump(int[] nums) {
+        int maxScope = 0;
+        for (int i = 0; i <= maxScope; i++) {
+            maxScope = Math.max(maxScope, i + nums[i]);
+            if (maxScope >= nums.length - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 跳跃游戏II
+     * 非最优解
+     * 这个是dp解法
+     */
+    public int jump(int[] nums) {
+        int len = nums.length;
+        int[] dp = new int[len];
+        Arrays.fill(dp, len + 1);
+        dp[0] = 0;
+        for (int i = 0; i < len; i++) {
+            for (int delta = 0; delta <= nums[i]; delta++) {
+                if (i + delta >= len) {
+                    continue;
+                }
+                dp[i + delta] = Math.min(dp[i] + 1, dp[i + delta]);
+            }
+        }
+        return dp[len - 1];
+    }
+
+    /**
+     * 跳跃游戏II
+     * 最优解
+     * 计算个格子所能到达的最远的地方
+     * 然后由于每一step都至少走一步，所以直接遍历到最远的直到可达到最后一个就是最快的
+     */
+    public int jumpBetterSolution(int[] nums) {
+        int[] farest = new int[nums.length];
+        int max = 0;
+        for (int i = 0; i < nums.length; i++) {
+            max = Math.max(max, i + nums[i]);
+            farest[i] = max;
+        }
+        int step = 0;
+        int scope = 0;
+        while (scope < nums.length - 1) {
+            step++;
+            scope = farest[scope];
+        }
+        return step;
+    }
+
+    /**
+     * 划分字母区间
+     */
+    public List<Integer> partitionLabels(String s) {
+        int len = s.length();
+        int[] lastIdx = new int[26];
+        char[] chs = s.toCharArray();
+        for (int i = 0; i < len; i++) {
+            lastIdx[chs[i] - 'a'] = i;
+        }
+        int scope = 0;
+        int start = 0;
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            if (scope == 0) {
+                start = i;
+            }
+            scope = Math.max(scope, lastIdx[chs[i] - 'a']);
+            if (i == scope) {
+                res.add(scope - start + 1);
+                scope = 0;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 爬楼梯
+     */
+    public int climbStairs(int n) {
+        int[] record = new int[n + 1];
+        Arrays.fill(record, -1);
+        return climbStairs(record, n);
+    }
+
+    public int climbStairs(int[] record, int n) {
+        if (n == 1 || n == 2) {
+            return n;
+        }
+        if (record[n] >= 0) {
+            return record[n];
+        }
+        int res = climbStairs(record, n - 1) + climbStairs(record, n - 2);
+        record[n] = res;
+        return res;
+    }
+
+    /**
+     * 杨辉三角
+     */
+    public List<List<Integer>> generate(int numRows) {
+        int[][] dp = new int[numRows][numRows];
+        List<List<Integer>> res = new ArrayList<>();
+        dp[0][0] = 1;
+        res.add(List.of(1));
+        for (int i = 1; i < numRows; i++) {
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j <= i; j++) {
+                dp[i][j] = (j >= 1 ? dp[i - 1][j - 1] : 0) + dp[i - 1][j];
+                list.add(dp[i][j]);
+            }
+            res.add(list);
+        }
+        return res;
+    }
+
+    /**
+     * 打家劫舍
+     */
+    public int rob(int[] nums) {
+        int len = nums.length;
+        int[] dp = new int[len];
+        dp[0] = nums[0];
+        if (len < 2) {
+            return dp[len - 1];
+        }
+        dp[1] = Math.max(nums[0], nums[1]);
+        for (int i = 2; i < len; i++) {
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+        }
+        return dp[len - 1];
+    }
+
+    /**
+     * 完全平方数
+     */
+    public int numSquares(int n) {
+        int[] dp = new int[n + 1];
+        for (int i = 1; i < n + 1; i++) {
+            dp[i] = n + 1;
+            for (int j = 1; j * j <= i; j++) {
+                dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+            }
+        }
+        return dp[n];
+    }
+
+    /**
+     * 单词拆分
+     */
+    public boolean wordBreak(String s, List<String> wordDict) {
+        int size = wordDict.size();
+        int len = s.length();
+        boolean[] dp = new boolean[len + 1];
+        dp[0] = true;
+        for (int i = 1; i < len + 1; i++) {
+            for (int j = 0; j < size; j++) {
+                String word = wordDict.get(j);
+                int wLen = word.length();
+                int end = i - 1;
+                int start = end - wLen + 1;
+                dp[i] = dp[i] || (i - wLen >= 0 && dp[i - wLen] && word.equals(s.substring(start, start + wLen)));
+            }
+        }
+        return dp[len];
+    }
+
+    /**
+     * 最长递增子序列
+     */
+    public int lengthOfLIS(int[] nums) {
+        List<Integer> list = new ArrayList<>();
+        for (int num : nums) {
+            int size = list.size();
+            int insertPos = bs(list, num);
+            if (insertPos >= size) {
+                list.add(num);
+            } else {
+                list.set(insertPos, num);
+            }
+        }
+        return list.size();
+    }
+
+    private int bs(List<Integer> list, int target) {
+        int lt = 0, rt = list.size() - 1;
+        while (lt <= rt) {
+            int mid = (lt + rt) >> 1;
+            int num = list.get(mid);
+            if (num > target) {
+                rt = mid - 1;
+            } else if (num < target) {
+                lt = mid + 1;
+            } else {
+                rt = mid - 1;
+            }
+        }
+        return lt;
+    }
+
+    /**
+     * 零钱兑换
+     * 通过这题可以看出来01背包和完全背包你已经很不熟了
+     */
+    public int coinChange(int[] coins, int amount) {
+        int[] dp = new int[amount + 1];
+        Arrays.fill(dp, amount + 1);
+        dp[0] = 0;
+        for (int i = 1; i < amount + 1; i++) {
+            for (int j = 0; j < coins.length; j++) {
+                dp[i] = Math.min(dp[i], (i - coins[j] >= 0 ? dp[i - coins[j]] + 1 : (amount + 1)));
+            }
+        }
+        return dp[amount] == amount + 1 ? -1 : dp[amount];
+    }
+
+    /**
+     * 乘积最大子数组
+     */
+    public int maxProduct(int[] nums) {
         
     }
 }
