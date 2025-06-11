@@ -2501,6 +2501,9 @@ public class LeetcodeHot100FourEx {
     }
 
     /**
-     * 
+     * 最长有效括号
      */
+    public int longestValidParentheses(String s) {
+        
+    }
 }
