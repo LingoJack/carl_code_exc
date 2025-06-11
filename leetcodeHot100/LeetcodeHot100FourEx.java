@@ -2471,17 +2471,36 @@ public class LeetcodeHot100FourEx {
 
     /**
      * 分割等和子集
+     * 没有做到最优的空间复杂度
+     * 这题还可以用记忆化递归做
      */
     public boolean canPartition(int[] nums) {
         int sum = 0;
-        for(int num : nums) {
+        for (int num : nums) {
             sum += num;
         }
         if (sum % 2 == 1) {
             return false;
         }
         int target = sum >> 1;
-        boolean[] dp = new boolean[target + 1];
-        
+        int len = nums.length;
+        boolean[][] dp = new boolean[target + 1][len];
+        for (int i = 0; i < len; i++) {
+            dp[0][i] = true;
+            if (nums[i] <= target) {
+                dp[nums[i]][i] = true;
+            }
+        }
+        for (int i = 1; i < target + 1; i++) {
+            for (int j = 0; j < nums.length; j++) {
+                int num = nums[j];
+                dp[i][j] = dp[i][j - 1] || (i >= num && dp[i - num][j - 1]);
+            }
+        }
+        return dp[target][len - 1];
     }
+
+    /**
+     * 
+     */
 }
