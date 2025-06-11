@@ -429,3 +429,788 @@ ICP，index condition pushdown， 索引下推
 
 大sql拆分，在业务层聚合，好处是可以减少主从同步的时间，减少锁等待的时间
 
+
+--- 
+
+我有一个热重启的服务a，然后一个脚本b，每当我的发配置的时候，配置发完就会调用脚本b，来找到cam_diff进程发送HUP信号来触发热重启，
+但是现在不知道为什么看日志，热重启会触发两次：
+[root@api-ty-ap-guangzhou-3-set-1-0 /data/release/cam_diff/logs]# cat app.log_202506101400.log.1614 | grep "Load config success"
+2025/06/10 14:16:07 [DEBUG] Load config success
+2025/06/10 14:16:07 [DEBUG] Load config success
+[root@api-ty-ap-guangzhou-3-set-1-0 /data/release/cam_diff/logs]# cat app.log_202506101400.log.2559 | grep "Load config success"
+[root@api-ty-ap-guangzhou-3-set-1-0 /data/release/cam_diff/logs]# cat app.log_202506101100.log.4601 | grep "Load config success"
+[root@api-ty-ap-guangzhou-3-set-1-0 /data/release/cam_diff/logs]# cat app.log_202506101100.log.4559 | grep "Load config success"
+2025/06/10 11:45:52 [DEBUG] Load config success
+2025/06/10 11:45:52 [DEBUG] Load config success
+这是我的热重启相关的脚本b：
+# 获取diff进程PID
+pid=$(pgrep -x cam_diff)
+echo $pid
+[ -n "$pid" ] && kill -HUP "$pid"
+
+这是我的代码：
+package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"git.code.oa.com/tencent-cloud-platform/cam_diff/model"
+	"git.code.oa.com/tencent-cloud-platform/cam_diff/util"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"os/signal"
+	"strconv"
+	"strings"
+	"sync/atomic"
+	"syscall"
+	"time"
+
+	"git.code.oa.com/tencent-cloud-platform/cam_diff/component"
+	"git.code.oa.com/tencent-cloud-platform/cam_diff/pb/stat"
+	"git.woa.com/polaris/polaris-go/v2/api"
+	pmodel "git.woa.com/polaris/polaris-go/v2/pkg/model"
+	"git.woa.com/tencent-cloud-platform/pandora/server"
+	"github.com/panjf2000/gnet"
+	"google.golang.org/protobuf/proto"
+	"gopkg.in/yaml.v2"
+
+	"git.code.oa.com/tencent-cloud-platform/cam_diff/logger"
+)
+
+var (
+	channel         = make(chan *forwardData, 10000)
+	handler         = &diffEventHandler{}
+	restartChan     = make(chan struct{}, 1)
+	shutdownChan    = make(chan struct{})
+	cancel          context.CancelFunc
+	isChildProcess  = os.Getenv("HOT_RELOAD_CHILD") == "1"
+	parentPID       = 0
+	polarisMetaInfo *model.PolarisMetaInfo
+	consumerApi     api.ConsumerAPI
+	glog            *logger.Logger
+)
+
+// udpServer 定义UDP服务结构体，包含事件处理器、HTTP客户端和配置
+type udpServer struct {
+	*gnet.EventServer                   // 继承gnet的事件处理器
+	httpClient        *http.Client      // HTTP客户端用于转发请求
+	UdpConfig         *model.UdpConfig  // UDP服务配置（端口、超时等）
+	RuleConfigs       *model.RuleConfig // 过滤规则配置
+	LimiterManager    *component.RateLimitManager
+	RuleMatcher       *component.RuleMatcher
+}
+
+type forwardData struct {
+	diffBody *server.DiffBody
+	rule     *model.FilterRule
+}
+
+// main 程序入口
+func main() {
+	log.Printf("Starting server, pid: %d\n", os.Getpid())
+	if isChildProcess {
+		if ppid, err := strconv.Atoi(os.Getenv("HOT_RELOAD_PARENT_PID")); err == nil {
+			parentPID = ppid
+			log.Printf("Running as child process, parent pid: %d", parentPID)
+		}
+	}
+
+	// 加载配置
+	udpConfig, ruleConfig, err := loadConfig()
+	l, err := initLoggerFromConfig(ruleConfig.LogConfig)
+	if err != nil {
+		log.Printf("Load config error: %v", err)
+		os.Exit(1)
+	}
+	glog = l
+	defer l.Close()
+
+	glog.Info("pid: %d, parent pid: %d", os.Getpid(), parentPID)
+	glog.Debug("Load config success")
+	glog.Debug("udp config: %s", getJsonString(udpConfig))
+	glog.Debug("rule config: %s", getJsonString(ruleConfig))
+
+	glog.Debug("start init polaris...")
+	// 初始化北极星参数
+	initPolaris()
+	glog.Debug("init polaris success")
+
+	// 初始化UDP服务实例
+	var udpService = &udpServer{
+		UdpConfig:   udpConfig,
+		RuleConfigs: ruleConfig,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     30 * time.Second,
+			},
+			Timeout: 5 * time.Second,
+		},
+		LimiterManager: component.NewLimiterManager(component.TokenBucket),
+		RuleMatcher:    component.NewRuleMatcher(),
+	}
+
+	// 监听配置更新
+	go udpService.listenReloadConfigSignal()
+	// 启动协程重放请求，限制QPS
+	go udpService.consumeAndReapply()
+	// 处理热重启等信号
+	go handleSignals()
+
+	// 启动gnet服务
+	udpServerAddr := fmt.Sprintf("udp://:%d", udpConfig.Port)
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	cancel = cancelFunc
+
+	glog.Info("Starting UDP server on port %d", udpConfig.Port)
+	go func() {
+		err = gnet.Serve(
+			udpService,
+			udpServerAddr,
+			gnet.WithMulticore(true),
+			gnet.WithReusePort(true),
+			gnet.WithReuseAddr(true),
+			gnet.WithTicker(false),
+		)
+		if err != nil {
+			glog.Info("UDP server error: %v", err)
+		}
+		cancel()
+	}()
+
+	glog.Info("Waiting for shutdown...")
+	select {
+	case <-ctx.Done():
+		if err := gnet.Stop(ctx, udpServerAddr); err != nil {
+			glog.Info("Failed to stop gnet: %v", err)
+		}
+	}
+}
+
+func initPolaris() {
+	polarisMetaInfo = model.NewPolarisMetaInfo()
+	cfg := api.NewConfiguration()
+	if len(polarisMetaInfo.Addresses) > 0 {
+		cfg.GetGlobal().GetServerConnector().SetAddresses(strings.Split(polarisMetaInfo.Addresses, ","))
+	} else if len(polarisMetaInfo.JoinPoint) > 0 {
+		cfg.GetGlobal().GetServerConnector().SetJoinPoint(polarisMetaInfo.JoinPoint)
+	}
+	a, err := api.NewConsumerAPIByConfig(cfg)
+	if nil != err {
+		glog.Info("Fail to create ConsumerAPI by default configuration, err is %v", err)
+		os.Exit(1)
+	}
+	consumerApi = a
+}
+
+func handleSignals() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		for range restartChan {
+			glog.Info("Restarting server...")
+			hotReload()
+		}
+	}()
+	for s := range sigChan {
+		switch s {
+		case syscall.SIGINT, syscall.SIGTERM:
+			glog.Info("Received shutdown signal: %v", s)
+			gracefulShutdown()
+			return
+		case syscall.SIGHUP:
+			glog.Info("Received reload signal")
+			select {
+			case restartChan <- struct{}{}:
+			default:
+				glog.Info("Restart already in progress")
+			}
+		}
+	}
+}
+
+func gracefulShutdown() {
+	glog.Info("Gracefully shutting down server...")
+	close(channel)
+	close(shutdownChan)
+	if cancel == nil {
+		glog.Info("Server shutdown by os.Exit()")
+		os.Exit(1)
+	}
+	cancel()
+}
+
+func hotReload() {
+	if isChildProcess {
+		glog.Info("Hot reload in child process")
+	}
+	glog.Info("Starting new process for hot reload...")
+
+	execPath, err := os.Executable()
+	if err != nil {
+		glog.Info("Failed to get executable path: %v", err)
+		return
+	}
+
+	var args []string
+	for _, arg := range os.Args[1:] {
+		if !strings.HasPrefix(arg, "HOT_RELOAD_") {
+			args = append(args, arg)
+		}
+	}
+
+	cmd := exec.Command(execPath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = append(os.Environ(),
+		"HOT_RELOAD_CHILD=1",
+		fmt.Sprintf("HOT_RELOAD_PARENT_PID=%d", os.Getpid()),
+	)
+
+	if err := cmd.Start(); err != nil {
+		glog.Info("Failed to start new process: %v", err)
+		return
+	}
+
+	glog.Info("Started new process with PID: %d", cmd.Process.Pid)
+	gracefulShutdown()
+}
+
+func (u *udpServer) React(frame []byte, c gnet.Conn) (out []byte, action gnet.Action) {
+	body, err := u.decodeLog(frame)
+	if err != nil {
+		glog.Info("Decode log error or unmatch, err: %s", err.Error())
+		if body != nil {
+			glog.Debug("pBody decoded: %s", getJsonString(body))
+		} else {
+			glog.Debug("body is nil")
+		}
+	}
+	if body == nil {
+		glog.Debug("frame decode body is null, skip...")
+		return nil, gnet.None
+	}
+	glog.Debug("decode frame body: %s", getJsonString(body))
+	u.filterRequestAndReapplyIfMatch(body)
+	return nil, gnet.None
+}
+
+func (u *udpServer) forward(diffBody *server.DiffBody, rule *model.FilterRule) {
+	requestStr := diffBody.Request
+	for _, addr := range rule.Forward {
+		url, err := getForwardUrl(&addr)
+		glog.Debug("forward url: %s", url)
+		if err != nil {
+			glog.Info("Fail to get forward url error: %v", err)
+			continue
+		}
+		req, err := http.NewRequest("POST", url, bytes.NewBufferString(requestStr))
+		if err != nil {
+			glog.Info("Failed to create HTTP request: %v", err)
+			continue
+		}
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := u.httpClient.Do(req)
+		if err != nil {
+			glog.Info("Failed to forward request: %v", err)
+			continue
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			glog.Info("Failed to read response body: %v", err)
+			continue
+		}
+		_ = resp.Body.Close()
+		newResp := string(body)
+		diff(diffBody.Request, diffBody.Response, newResp, url, diffBody, &addr)
+	}
+}
+
+func getForwardUrl(forwardAddr *model.ForwardAddr) (url string, err error) {
+	url = forwardAddr.Addr
+	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
+		url = "http://" + url
+	}
+
+	split := strings.Split(forwardAddr.L5, "/")
+	namespace := split[0]
+	service := split[1]
+	glog.Info("Getting instance for namespace: %s, service: %s", namespace, service)
+
+	var flowId uint64
+	getOneInstanceReq := &api.GetOneInstanceRequest{}
+	getOneInstanceReq.FlowID = atomic.AddUint64(&flowId, 1)
+	getOneInstanceReq.Namespace = namespace
+	getOneInstanceReq.Service = service
+	getOneInstanceReq.LbPolicy = api.LBPolicyWeightedRandom
+	startTime := time.Now()
+
+	getInstResp, err := consumerApi.GetOneInstance(getOneInstanceReq)
+	if err != nil {
+		glog.Info("Fail to sync GetOneInstance, use default url: %s, err is %v", forwardAddr.Addr, err)
+		return url, nil
+	}
+	consumeDuration := time.Since(startTime)
+	glog.Info("Successfully got instance in %v, count: %d", consumeDuration, len(getInstResp.Instances))
+
+	targetInstance := getInstResp.Instances[0]
+	host := targetInstance.GetHost()
+	port := targetInstance.GetPort()
+	glog.Info("Selected instance: id=%s, address=%s:%d", targetInstance.GetId(), host, port)
+
+	url = "http://" + host + ":" + strconv.FormatUint(uint64(port), 10)
+	polarisCallback(targetInstance, consumeDuration)
+
+	return url, nil
+}
+
+func polarisCallback(targetInstance pmodel.Instance, consumeDuration time.Duration) {
+	svcCallResult := &api.ServiceCallResult{}
+	svcCallResult.SetCalledInstance(targetInstance)
+	svcCallResult.SetRetStatus(api.RetSuccess)
+	svcCallResult.SetRetCode(0)
+	svcCallResult.SetDelay(consumeDuration)
+	err := consumerApi.UpdateServiceCallResult(svcCallResult)
+	if err != nil {
+		glog.Info("Fail to UpdateServiceCallResult, err is %v", err)
+	}
+}
+
+func diff(request, oldResp, newResp, url string, diffBody *server.DiffBody, addr *model.ForwardAddr) {
+	glog.Debug("start diff response...")
+	isDifferent := handler.Compare(request, oldResp, newResp)
+	if isDifferent {
+		glog.Info("Diff detected, request = %s, oldResp = %s, newResp = %s, actual url = %s, diffBody = %s",
+			request, oldResp, newResp, url, getJsonString(diffBody))
+		return
+	}
+	glog.Debug("No different. new response: %s, old response: %s, url: %s", newResp, oldResp, url)
+}
+
+func (u *udpServer) decodeLog(req []byte) (*server.DiffBody, error) {
+	reqLog := &stat.Log{}
+	err := proto.Unmarshal(req, reqLog)
+	if err != nil {
+		return nil, err
+	}
+	if len(reqLog.GetModule()) == 0 {
+		return nil, errors.New("illegal uin or module")
+	}
+	if len(reqLog.GetProduct()) == 0 {
+		arrAction := strings.Split(strings.TrimSpace(reqLog.GetAction()), ":")
+		if len(arrAction) == 2 {
+			*reqLog.Product = arrAction[0]
+			*reqLog.Action = arrAction[1]
+		}
+	}
+	glog.Debug("decode log, the req log: %s", util.GetJsonStr(reqLog))
+	if len(reqLog.GetProduct()) == 0 || len(reqLog.GetAction()) == 0 {
+		return nil, errors.New("illegal product or action")
+	}
+	var tmp map[string]interface{}
+	if err := json.Unmarshal([]byte(reqLog.GetRequest()), &tmp); err != nil {
+		return nil, errors.New("illegal request")
+	}
+	if err := json.Unmarshal([]byte(reqLog.GetResponse()), &tmp); err != nil {
+		return nil, errors.New("illegal response")
+	}
+	pBody := &server.DiffBody{
+		Timestamp: int64(reqLog.GetTimestamp()),
+		Module:    reqLog.GetModule(),
+		Uin:       reqLog.GetUin(),
+		Product:   reqLog.GetProduct(),
+		Action:    reqLog.GetAction(),
+		Request:   reqLog.GetRequest(),
+		Response:  reqLog.GetResponse(),
+	}
+	return pBody, nil
+}
+
+func (u *udpServer) filterRequestAndReapplyIfMatch(diffBody *server.DiffBody) bool {
+	for _, rule := range u.RuleConfigs.FilterRules {
+		if u.matchRule(diffBody, rule) {
+			glog.Info("Match rule (rule-id = %s), body: %s", rule.ID, getJsonString(diffBody))
+			channel <- &forwardData{diffBody, &rule}
+			return true
+		}
+		glog.Debug("Not match rule (rule-id = %s), body: %s", rule.ID, getJsonString(diffBody))
+	}
+	return false
+}
+
+func (u *udpServer) matchRule(diffBody *server.DiffBody, rule model.FilterRule) bool {
+	if len(rule.Modules) != 0 && !u.matchField(diffBody.Module, rule.Modules) {
+		glog.Debug("modules not match, rule id: %s, body: %s, rule modules: %s", rule.ID, getJsonString(diffBody), getJsonString(rule.Modules))
+		return false
+	}
+	if len(rule.Products) != 0 && !u.matchField(diffBody.Product, rule.Products) {
+		glog.Debug("products not match, rule id: %s, body: %s, rule products: %s", rule.ID, getJsonString(diffBody), getJsonString(rule.Products))
+		return false
+	}
+	if len(rule.UinList) != 0 && !u.matchField(strconv.FormatUint(diffBody.Uin, 10), rule.UinList) {
+		glog.Debug("uin not match, rule id: %s, body: %s, rule uin list: %s", rule.ID, getJsonString(diffBody), getJsonString(rule.UinList))
+		return false
+	}
+	request := diffBody.Request
+	var requestPkg model.RequestPkg
+	err := json.Unmarshal([]byte(request), &requestPkg)
+	if err != nil {
+		glog.Error("Unmarshal request error while matching rule on field [action], err: %v", err)
+		return false
+	}
+	if len(requestPkg.Interface.InterfaceName) != 0 && !u.matchField(requestPkg.Interface.InterfaceName, rule.Actions) {
+		glog.Debug("actions not match, rule id: %s, body: %s, rule actions: %s", rule.ID, getJsonString(diffBody), getJsonString(rule.Actions))
+		return false
+	}
+	return true
+}
+
+func (u *udpServer) matchField(requestField string, ruleFields []string) bool {
+	for _, ruleField := range ruleFields {
+		match, err := u.RuleMatcher.Match(requestField, ruleField)
+		if err != nil {
+			glog.Info("Match field error, err: %v", err)
+			continue
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
+func loadConfig() (*model.UdpConfig, *model.RuleConfig, error) {
+	// return loadConfigFromPath("config/idc/rainbow/udp.yaml", "config/idc/rainbow/rule.yaml")
+	return loadConfigFromPath("config/idc/udp.yaml", "config/idc/rule.yaml")
+}
+
+func loadConfigFromPath(udpConfigPath, ruleConfigPath string) (*model.UdpConfig, *model.RuleConfig, error) {
+	log.Printf("Loading config from %s and %s\n", udpConfigPath, ruleConfigPath)
+
+	var udpConfig model.UdpConfig
+	var ruleConfigs model.RuleConfig
+
+	udpConfigFile, err := os.ReadFile(udpConfigPath)
+	if err != nil {
+		log.Printf("Load udp server config file error, err: %v\n", err)
+		return nil, nil, err
+	}
+
+	err = yaml.Unmarshal(udpConfigFile, &udpConfig)
+	if err != nil {
+		log.Printf("Unmarshal udpConfigFile error, err: %v\n", err)
+		return nil, nil, err
+	}
+
+	udpBody, err := json.Marshal(udpConfig)
+	if err != nil {
+		log.Printf("Marshal udpBody error, err: %v\n", err)
+		return nil, nil, err
+	}
+	log.Printf("UDP config: %s\n", string(udpBody))
+
+	filterConfigFile, err := os.ReadFile(ruleConfigPath)
+	if err != nil {
+		log.Printf("Load filter rule config file error, err: %v\n", err)
+		return nil, nil, err
+	}
+
+	err = yaml.Unmarshal(filterConfigFile, &ruleConfigs)
+	if err != nil {
+		log.Printf("Unmarshal filterConfigFile error, err: %v\n", err)
+		return nil, nil, err
+	}
+
+	return &udpConfig, &ruleConfigs, nil
+}
+
+func (u *udpServer) reloadConfig() {
+	udpConfig, ruleConfig, err := loadConfig()
+	if err != nil {
+		glog.Info("Reload configuration error: %v", err)
+		return
+	}
+	u.UdpConfig = udpConfig
+	u.RuleConfigs = ruleConfig
+
+	activeKeys := make(map[string]struct{})
+	for _, rule := range ruleConfig.FilterRules {
+		if rule.QPS > 0 {
+			u.LimiterManager.UpdateLimiter(rule.ID, rule.QPS)
+			activeKeys[rule.ID] = struct{}{}
+		}
+	}
+	u.LimiterManager.Cleanup(activeKeys)
+}
+
+func (u *udpServer) listenReloadConfigSignal() {
+	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
+		u.reloadConfig()
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("Configuration reloaded successfully"))
+		if err != nil {
+			glog.Info("Write response error: %v", err)
+			return
+		}
+	})
+	port := "8089"
+	glog.Info("Starting config reload listener on :%s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		glog.Info("Failed to start config reload server: %v", err)
+	}
+	glog.Info("Config reload listener shutdown")
+}
+
+func (u *udpServer) consumeAndReapply() {
+	for data := range channel {
+		if data.rule.QPS >= 0 {
+			limiter := u.LimiterManager.GetLimiter(data.rule.ID, data.rule.QPS)
+			if !limiter.Allow() {
+				glog.Debug("Drop request due to rate limit, rule id: %s", data.rule.ID)
+				continue
+			}
+			glog.Debug("Request passed rate limit, rule id: %s", data.rule.ID)
+		}
+		glog.Debug("forward data: %s", getJsonString(data.diffBody))
+		u.forward(data.diffBody, data.rule)
+	}
+}
+
+func initLoggerFromConfig(logConfig model.LogConfig) (*logger.Logger, error) {
+	// 解析日志级别
+	level, err := logger.ParseLogLevel(logConfig.Level)
+	if err != nil {
+		// 如果解析失败，使用默认INFO级别并记录警告
+		level = logger.INFO
+		fmt.Printf("WARN: Invalid log level '%s', using default INFO level\n", logConfig.Level)
+	}
+
+	// 创建基础配置
+	config := logger.Config{
+		Level:      level,
+		LogDir:     logConfig.LogDir,
+		MaxSize:    logConfig.MaxSize,
+		MaxAge:     logConfig.MaxAge,
+		MaxBackups: logConfig.MaxBackups,
+		Compress:   logConfig.Compress,
+		Async:      logConfig.Async,
+		QueueSize:  logConfig.QueueSize,
+	}
+
+	// 获取默认配置
+	finalConfig := logger.DefaultConfig()
+
+	// 4. 合并配置项 (使用传入配置覆盖默认配置)
+	if config.Level != finalConfig.Level {
+		finalConfig.Level = config.Level
+	}
+	if config.LogDir != "" {
+		finalConfig.LogDir = config.LogDir
+	}
+	if config.MaxSize > 0 {
+		finalConfig.MaxSize = config.MaxSize
+	}
+	if config.MaxAge > 0 {
+		finalConfig.MaxAge = config.MaxAge
+	}
+	if config.MaxBackups > 0 {
+		finalConfig.MaxBackups = config.MaxBackups
+	}
+	// Compress 和 Async 是布尔值，只要配置中有设置就覆盖
+	if logConfig.Compress {
+		finalConfig.Compress = true
+	}
+	if logConfig.Async {
+		finalConfig.Async = true
+	} else {
+		finalConfig.Async = false
+	}
+	if config.QueueSize > 0 {
+		finalConfig.QueueSize = config.QueueSize
+	}
+
+	// 验证最终配置
+	if err := validateLogConfig(finalConfig); err != nil {
+		return nil, fmt.Errorf("invalid log configuration: %w", err)
+	}
+
+	// 创建日志记录器
+	return logger.NewLogger(finalConfig)
+}
+
+func validateLogConfig(config logger.Config) error {
+	if config.LogDir == "" {
+		return fmt.Errorf("log directory cannot be empty")
+	}
+	if config.MaxSize <= 0 {
+		return fmt.Errorf("max size must be positive")
+	}
+	if config.MaxAge < 0 {
+		return fmt.Errorf("max age cannot be negative")
+	}
+	if config.MaxBackups < 0 {
+		return fmt.Errorf("max backups cannot be negative")
+	}
+	if config.QueueSize < 0 {
+		return fmt.Errorf("queue size cannot be negative")
+	}
+	return nil
+}
+
+type diffEventHandler struct{}
+
+func (c *diffEventHandler) Decode(req []byte) (*server.DiffBody, error) {
+	l := &stat.Log{}
+	err := proto.Unmarshal(req, l)
+	if err != nil {
+		return nil, err
+	}
+	if l.GetUin() == 0 || l.GetSubAccountUin() == 0 || len(l.GetModule()) == 0 {
+		return nil, errors.New("illegal uin or module")
+	}
+	if len(l.GetProduct()) == 0 {
+		arrAction := strings.Split(strings.TrimSpace(l.GetAction()), ":")
+		if len(arrAction) == 2 {
+			*l.Product = arrAction[0]
+			*l.Action = arrAction[1]
+		}
+	}
+	if len(l.GetProduct()) == 0 || len(l.GetAction()) == 0 {
+		return nil, errors.New("illegal product or action")
+	}
+	var tmp map[string]interface{}
+	if err := json.Unmarshal([]byte(l.GetRequest()), &tmp); err != nil {
+		return nil, errors.New("illegal request")
+	}
+	if err := json.Unmarshal([]byte(l.GetResponse()), &tmp); err != nil {
+		return nil, errors.New("illegal response")
+	}
+	pBody := &server.DiffBody{
+		Timestamp: int64(l.GetTimestamp()),
+		Module:    l.GetModule(),
+		Uin:       l.GetUin(),
+		Product:   l.GetProduct(),
+		Action:    l.GetAction(),
+		Request:   l.GetRequest(),
+		Response:  l.GetResponse(),
+	}
+	return pBody, nil
+}
+
+func (c *diffEventHandler) Compare(request, response, diffResponse string) bool {
+	var diffRsp map[string]interface{}
+	if err := json.Unmarshal([]byte(diffResponse), &diffRsp); err != nil {
+		return false
+	}
+	diffData, ok := diffRsp["data"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	var diffOwnerUin, diffUin, diffOwnerAppid, diffReturnCode float64
+	var diffPass, diffNeedAcl, diffIsAuthenticationUser float64
+	if tmp, ok := diffData["ownerUin"].(float64); ok {
+		diffOwnerUin = tmp
+	}
+	if tmp, ok := diffData["uin"].(float64); ok {
+		diffUin = tmp
+	}
+	if tmp, ok := diffData["ownerUin"].(float64); ok {
+		diffOwnerAppid = tmp
+	}
+	if tmp, ok := diffData["ownerAppid"].(float64); ok {
+		diffOwnerAppid = tmp
+	}
+	if tmp, ok := diffRsp["returnCode"].(float64); ok {
+		diffReturnCode = tmp
+	}
+	if tmp, ok := diffData["pass"].(float64); ok {
+		diffPass = tmp
+	}
+	if tmp, ok := diffData["needAcl"].(float64); ok {
+		diffNeedAcl = tmp
+	}
+	if tmp, ok := diffData["isAuthenticationUser"].(float64); ok {
+		diffIsAuthenticationUser = tmp
+	}
+
+	var rsp map[string]interface{}
+	if err := json.Unmarshal([]byte(response), &rsp); err != nil {
+		return false
+	}
+	data, ok := rsp["data"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	var ownerUin, uin, ownerAppid, returnCode float64
+	var pass, needAcl, isAuthenticationUser float64
+	if tmp, ok := data["ownerUin"].(float64); ok {
+		ownerUin = tmp
+	}
+	if tmp, ok := data["uin"].(float64); ok {
+		uin = tmp
+	}
+	if tmp, ok := data["ownerUin"].(float64); ok {
+		ownerAppid = tmp
+	}
+	if tmp, ok := data["ownerAppid"].(float64); ok {
+		ownerAppid = tmp
+	}
+	if tmp, ok := rsp["returnCode"].(float64); ok {
+		returnCode = tmp
+	}
+	if tmp, ok := data["pass"].(float64); ok {
+		pass = tmp
+	}
+	if tmp, ok := data["needAcl"].(float64); ok {
+		needAcl = tmp
+	}
+	if tmp, ok := data["isAuthenticationUser"].(float64); ok {
+		isAuthenticationUser = tmp
+	}
+
+	var reqInfo map[string]interface{}
+	if err := json.Unmarshal([]byte(request), &reqInfo); err != nil {
+		return false
+	}
+	var migration float64
+	if inter, ok := reqInfo["interface"].(map[string]interface{}); ok {
+		if para, ok := inter["para"].(map[string]interface{}); ok {
+			if tmpMigration, ok := para["migration"].(float64); ok {
+				migration = tmpMigration
+			}
+		}
+	}
+	if migration == 1 {
+		if (diffReturnCode == 0 || diffReturnCode == 11008) && (returnCode == 0 || returnCode == 11008) {
+			if diffReturnCode == returnCode && diffOwnerUin == ownerUin && diffUin == uin &&
+				diffOwnerAppid == ownerAppid && diffPass == pass && diffNeedAcl == needAcl &&
+				diffIsAuthenticationUser == isAuthenticationUser {
+				return true
+			}
+		} else if diffReturnCode == returnCode {
+			return true
+		}
+	} else {
+		if diffReturnCode == returnCode && diffOwnerUin == ownerUin &&
+			diffUin == uin && diffOwnerAppid == ownerAppid {
+			return true
+		}
+	}
+	return false
+}
+
+func getJsonString(data interface{}) string {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
