@@ -2456,5 +2456,32 @@ public class LeetcodeHot100FourEx {
      */
     public int maxProduct(int[] nums) {
         int len = nums.length;
+        int[] maxDp = new int[len];
+        int[] minDp = new int[len];
+        maxDp[0] = nums[0];
+        minDp[0] = nums[0];
+        int max = nums[0];
+        for (int i = 1; i < len; i++) {
+            maxDp[i] = Math.max(nums[i], Math.max(maxDp[i - 1] * nums[i], minDp[i - 1] * nums[i]));
+            minDp[i] = Math.min(nums[i], Math.min(maxDp[i - 1] * nums[i], minDp[i - 1] * nums[i]));
+            max = Math.max(max, maxDp[i]);
+        }
+        return max;
+    }
+
+    /**
+     * 分割等和子集
+     */
+    public boolean canPartition(int[] nums) {
+        int sum = 0;
+        for(int num : nums) {
+            sum += num;
+        }
+        if (sum % 2 == 1) {
+            return false;
+        }
+        int target = sum >> 1;
+        boolean[] dp = new boolean[target + 1];
+        
     }
 }
