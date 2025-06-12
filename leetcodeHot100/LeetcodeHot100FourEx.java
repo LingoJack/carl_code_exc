@@ -2529,4 +2529,113 @@ public class LeetcodeHot100FourEx {
         }
         return max;
     }
+
+    /**
+     * 不同路径
+     */
+    public int uniquePaths(int m, int n) {
+        int[][] dp = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            dp[i][0] = 1;
+        }
+        for (int i = 0; i < n; i++) {
+            dp[0][i] = 1;
+        }
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+
+    /**
+     * 最小路径和
+     */
+    public int minPathSum(int[][] grid) {
+        int row = grid.length, col = grid[0].length;
+        int[][] dp = new int[row + 1][col + 1];
+        for (int i = 0; i < row; i++) {
+            dp[i][0] = (i >= 1 ? dp[i - 1][0] : 0) + grid[i][0];
+        }
+        for (int i = 0; i < col; i++) {
+            dp[0][i] = (i >= 1 ? dp[0][i - 1] : 0) + grid[0][i];
+        }
+        for (int i = 1; i < row; i++) {
+            for (int j = 1; j < col; j++) {
+                dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
+            }
+        }
+        return dp[row - 1][col - 1];
+    }
+
+    /**
+     * 最长回文子串
+     */
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        boolean[][] dp = new boolean[len][len];
+        for (int i = 0; i < len; i++) {
+            dp[i][i] = true;
+        }
+        int offset = 0;
+        int maxSize = 1;
+        for (int size = 2; size <= len; size++) {
+            for (int start = 0; start + size - 1 < len; start++) {
+                int end = start + size - 1;
+                if (size == 2) {
+                    dp[start][end] = s.charAt(start) == s.charAt(end);
+                } else {
+                    dp[start][end] = (s.charAt(start) == s.charAt(end)) && dp[start + 1][end - 1];
+                }
+                if (dp[start][end] && size > maxSize) {
+                    maxSize = size;
+                    offset = start;
+                }
+            }
+        }
+        return s.substring(offset, offset + maxSize);
+    }
+
+    /**
+     * 最长公共子序列
+     */
+    public int longestCommonSubsequence(String text1, String text2) {
+        int l1 = text1.length(), l2 = text2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for (int i = 1; i < l1 + 1; i++) {
+            for (int j = 1; j < l2 + 1; j++) {
+                dp[i][j] = (text1.charAt(i - 1) == text2.charAt(j - 1) ? (1 + dp[i - 1][j - 1])
+                        : Math.max(dp[i - 1][j], dp[i][j - 1]));
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 编辑距离
+     */
+    public int minDistance(String word1, String word2) {
+        int l1 = word1.length(), l2 = word2.length();
+        int[][] dp = new int[l1 + 1][l2 + 1];
+        for(int i = 0; i < l2 + 1; i++) {
+            dp[0][i] = i;
+        }
+        for(int i = 0; i < l1 + 1; i++) {
+            dp[i][0] = i;
+        }
+        for(int i = 1; i < l1 + 1; i++) {
+            for(int j = 1; j < l2 + 1; j++) {
+                dp[i][j] = (word1.charAt(i  -1) == word2.charAt(j - 1)) ? (dp[i - 1][j - 1]) : (Math.min(dp[i - 1][j], Math.min(dp[i][j - 1], dp[i - 1][j - 1])) + 1);
+            }
+        }
+        return dp[l1][l2];
+    }
+
+    /**
+     * 只出现一次的数字
+     */
+    public int singleNumber(int[] nums) {
+       
+    }
 }
