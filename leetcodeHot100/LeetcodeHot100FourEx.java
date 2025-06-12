@@ -2504,6 +2504,29 @@ public class LeetcodeHot100FourEx {
      * 最长有效括号
      */
     public int longestValidParentheses(String s) {
-        
+        int len = s.length();
+        // 以s[i]结尾的最长有效括号长度为dp[i]
+        int[] dp = new int[len];
+        int max = 0;
+        for (int i = 1; i < len; i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                dp[i] = 0;
+                continue;
+            }
+            char lastCh = s.charAt(i - 1);
+            if (lastCh == '(') {
+                // ()
+                dp[i] = (i - 2 >= 0 ? dp[i - 2] : 0) + 2;
+            } else {
+                // ((())
+                int lastMatchIdx = i - dp[i - 1] - 1;
+                if (lastMatchIdx >= 0 && s.charAt(lastMatchIdx) == '(') {
+                    dp[i] = 2 + dp[i - 1] + (lastMatchIdx - 1 >= 0 ? dp[lastMatchIdx - 1] : 0);
+                }
+            }
+            max = Math.max(max, dp[i]);
+        }
+        return max;
     }
 }
