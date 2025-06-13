@@ -2648,6 +2648,28 @@ public class LeetcodeHot100FourEx {
      * 多数元素
      */
     public int majorityElement(int[] nums) {
-       
+        int count = 0;
+        Integer winner = null;
+        for (int num : nums) {
+            if (winner == null) {
+                winner = num;
+            }
+            if (winner == num) {
+                count++;
+            } else {
+                count--;
+                if (count == 0) {
+                    winner = null;
+                }
+            }
+        }
+        return winner;
+    }
+
+    /**
+     * 颜色分类
+     */
+    public void sortColors(int[] nums) {
+        
     }
 }
