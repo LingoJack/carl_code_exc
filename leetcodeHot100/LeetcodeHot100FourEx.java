@@ -2670,6 +2670,71 @@ public class LeetcodeHot100FourEx {
      * 颜色分类
      */
     public void sortColors(int[] nums) {
-        
+        quickSort(nums, 0, nums.length - 1);
+    }
+
+    private void quickSort(int[] nums, int start, int end) {
+        if (start >= end) {
+            return;
+        }
+        int idx = partition(nums, start, end);
+        quickSort(nums, start, idx - 1);
+        quickSort(nums, idx + 1, end);
+    }
+
+    private int partition(int[] nums, int start, int end) {
+        int slow = start, fast = start;
+        while (fast < end) {
+            if (nums[fast] < nums[end]) {
+                swap(nums, slow, fast);
+                slow++;
+            }
+            fast++;
+        }
+        swap(nums, end, slow);
+        return slow;
+    }
+
+    /**
+     * 下一个排列
+     */
+    public void nextPermutation(int[] nums) {
+        // 找到从右往左看第一个逆序对
+        int len = nums.length;
+        int idx = len - 2;
+        int last = nums[len - 1];
+        while (idx >= 0) {
+            if (nums[idx] >= last) {
+                last = nums[idx];
+                idx--;
+            } else {
+                int pivot = nums[idx];
+                int finder = len - 1;
+                while (nums[finder] <= pivot) {
+                    finder--;
+                }
+                swap(nums, idx, finder);
+                reverse(nums, idx + 1, len - 1);
+                break;
+            }
+        }
+        if (idx < 0) {
+            reverse(nums, 0, len - 1);
+        }
+    }
+
+    /**
+     * 寻找重复数
+     */
+    public int findDuplicate(int[] nums) {
+        int len = nums.length;
+        boolean[] exist = new boolean[len + 1];
+        for (int num : nums) {
+            if (exist[num]) {
+                return num;
+            }
+            exist[num] = true;
+        }
+        return -1;
     }
 }
