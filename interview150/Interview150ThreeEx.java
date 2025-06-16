@@ -1,5 +1,9 @@
 package interview150;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Interview150ThreeEx {
 
     /**
@@ -47,6 +51,38 @@ public class Interview150ThreeEx {
      * 删除有序数组中的重复项
      */
     public int removeDuplicates(int[] nums) {
-        
+        Set<Integer> set = new HashSet<>();
+        int slow = 0, fast = 0;
+        while (fast < nums.length) {
+            if (!set.contains(nums[fast])) {
+                set.add(nums[fast]);
+                swap(nums, slow, fast);
+                slow++;
+            }
+            fast++;
+        }
+        return set.size();
+    }
+
+    /**
+     * 删除有序数组中的重复项II
+     * 没做出来
+     * 想到了用双指针，但是写不出来
+     * 只有一个混沌的想法...
+     */
+    public int removeDuplicatesII(int[] nums) {
+        int n = nums.length;
+        if (n <= 2) {
+            return n;
+        }
+        int slow = 2, fast = 2;
+        while (fast < n) {
+            if (nums[slow - 2] != nums[fast]) {
+                nums[slow] = nums[fast];
+                ++slow;
+            }
+            ++fast;
+        }
+        return slow;
     }
 }
