@@ -1214,3 +1214,37 @@ func getJsonString(data interface{}) string {
 	}
 	return string(b)
 }
+prompt：帮我做一个可以自动从b站拉取视频，输入bv号，然后提取音频，用ffmpeg转换aac格式为flac的应用
+
+
+PageRender
+
+目前有几个问题：
+1. mode2鉴权是什么意思？ url鉴权 已解决
+2. 当前接口sigAndAuth的作用是？ 鉴权 已解决
+3. 在敏捷开发中，user story，即用户故事，是一种表达需求的方式。
+关于helix
+4. tapd不是内部工具吗，为什么会在helix上用到
+5. tiny push是什么
+6. helix表演者， AISW，ai software，前后台关系
+7. 文档里的翻译是指什么
+
+
+--- 
+
+目前的几个主要流程
+1. 过滤需求、生成名称
+2. 循环反思生成最小产品功能分析，记录循环轮次
+3. 根据依赖的原子能力推断原子函数、U型管结构
+4. 判断是否有Mock函数，生成U型管结构，生成建表sql
+5. 循环对每个API生成cutom和dml代码，合并到工程代码
+6. 生成前端代码，编译部署、反思
+7. 验收
+exception：step5出现问题 --> 运行时故障修复 --> 结束
+
+--- 
+1. cam_diff的bug修复：Action匹配、连续热重启
+2. 内部接口分类分级改了Prompt跑了第二版的接口文档的数据
+3. 改造cam_diff客户端，根据req、rsp包构造mode2鉴权请求去刷缓存
+4. 跟进需要找日志的需求，去cls、tdw捞日志数据
+5. 了解helix，目前了解了一下helix的流程，对比一下不同模型在U型管数据结构生成API代码的效果；
