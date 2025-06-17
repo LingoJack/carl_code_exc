@@ -49,6 +49,7 @@ public class Interview150ThreeEx {
 
     /**
      * 删除有序数组中的重复项
+     * 这不是最优的解法，你没有充分利用题目中“有序”这个特性
      */
     public int removeDuplicates(int[] nums) {
         Set<Integer> set = new HashSet<>();
@@ -65,25 +66,64 @@ public class Interview150ThreeEx {
     }
 
     /**
+     * 删除有序数组中的重复项
+     * 这个是最优解
+     * 这个快慢指针的思路很牛逼，但是很反人类思维
+     */
+    public int removeDuplicatesAwesomeSolution(int[] nums) {
+        // 0 1 2 1 1 2 2 3 3 4
+        // _ _ s
+        // _ _ _ _ _ f
+        int len = nums.length;
+        if (len <= 1) {
+            return len;
+        }
+        // slow跟踪下一个不同元素需要被放置到的位置
+        // slow - 1就是上一组元素
+        // fast跟踪当前扫描的元素
+        int slow = 1, fast = 1;
+        while (fast < len) {
+            if (nums[fast] != nums[slow - 1]) {
+                nums[slow] = nums[fast];
+                slow++;
+            }
+            fast++;
+        }
+        return slow;
+    }
+
+    /**
      * 删除有序数组中的重复项II
      * 没做出来
      * 想到了用双指针，但是写不出来
      * 只有一个混沌的想法...
      * 明天要好好看看（time： 2026-6-17 01:03 24h）
+     * --- 已阅
+     * 这题没做出来，因为「删除有序数组中的重复项」你就不是最优解做的，
+     * 换句话说「删除有序数组中的重复项」你都没做明白
      */
     public int removeDuplicatesII(int[] nums) {
-        int n = nums.length;
-        if (n <= 2) {
-            return n;
+        int len = nums.length;
+        if (len <= 2) {
+            return len;
         }
+        // slow跟踪下一个不同组的元素应该被插入到的位置
+        // slow - 2代表上一个不同组的元素
         int slow = 2, fast = 2;
-        while (fast < n) {
+        while (fast < len) {
             if (nums[slow - 2] != nums[fast]) {
                 nums[slow] = nums[fast];
-                ++slow;
+                slow++;
             }
-            ++fast;
+            fast++;
         }
         return slow;
+    }
+
+    /**
+     * 多数元素
+     */
+    public int majorityElement(int[] nums) {
+
     }
 }
