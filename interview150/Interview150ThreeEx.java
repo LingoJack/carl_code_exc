@@ -165,6 +165,22 @@ public class Interview150ThreeEx {
      * 买卖股票的最佳时机
      */
     public int maxProfit(int[] prices) {
-        
+        int minPrice = Integer.MAX_VALUE;
+        int maxProft = 0;
+        for (int price : prices) {
+            if (minPrice > price) {
+                minPrice = price;
+            } else {
+                maxProft = Math.max(maxProft, price - minPrice);
+            }
+        }
+        return maxProft;
+    }
+
+    /**
+     * 买卖股票的最佳时机II
+     */
+    public int maxProfitII(int[] prices) {
+
     }
 }
