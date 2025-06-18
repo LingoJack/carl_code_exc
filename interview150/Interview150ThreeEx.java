@@ -124,6 +124,47 @@ public class Interview150ThreeEx {
      * 多数元素
      */
     public int majorityElement(int[] nums) {
+        int count = 0;
+        Integer winner = null;
+        for (int num : nums) {
+            if (winner == null) {
+                winner = num;
+            }
+            if (winner.equals(num)) {
+                count++;
+            } else {
+                count--;
+                if (count == 0) {
+                    winner = null;
+                }
+            }
+        }
+        return winner;
+    }
 
+    /**
+     * 轮转数组
+     */
+    public void rotate(int[] nums, int k) {
+        int len = nums.length;
+        reverse(nums, 0, len - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, len - 1);
+    }
+
+    private void reverse(int[] nums, int start, int end) {
+        int lt = start, rt = end;
+        while (lt < rt) {
+            swap(nums, lt, rt);
+            lt++;
+            rt--;
+        }
+    }
+
+    /**
+     * 买卖股票的最佳时机
+     */
+    public int maxProfit(int[] prices) {
+        
     }
 }
