@@ -201,13 +201,6 @@ public class Interview150ThreeEx {
      * 跳跃游戏
      */
     public boolean canJump(int[] nums) {
-                
-    }
-
-    /**
-     * 跳跃游戏
-     */
-    public boolean canJump(int[] nums) {
         int scope = 0;
         for (int i = 0; i <= scope; i++) {
             scope = Math.max(scope, i + nums[i]);
