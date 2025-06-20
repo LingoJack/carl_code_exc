@@ -183,4 +183,85 @@ public class Interview150ThreeEx {
     public int maxProfitII(int[] prices) {
 
     }
+
+    /**
+     * 跳跃游戏
+     */
+    public boolean canJump(int[] nums) {
+        int scope = 0;
+        for (int i = 0; i <= scope; i++) {
+            scope = Math.max(scope, i + nums[i]);
+            if (scope >= nums.length - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 跳跃游戏II
+     */
+    public int jump(int[] nums) {
+        int[] scope = new int[nums.length];
+        int maxScope = 0;
+        for (int i = 0; i < nums.length; i++) {
+            maxScope = Math.max(maxScope, nums[i] + i);
+            scope[i] = maxScope;
+        }
+        int step = 0;
+        int pos = 0;
+        while (pos < nums.length - 1) {
+            pos = scope[pos];
+            step++;
+            if (pos >= nums.length - 1) {
+                break;
+            }
+        }
+        return step;
+    }
+
+    /**
+     * H指数
+     */
+    public int hIndex(int[] citations) {
+        // 3 0 6 1 5
+        // 0 1 3 5 6
+        // _ _ _ _ i
+        // _ _ _ _ c
+        int len = citations.length;
+        Arrays.sort(citations);
+        int idx = len - 1;
+        int count = 0;
+        while (idx >= 0) {
+            if (citations[idx] <= count) {
+                break;
+            }
+            count++;
+            idx--;
+        }
+        return count;
+    }
+
+    /**
+     * O(1)时间插入、删除和获取随机元素
+     */
+    class RandomizedSet {
+
+        public RandomizedSet() {
+
+        }
+
+        public boolean insert(int val) {
+
+        }
+
+        public boolean remove(int val) {
+
+        }
+
+        public int getRandom() {
+
+        }
+    }
+
 }
