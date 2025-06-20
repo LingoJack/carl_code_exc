@@ -1264,3 +1264,10 @@ exception：step5出现问题 --> 运行时故障修复 --> 结束
   1. 调用关系图谱生成
 5. 数据依赖分析
 6. 生成代码、部署编译(这一步会有多个提问内容)
+
+```plaintext
+function =》 encoder，decoder
+source =》 入参
+channel =》 数据实体
+logic =》 function内部实现逻辑
+```
