@@ -257,7 +257,8 @@ public class Interview150ThreeEx {
 
     /**
      * O(1)时间插入、删除和获取随机元素
-     * TODO 还没写完 需要继续
+     * 没做出来
+     * 主要是remove的逻辑没有写好
      */
     class RandomizedSet {
 
@@ -286,8 +287,11 @@ public class Interview150ThreeEx {
             if (!map.containsKey(val)) {
                 return false;
             }
-            list.remove(map.get(val));
+            Integer removedIdx = map.get(val);
+            list.set(removedIdx, list.get(list.size() - 1));
+            map.put(list.get(list.size() - 1), removedIdx);
             map.remove(val);
+            list.remove(list.size() - 1);
             return true;
         }
 
@@ -296,4 +300,10 @@ public class Interview150ThreeEx {
         }
     }
 
+    /**
+     * 除自身以外的数组乘积
+     */
+    public int[] productExceptSelf(int[] nums) {
+        
+    }
 }
