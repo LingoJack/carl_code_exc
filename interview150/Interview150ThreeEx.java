@@ -278,7 +278,7 @@ public class Interview150ThreeEx {
             if (!map.containsKey(val)) {
                 return false;
             }
-            list.remove(val);
+            list.remove(map.get(val));
             map.remove(val);
             return true;
         }
