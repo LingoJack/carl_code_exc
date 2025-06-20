@@ -1,7 +1,12 @@
 package interview150;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class Interview150ThreeEx {
@@ -244,23 +249,42 @@ public class Interview150ThreeEx {
 
     /**
      * O(1)时间插入、删除和获取随机元素
+     * TODO 还没写完 需要继续
      */
     class RandomizedSet {
 
-        public RandomizedSet() {
+        private Map<Integer, Integer> map;
 
+        private List<Integer> list;
+
+        private Random random;
+
+        public RandomizedSet() {
+            list = new ArrayList<>();
+            map = new HashMap<>();
+            random = new Random();
         }
 
         public boolean insert(int val) {
-
+            if (map.containsKey(val)) {
+                return false;
+            }
+            map.put(val, list.size());
+            list.add(val);
+            return true;
         }
 
         public boolean remove(int val) {
-
+            if (!map.containsKey(val)) {
+                return false;
+            }
+            list.remove(val);
+            map.remove(val);
+            return true;
         }
 
         public int getRandom() {
-
+            return list.get(random.nextInt(list.size()));
         }
     }
 
