@@ -1,0 +1,855 @@
+我有一个模拟生成用户数据的表，需要根据mock生成的数据来完成这些任务的展示：
+1、替换Spark区域人群位图程序，开发Flink程序，每5分钟生成区域人群位图，
+写入Clickhouse
+区域实时位图开发
+2、开发API接口，实现任意各区域各时间段，总人数、各年龄段人数、各性别人
+数信息查询
+3、大模型应用:将查询封装为openapi风格，使用difyagent查询最近5分钟人群数
+量
+项目前期需要给老师展示效果，
+但是由于工期原因，我们只能考虑使用mysql来暂时给老师展示效果，节省后期开发成本
+
+请你设计结合以下项目信息，设计mysql数据库表，写springboot程序提供接口完成上述任务以达到给老师展示的效果
+注意mock这里不要直接生成人数，要和下面的模拟用户移动的逻辑一样，随机移动然后更新区域人数等数据
+
+这是部分cell.loc文件：
+38216464498688|23.132191070076026|113.33323287910133
+38218611982336|23.12938901464722|113.33323287910133
+38220759465984|23.129852892602997|113.33025569303132
+38222906949632|23.132654991450128|113.33025569303132
+38225054433280|23.133118855823877|113.32727849349654
+38227201916928|23.133582663192733|113.32430128052022
+38229349400576|23.130780477527157|113.32430128052022
+38231496884224|23.130316713564493|113.32727849349654
+38233644367872|23.127514564726795|113.32727849349654
+
+这是region.loc文件：
+3747838232570626048|38216464498688
+3747838232570626048|38218611982336
+3747838232570626048|38220759465984
+3747838232570626048|38222906949632
+3747838232570626048|38225054433280
+3747838232570626048|38227201916928
+3747838232570626048|38229349400576
+
+这是region_center_loc.loc文件：
+3747838232570626048|113.32876709494556,23.12868374746404|113.32281266899871,23.122151941317554;113.3347214670798,23.122151941317554;113.3347214670798,23.135215646706484;113.32281266899871,23.135215646706484
+3747839400801730560|113.40021595576945,23.095127289757343|113.39426218783932,23.088595434878663;113.40616966765742,23.088595434878663;113.40616966765742,23.101659240893053;113.39426218783932,23.101659240893053
+3747836102266847232|113.35258425874784,23.237037277997125|113.34663004916678,23.230502337114576;113.35853841377283,23.230502337114576;113.35853841377283,23.24357230704376;113.34663004916678,23.24357230704376
+
+这是user_info.loc文件：
+d92d8c88-d351-467b-8caf-e72178f02447|1|20
+e64b11a5-9b2c-431c-bfd4-7b6ef5f975ee|1|53
+269604c9-b59b-4a79-9b82-e7223aebfaaf|0|54
+e81b3d22-7d1c-4e38-8a19-247cb35b5930|1|53
+dc97e5d9-b621-4ef1-baa4-3cb2d838e5f1|1|10
+96e44937-4c40-4fc3-bed3-e5acdb13dbd5|1|31
+640cf2e9-4d84-460e-9fb1-6ccaf0162eec|1|42
+dc381f3f-1b25-46f0-8193-1bb87f5ce961|1|36
+9558dd52-3150-4125-be24-424b9107bfa2|1|31
+2db567ca-687c-42a5-90ff-e02132a28848|0|56
+9806b681-58c0-4a06-a25d-a4f753f3cc69|1|13
+f63e4f04-22f4-4c89-8556-c2b7e0f9d9e5|0|44
+a60940b3-dc53-40df-a0dd-a39907a3b551|0|45
+f53de2d1-9c18-4d8b-8657-9fc34a64f288|0|20
+a81c55d5-abf5-40aa-a4ee-f657794bef0e|1|52
+bc77f24e-010a-46d8-bdb3-6f160dc4ed9e|0|43
+
+这是我们模拟用户移动的文件：
+package core;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * 数据生成器主类，用于模拟用户移动位置数据
+ */
+public class GenerateData {
+
+    /**
+     * 主方法，程序入口
+     * @param args 命令行参数
+     * @throws IOException 文件读取异常
+     * @throws InterruptedException 线程中断异常
+     */
+    public static void main(String[] args) throws IOException, InterruptedException {
+        // 1. 从文件加载用户基本信息和基站位置信息
+        List<String> userInfoLines = loadUserData("user_info.txt");
+        List<CellInfo> cellLocLines = loadCellData("cell_loc.txt");
+
+        // 2. 为每个基站分配索引并排序
+        indexCellLocations(cellLocLines);
+
+        // 3. 创建基站索引映射表
+        Map<Integer, CellInfo> indexToCellMap = createIndexToCellMap(cellLocLines);
+        Map<String, Integer> cellToIndexMap = createCellToIndexMap(cellLocLines);
+
+        // 4. 记录用户当前所在的基站
+        Map<String, String> userCurrentCell = new HashMap<>();
+
+        // 5. 主循环：持续生成模拟数据
+        generateSimulationData(userInfoLines, indexToCellMap, cellToIndexMap, userCurrentCell);
+    }
+
+    /**
+     * 从文件加载用户数据
+     * @param filePath 文件路径
+     * @return 用户数据行列表
+     * @throws IOException 文件读取异常
+     */
+    private static List<String> loadUserData(String filePath) throws IOException {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        GenerateData.class.getClassLoader().getResourceAsStream(filePath)))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        return lines;
+    }
+
+    /**
+     * 从文件加载基站数据并进行初步处理
+     * @param filePath 文件路径
+     * @return 基站信息列表
+     * @throws IOException 文件读取异常
+     */
+    private static List<CellInfo> loadCellData(String filePath) throws IOException {
+        return loadUserData(filePath).stream()
+                .map(line -> {
+                    String[] parts = line.split("\\|");
+                    CellInfo cell = new CellInfo();
+                    cell.cell = parts[0];    // 基站ID
+                    cell.lat = parts[1];     // 纬度
+                    cell.lot = parts[2];     // 经度
+                    return cell;
+                })
+                .sorted(Comparator.comparingLong(c -> Long.parseLong(c.cell))) // 按基站ID排序
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 为基站分配索引
+     * @param cells 基站列表
+     */
+    private static void indexCellLocations(List<CellInfo> cells) {
+        for (int i = 0; i < cells.size(); i++) {
+            cells.get(i).index = i;
+        }
+    }
+
+    /**
+     * 创建基站索引到基站对象的映射
+     * @param cells 基站列表
+     * @return 映射表
+     */
+    private static Map<Integer, CellInfo> createIndexToCellMap(List<CellInfo> cells) {
+        return cells.stream()
+                .collect(Collectors.toMap(c -> c.index, c -> c));
+    }
+
+    /**
+     * 创建基站ID到索引的映射
+     * @param cells 基站列表
+     * @return 映射表
+     */
+    private static Map<String, Integer> createCellToIndexMap(List<CellInfo> cells) {
+        return cells.stream()
+                .collect(Collectors.toMap(c -> c.cell, c -> c.index));
+    }
+
+    /**
+     * 生成模拟数据的主循环
+     * @param userInfo 用户信息列表
+     * @param indexToCell 基站索引映射
+     * @param cellToIndex 基站ID映射
+     * @param userCurrentCell 记录用户当前位置
+     * @throws InterruptedException 线程中断异常
+     */
+    private static void generateSimulationData(List<String> userInfo,
+                                               Map<Integer, CellInfo> indexToCell,
+                                               Map<String, Integer> cellToIndex,
+                                               Map<String, String> userCurrentCell) throws InterruptedException {
+
+        Random random = new Random();
+
+        // 持续生成数据直到程序被终止
+        while (true) {
+            // 随机选择一个用户
+            String randomUser = userInfo.get(random.nextInt(userInfo.size()));
+            String[] userParts = randomUser.split("\\|");
+            String imsi = userParts[0];      // 用户IMSI
+            String gender = userParts[1];    // 性别 (0:未知,1:男,2:女)
+            String age = userParts[2];       // 年龄
+
+            // 获取用户当前所在的基站索引，如果不存在则随机分配一个
+            int lastIndex = cellToIndex.getOrDefault(
+                    userCurrentCell.get(imsi),
+                    random.nextInt(indexToCell.size()));
+
+            // 生成移动步长 (-3到3之间的随机数)
+            int step = random.nextInt(7) - 3;
+
+            // 只有当步长为正时才移动
+            if (step > 0) {
+                // 计算可能的移动方向
+                int[] possibleMoves = {
+                        lastIndex + step < indexToCell.size() ? lastIndex + step : lastIndex - step,
+                        lastIndex - step > 0 ? lastIndex - step : lastIndex + step
+                };
+
+                // 随机选择一个方向移动
+                int nextIndex = possibleMoves[random.nextInt(2)];
+                CellInfo nextCell = indexToCell.get(nextIndex);
+
+                // 更新用户当前位置
+                userCurrentCell.put(imsi, nextCell.cell);
+
+                // 生成数据记录
+                long currentTime = System.currentTimeMillis();
+                String record = String.join("|",
+                        imsi,            // 用户ID
+                        nextCell.cell,    // 基站ID
+                        nextCell.lat,     // 纬度
+                        nextCell.lot,     // 经度
+                        String.valueOf(currentTime), // 时间戳
+                        gender,           // 性别
+                        age               // 年龄
+                );
+
+                // 输出生成的记录
+                System.out.println(record);
+            }
+
+            // 暂停100毫秒模拟实时数据
+            Thread.sleep(100);
+        }
+    }
+}
+
+/**
+ * 基站信息类，存储单个基站的数据
+ */
+class CellInfo {
+    public String cell;  // 基站ID
+    public String lat;   // 纬度
+    public String lot;   // 经度
+    public int index;    // 索引位置
+
+    /**
+     * 默认构造函数
+     */
+    public CellInfo() {
+    }
+
+    /**
+     * 带索引的构造函数
+     * @param index 基站索引
+     */
+    public CellInfo(int index) {
+        this.index = index;
+    }
+
+    /**
+     * 转换为字符串表示
+     * @return 格式化的基站信息
+     */
+    @Override
+    public String toString() {
+        return String.join("|", cell, lat, lot, String.valueOf(index));
+    }
+}
+
+这是我们模拟生成用户行为数据的文件：
+package core
+
+import com.clickhouse.client.ClickHouseDataType
+import com.clickhouse.client.data.ClickHouseBitmap
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{IntegerType, StringType, StructType}
+import org.apache.spark.{SparkConf, SparkContext}
+import org.roaringbitmap.RoaringBitmap
+import utils.ClickhouseTool
+
+import java.util.Properties
+import scala.collection.mutable
+
+/**
+ * 用户画像位图生成器
+ *
+ * 功能：根据用户属性（性别、年龄）生成位图索引并存储到ClickHouse
+ *
+ * 位图类型定义：
+ * | ID | 属性值 | 描述       |
+ * |----|--------|------------|
+ * | 1  | 1      | 男性用户位图 |
+ * | 2  | 0      | 女性用户位图 |
+ * | 3  | 10     | 10-20岁用户 |
+ * | 4  | 20     | 20-40岁用户 |
+ * | 5  | 40     | 40岁以上用户 |
+ *
+ * 输入数据：
+ * 1. 用户基本信息（HDFS：/data/userInfo，格式：IMSI|性别|年龄）
+ * 2. 用户位图索引表（ClickHouse：USER_INDEX）
+ *
+ * 输出数据：
+ * 用户画像位图表（ClickHouse：TA_PORTRAIT_IMSI_BITMAP）
+ */
+object CalUserPersonBitMap {
+
+  /**
+   * 主入口方法
+   * @param args 命令行参数（未使用）
+   */
+  def main(args: Array[String]): Unit = {
+    // 1. 初始化Spark配置和会话
+    val conf = new SparkConf()
+      .setMaster("local")  // 本地模式（生产环境应移除）
+    val sparkSession = SparkSession.builder()
+      .appName("CalUserPersonBitMap")
+      .config(conf)
+      .getOrCreate()
+
+    // 2. 定义用户信息数据结构
+    val userInfoStruct = new StructType()
+      .add("imsi", StringType)    // 用户唯一标识
+      .add("gender", StringType)  // 性别（0:女，1:男）
+      .add("age", IntegerType)    // 年龄
+
+    // 3. 加载用户信息数据
+    val userInfoDf = sparkSession.read
+      .format("csv")
+      .option("sep", "|")
+      .schema(userInfoStruct)
+      .load("hdfs://bigdata01:9000/data/userInfo")
+
+    // 4. 创建临时视图
+    userInfoDf.createOrReplaceTempView("user_info")
+
+    // 5. 配置ClickHouse连接参数
+    val url = "jdbc:clickhouse://bigdata01:8123"
+    val prop = new Properties()
+    prop.setProperty("user", "default")
+    prop.setProperty("password", "clickhouse")
+
+    // 6. 加载用户位图索引数据
+    val userBitmapIndex = sparkSession.read
+      .jdbc(url, "USER_INDEX", prop)
+    userBitmapIndex.createOrReplaceTempView("user_index")
+
+    // 7. 定义SQL查询（生成用户画像位图）
+    val sql =
+      """
+        |-- 步骤1：预处理用户数据，添加年龄分段标记
+        |WITH tmp_res AS (
+        |  SELECT
+        |    ui.BITMAP_ID,
+        |    gender,
+        |    age_flag
+        |  FROM (
+        |    SELECT
+        |      imsi,
+        |      gender,
+        |      CASE
+        |        WHEN (age >= 10 AND age < 20) THEN '10'
+        |        WHEN (age >= 20 AND age < 40) THEN '20'
+        |        WHEN (age >= 40) THEN '40'
+        |      END AS age_flag
+        |    FROM user_info
+        |    WHERE age >= 10  -- 只处理10岁以上的用户
+        |  ) AS tmp
+        |  JOIN user_index AS ui ON tmp.imsi = ui.IMSI
+        |)
+        |
+        |-- 步骤2：生成性别位图（男性/女性）
+        |SELECT
+        |  CASE
+        |    WHEN gender = '1' THEN 1
+        |    WHEN gender = '0' THEN 2
+        |  END AS PORTRAIT_ID,
+        |  gender AS PORTRAIT_VALUE,
+        |  CASE
+        |    WHEN gender = '1' THEN '男性'
+        |    WHEN gender = '0' THEN '女性'
+        |  END AS COMMENT,
+        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
+        |FROM tmp_res
+        |GROUP BY gender
+        |
+        |UNION
+        |
+        |-- 步骤3：生成年龄段位图
+        |SELECT
+        |  CASE
+        |    WHEN age_flag = '10' THEN 3
+        |    WHEN age_flag = '20' THEN 4
+        |    WHEN age_flag = '40' THEN 5
+        |  END AS PORTRAIT_ID,
+        |  age_flag AS PORTRAIT_VALUE,
+        |  CASE
+        |    WHEN age_flag = '10' THEN '10-20岁'
+        |    WHEN age_flag = '20' THEN '20-40岁'
+        |    WHEN age_flag = '40' THEN '40岁以上'
+        |  END AS COMMENT,
+        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
+        |FROM tmp_res
+        |GROUP BY age_flag
+        |""".stripMargin
+
+    // 8. 执行查询并写入ClickHouse
+    sparkSession.sql(sql).rdd.foreachPartition { partition =>
+      // 获取ClickHouse连接（每个分区一个连接）
+      val conn = ClickhouseTool.getConn()
+
+      try {
+        // 处理当前分区的所有记录
+        partition.foreach { row =>
+          // 解析查询结果
+          val id = row.getAs[Int]("PORTRAIT_ID")          // 位图类型ID
+          val value = row.getAs[String]("PORTRAIT_VALUE") // 属性值
+          val comment = row.getAs[String]("COMMENT")       // 描述
+
+          // 创建位图并添加用户ID
+          val bitmap = new RoaringBitmap()
+          val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
+          bitArr.foreach { x =>
+            bitmap.add(x.intValue())
+          }
+
+          // 转换为ClickHouse位图格式
+          val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
+
+          // 准备并执行插入语句
+          val stmt = conn.prepareStatement(
+            """INSERT INTO TA_PORTRAIT_IMSI_BITMAP
+              |(PORTRAIT_ID, PORTRAIT_VALUE, PORTRAIT_BITMAP, COMMENT)
+              |VALUES (?, ?, ?, ?)""".stripMargin)
+
+          stmt.setInt(1, id)
+          stmt.setString(2, value)
+          stmt.setObject(3, ckBitmap)
+          stmt.setString(4, comment)
+          stmt.executeUpdate()
+          stmt.close()
+        }
+      } finally {
+        // 确保连接关闭
+        conn.close()
+      }
+    }
+
+    // 9. 停止Spark会话
+    sparkSession.stop()
+  }
+}
+
+这是我们生成用户位图相关数据结构的文件：
+package core
+
+import com.clickhouse.client.ClickHouseDataType
+import com.clickhouse.client.data.ClickHouseBitmap
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{DoubleType, LongType, StringType, StructType}
+import org.roaringbitmap.RoaringBitmap
+import utils.ClickhouseTool
+
+import java.util.Properties
+import scala.collection.mutable
+
+/**
+ * 区域用户停留计算类
+ * 功能：计算用户在指定区域的停留情况，并生成位图索引存储到ClickHouse
+ * 执行频率：每天执行一次
+ *
+ * 输入数据：
+ * 1. XDR数据（包含用户IMSI、位置信息和时间戳）
+ * 2. 区域-基站映射数据
+ * 3. 用户位图索引数据（从ClickHouse读取）
+ *
+ * 输出数据：
+ * 区域用户位图（存储到ClickHouse的REGION_ID_IMSI_BITMAP表）
+ */
+object CalRegionUserStay {
+
+  /**
+   * 主方法，程序入口
+   * @param args 命令行参数
+   */
+  def main(args: Array[String]): Unit = {
+    // 1. 初始化Spark配置和会话
+    val conf = new SparkConf().setMaster("local")
+    val sparkSession = SparkSession.builder()
+      .appName("CalRegionUserStay")
+      .config(conf)
+      .getOrCreate()
+
+    // 2. 加载XDR数据（用户信令数据）
+    val xdrPath = "hdfs://bigdata01:9000/xdr/20230204/*"
+    val xdrStruct = new StructType()
+      .add("imsi", StringType)      // 用户IMSI
+      .add("laccell", StringType)   // 基站小区ID
+      .add("lat", DoubleType)       // 纬度
+      .add("lot", DoubleType)       // 经度
+      .add("startTime", LongType)   // 开始时间戳（毫秒）
+
+    val xdrDf = sparkSession.read
+      .format("csv")
+      .option("sep", "|")
+      .schema(xdrStruct)
+      .load(xdrPath)
+
+    // 3. 加载区域-基站映射数据
+    val regionCellPath = "hdfs://bigdata01:9000/data/regionCell"
+    val regionCellStruct = new StructType()
+      .add("regionId", StringType)  // 区域ID
+      .add("laccell", StringType)   // 基站小区ID
+
+    val regionCellDf = sparkSession.read
+      .format("csv")
+      .option("sep", "|")
+      .schema(regionCellStruct)
+      .load(regionCellPath)
+
+    // 4. 从ClickHouse加载用户位图索引数据
+    val url = "jdbc:clickhouse://bigdata01:8123"
+    val prop = new Properties()
+    prop.setProperty("user", "default")
+    prop.setProperty("password", "clickhouse")
+
+    val userBitmapIndex = sparkSession.read
+      .jdbc(url, "USER_INDEX", prop)
+
+    // 5. 创建临时视图以便SQL查询
+    xdrDf.createOrReplaceTempView("xdr")
+    regionCellDf.createOrReplaceTempView("region_cell")
+    userBitmapIndex.createOrReplaceTempView("user_index")
+
+    // 6. 定义SQL查询，计算区域用户停留情况
+    val sql =
+      """
+        |SELECT
+        |  tmp.regionId,
+        |  tmp.produce_hour,
+        |  COLLECT_SET(tmp.BITMAP_ID) AS bitmapIds
+        |FROM (
+        |  SELECT
+        |    b.regionId,
+        |    FROM_UNIXTIME(a.startTime/1000, 'yyyyMMddHH') AS produce_hour,
+        |    c.BITMAP_ID
+        |  FROM xdr a
+        |  LEFT JOIN region_cell b ON a.laccell = b.laccell
+        |  LEFT JOIN user_index c ON a.imsi = c.IMSI
+        |) AS tmp
+        |GROUP BY tmp.regionId, tmp.produce_hour
+        |""".stripMargin
+
+    // 7. 执行查询并将结果写入ClickHouse
+    sparkSession.sql(sql).rdd.foreachPartition { it =>
+      // 获取ClickHouse连接
+      val conn = ClickhouseTool.getConn()
+
+      // 处理每个分区的数据
+      it.foreach { row =>
+        val regionId = row.getAs[String]("regionId")          // 区域ID
+        val produceHour = row.getAs[String]("produce_hour")   // 时间小时（格式：yyyyMMddHH）
+        val bitmap = new RoaringBitmap()                      // 创建位图对象
+
+        // 获取位图ID数组并添加到RoaringBitmap中
+        val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
+        bitArr.foreach { x =>
+          bitmap.add(x.intValue())
+        }
+
+        // 将位图转换为ClickHouse格式
+        val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
+
+        // 准备并执行插入语句
+        val stmt = conn.prepareStatement(
+          "INSERT INTO REGION_ID_IMSI_BITMAP " +
+            "(REGION_ID, PRODUCE_HOUR, IMSI_INDEXES) VALUES (?, ?, ?)")
+
+        stmt.setString(1, regionId)
+        stmt.setString(2, produceHour)
+        stmt.setObject(3, ckBitmap)
+        stmt.executeUpdate()
+        stmt.close()
+      }
+
+      // 关闭连接
+      conn.close()
+    }
+
+    // 8. 停止Spark会话
+    sparkSession.stop()
+  }
+}
+
+package core
+
+import com.clickhouse.jdbc.ClickHouseDataSource
+import org.apache.spark.{SparkConf, SparkContext}
+import ru.yandex.clickhouse.settings.ClickHouseQueryParam
+import utils.ClickhouseTool
+
+import java.util.Properties
+
+/**
+ * 用户位图索引生成器
+ *
+ * 功能：为每个用户生成唯一的位图ID并存储到ClickHouse的USER_INDEX表中
+ *
+ * 主要处理流程：
+ * 1. 从HDFS加载用户信息数据（格式：IMSI|性别|年龄）
+ * 2. 为每个用户分配唯一的数字ID（使用zipWithUniqueId）
+ * 3. 将用户IMSI和对应的唯一ID写入ClickHouse
+ *
+ * 执行频率：根据用户信息变化情况定期执行
+ *
+ * 输出表结构（ClickHouse的USER_INDEX表）：
+ * | 列名     | 类型    | 描述          |
+ * |----------|---------|-------------|
+ * | IMSI     | String  | 用户唯一标识    |
+ * | BITMAP_ID| UInt64  | 用户位图唯一ID  |
+ */
+object CalUserBitmapIndex {
+
+  /**
+   * 主入口方法
+   *
+   * @param args 命令行参数（未使用）
+   */
+  def main(args: Array[String]): Unit = {
+    // 1. 初始化Spark配置
+    val conf = new SparkConf()
+      .setAppName("CalUserBitmapIndex")  // 设置应用名称
+      .setMaster("local")                // 本地模式运行（生产环境应移除）
+
+    // 2. 创建SparkContext
+    val sc = new SparkContext(conf)
+
+    // 3. 从HDFS加载用户信息数据并处理
+    sc.textFile("hdfs://bigdata01:9000/data/userInfo")  // 读取HDFS文件
+      .map { line =>
+        // 3.1 解析每行数据，提取IMSI
+        val arr = line.split("\\|")  // 按竖线分割
+        arr(0)                       // 返回IMSI（第一列）
+      }
+      // 3.2 为每个用户分配唯一ID（延迟计算，不立即执行）
+      .zipWithUniqueId()
+      // 3.3 将结果写入ClickHouse（按分区并行处理）
+      .foreachPartition { partition =>
+        // 获取ClickHouse连接（每个分区一个连接）
+        val conn = ClickhouseTool.getConn()
+        val stmt = conn.createStatement()
+
+        try {
+          // 处理当前分区的所有记录
+          partition.foreach { case (imsi, id) =>
+            // 构造并执行插入语句
+            val sql =
+              s"""
+                INSERT INTO USER_INDEX
+                (IMSI, BITMAP_ID)
+                VALUES('${imsi}','${id}')
+              """
+            stmt.executeUpdate(sql)
+          }
+        } finally {
+          // 确保连接关闭
+          stmt.close()
+          conn.close()
+        }
+      }
+
+    // 4. 停止SparkContext释放资源
+    sc.stop()
+  }
+}
+
+package core
+
+import com.clickhouse.client.ClickHouseDataType
+import com.clickhouse.client.data.ClickHouseBitmap
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{IntegerType, StringType, StructType}
+import org.apache.spark.{SparkConf, SparkContext}
+import org.roaringbitmap.RoaringBitmap
+import utils.ClickhouseTool
+
+import java.util.Properties
+import scala.collection.mutable
+
+/**
+ * 用户画像位图生成器
+ *
+ * 功能：根据用户属性（性别、年龄）生成位图索引并存储到ClickHouse
+ *
+ * 位图类型定义：
+ * | ID | 属性值 | 描述       |
+ * |----|--------|------------|
+ * | 1  | 1      | 男性用户位图 |
+ * | 2  | 0      | 女性用户位图 |
+ * | 3  | 10     | 10-20岁用户 |
+ * | 4  | 20     | 20-40岁用户 |
+ * | 5  | 40     | 40岁以上用户 |
+ *
+ * 输入数据：
+ * 1. 用户基本信息（HDFS：/data/userInfo，格式：IMSI|性别|年龄）
+ * 2. 用户位图索引表（ClickHouse：USER_INDEX）
+ *
+ * 输出数据：
+ * 用户画像位图表（ClickHouse：TA_PORTRAIT_IMSI_BITMAP）
+ */
+object CalUserPersonBitMap {
+
+  /**
+   * 主入口方法
+   * @param args 命令行参数（未使用）
+   */
+  def main(args: Array[String]): Unit = {
+    // 1. 初始化Spark配置和会话
+    val conf = new SparkConf()
+      .setMaster("local")  // 本地模式（生产环境应移除）
+    val sparkSession = SparkSession.builder()
+      .appName("CalUserPersonBitMap")
+      .config(conf)
+      .getOrCreate()
+
+    // 2. 定义用户信息数据结构
+    val userInfoStruct = new StructType()
+      .add("imsi", StringType)    // 用户唯一标识
+      .add("gender", StringType)  // 性别（0:女，1:男）
+      .add("age", IntegerType)    // 年龄
+
+    // 3. 加载用户信息数据
+    val userInfoDf = sparkSession.read
+      .format("csv")
+      .option("sep", "|")
+      .schema(userInfoStruct)
+      .load("hdfs://bigdata01:9000/data/userInfo")
+
+    // 4. 创建临时视图
+    userInfoDf.createOrReplaceTempView("user_info")
+
+    // 5. 配置ClickHouse连接参数
+    val url = "jdbc:clickhouse://bigdata01:8123"
+    val prop = new Properties()
+    prop.setProperty("user", "default")
+    prop.setProperty("password", "clickhouse")
+
+    // 6. 加载用户位图索引数据
+    val userBitmapIndex = sparkSession.read
+      .jdbc(url, "USER_INDEX", prop)
+    userBitmapIndex.createOrReplaceTempView("user_index")
+
+    // 7. 定义SQL查询（生成用户画像位图）
+    val sql =
+      """
+        |-- 步骤1：预处理用户数据，添加年龄分段标记
+        |WITH tmp_res AS (
+        |  SELECT
+        |    ui.BITMAP_ID,
+        |    gender,
+        |    age_flag
+        |  FROM (
+        |    SELECT
+        |      imsi,
+        |      gender,
+        |      CASE
+        |        WHEN (age >= 10 AND age < 20) THEN '10'
+        |        WHEN (age >= 20 AND age < 40) THEN '20'
+        |        WHEN (age >= 40) THEN '40'
+        |      END AS age_flag
+        |    FROM user_info
+        |    WHERE age >= 10  -- 只处理10岁以上的用户
+        |  ) AS tmp
+        |  JOIN user_index AS ui ON tmp.imsi = ui.IMSI
+        |)
+        |
+        |-- 步骤2：生成性别位图（男性/女性）
+        |SELECT
+        |  CASE
+        |    WHEN gender = '1' THEN 1
+        |    WHEN gender = '0' THEN 2
+        |  END AS PORTRAIT_ID,
+        |  gender AS PORTRAIT_VALUE,
+        |  CASE
+        |    WHEN gender = '1' THEN '男性'
+        |    WHEN gender = '0' THEN '女性'
+        |  END AS COMMENT,
+        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
+        |FROM tmp_res
+        |GROUP BY gender
+        |
+        |UNION
+        |
+        |-- 步骤3：生成年龄段位图
+        |SELECT
+        |  CASE
+        |    WHEN age_flag = '10' THEN 3
+        |    WHEN age_flag = '20' THEN 4
+        |    WHEN age_flag = '40' THEN 5
+        |  END AS PORTRAIT_ID,
+        |  age_flag AS PORTRAIT_VALUE,
+        |  CASE
+        |    WHEN age_flag = '10' THEN '10-20岁'
+        |    WHEN age_flag = '20' THEN '20-40岁'
+        |    WHEN age_flag = '40' THEN '40岁以上'
+        |  END AS COMMENT,
+        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
+        |FROM tmp_res
+        |GROUP BY age_flag
+        |""".stripMargin
+
+    // 8. 执行查询并写入ClickHouse
+    sparkSession.sql(sql).rdd.foreachPartition { partition =>
+      // 获取ClickHouse连接（每个分区一个连接）
+      val conn = ClickhouseTool.getConn()
+
+      try {
+        // 处理当前分区的所有记录
+        partition.foreach { row =>
+          // 解析查询结果
+          val id = row.getAs[Int]("PORTRAIT_ID")          // 位图类型ID
+          val value = row.getAs[String]("PORTRAIT_VALUE") // 属性值
+          val comment = row.getAs[String]("COMMENT")       // 描述
+
+          // 创建位图并添加用户ID
+          val bitmap = new RoaringBitmap()
+          val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
+          bitArr.foreach { x =>
+            bitmap.add(x.intValue())
+          }
+
+          // 转换为ClickHouse位图格式
+          val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
+
+          // 准备并执行插入语句
+          val stmt = conn.prepareStatement(
+            """INSERT INTO TA_PORTRAIT_IMSI_BITMAP
+              |(PORTRAIT_ID, PORTRAIT_VALUE, PORTRAIT_BITMAP, COMMENT)
+              |VALUES (?, ?, ?, ?)""".stripMargin)
+
+          stmt.setInt(1, id)
+          stmt.setString(2, value)
+          stmt.setObject(3, ckBitmap)
+          stmt.setString(4, comment)
+          stmt.executeUpdate()
+          stmt.close()
+        }
+      } finally {
+        // 确保连接关闭
+        conn.close()
+      }
+    }
+
+    // 9. 停止Spark会话
+    sparkSession.stop()
+  }
+}
