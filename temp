@@ -1,855 +1,941 @@
-我有一个模拟生成用户数据的表，需要根据mock生成的数据来完成这些任务的展示：
-1、替换Spark区域人群位图程序，开发Flink程序，每5分钟生成区域人群位图，
-写入Clickhouse
-区域实时位图开发
-2、开发API接口，实现任意各区域各时间段，总人数、各年龄段人数、各性别人
-数信息查询
-3、大模型应用:将查询封装为openapi风格，使用difyagent查询最近5分钟人群数
-量
-项目前期需要给老师展示效果，
-但是由于工期原因，我们只能考虑使用mysql来暂时给老师展示效果，节省后期开发成本
+# 对于操作了相同数据元的函数协议进行检查、相互借鉴、优化出入参
 
-请你设计结合以下项目信息，设计mysql数据库表，写springboot程序提供接口完成上述任务以达到给老师展示的效果
-注意mock这里不要直接生成人数，要和下面的模拟用户移动的逻辑一样，随机移动然后更新区域人数等数据
+## 一、设计目标函数的理论基础
 
-这是部分cell.loc文件：
-38216464498688|23.132191070076026|113.33323287910133
-38218611982336|23.12938901464722|113.33323287910133
-38220759465984|23.129852892602997|113.33025569303132
-38222906949632|23.132654991450128|113.33025569303132
-38225054433280|23.133118855823877|113.32727849349654
-38227201916928|23.133582663192733|113.32430128052022
-38229349400576|23.130780477527157|113.32430128052022
-38231496884224|23.130316713564493|113.32727849349654
-38233644367872|23.127514564726795|113.32727849349654
+### 1.1用户诉求定义
 
-这是region.loc文件：
-3747838232570626048|38216464498688
-3747838232570626048|38218611982336
-3747838232570626048|38220759465984
-3747838232570626048|38222906949632
-3747838232570626048|38225054433280
-3747838232570626048|38227201916928
-3747838232570626048|38229349400576
+用户希望通过一个软件，可以达成某项目标而提出的一个想法，这是一段自然语言。例如：【我想要一个留言板的软件】。
 
-这是region_center_loc.loc文件：
-3747838232570626048|113.32876709494556,23.12868374746404|113.32281266899871,23.122151941317554;113.3347214670798,23.122151941317554;113.3347214670798,23.135215646706484;113.32281266899871,23.135215646706484
-3747839400801730560|113.40021595576945,23.095127289757343|113.39426218783932,23.088595434878663;113.40616966765742,23.088595434878663;113.40616966765742,23.101659240893053;113.39426218783932,23.101659240893053
-3747836102266847232|113.35258425874784,23.237037277997125|113.34663004916678,23.230502337114576;113.35853841377283,23.230502337114576;113.35853841377283,23.24357230704376;113.34663004916678,23.24357230704376
+### 1.2软件框架定义
 
-这是user_info.loc文件：
-d92d8c88-d351-467b-8caf-e72178f02447|1|20
-e64b11a5-9b2c-431c-bfd4-7b6ef5f975ee|1|53
-269604c9-b59b-4a79-9b82-e7223aebfaaf|0|54
-e81b3d22-7d1c-4e38-8a19-247cb35b5930|1|53
-dc97e5d9-b621-4ef1-baa4-3cb2d838e5f1|1|10
-96e44937-4c40-4fc3-bed3-e5acdb13dbd5|1|31
-640cf2e9-4d84-460e-9fb1-6ccaf0162eec|1|42
-dc381f3f-1b25-46f0-8193-1bb87f5ce961|1|36
-9558dd52-3150-4125-be24-424b9107bfa2|1|31
-2db567ca-687c-42a5-90ff-e02132a28848|0|56
-9806b681-58c0-4a06-a25d-a4f753f3cc69|1|13
-f63e4f04-22f4-4c89-8556-c2b7e0f9d9e5|0|44
-a60940b3-dc53-40df-a0dd-a39907a3b551|0|45
-f53de2d1-9c18-4d8b-8657-9fc34a64f288|0|20
-a81c55d5-abf5-40aa-a4ee-f657794bef0e|1|52
-bc77f24e-010a-46d8-bdb3-6f160dc4ed9e|0|43
+根据用户诉求所设计用户预期软件的逻辑功能以及数据流转，为软件框架，现将软件框架抽象为一个信号处理系统，一共有五个元素组成：信源、信宿、信道、编码器和解码器。五者之间的关系是，信源产生的信息通过编码器的编码后形成信号存放到信道中，信宿从信道中读取信号，通过解码器解码后得到原始的信息。如下图：
 
-这是我们模拟用户移动的文件：
-package core;
+```mermaid
+graph LR
+A(("信源")) -- 信息 --> B["编码器"]
+B -- 信号 --> C["信道"]
+C -- 信号 --> D["解码器"]
+D -- 信息 --> E{"信宿"}
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.*;
-import java.util.stream.Collectors;
+classDef source fill:#f9f,stroke:#333,stroke-width:2px;
+classDef process fill:#6f9,stroke:#333,stroke-width:2px;
+classDef channel fill:#9cf,stroke:#333,stroke-width:2px;
+classDef sink fill:#fc9,stroke:#333,stroke-width:2px;
 
-/**
- * 数据生成器主类，用于模拟用户移动位置数据
- */
-public class GenerateData {
+class A source;
+class B process;
+class C channel;
+class D process;
+class E sink;
+```
 
-    /**
-     * 主方法，程序入口
-     * @param args 命令行参数
-     * @throws IOException 文件读取异常
-     * @throws InterruptedException 线程中断异常
-     */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        // 1. 从文件加载用户基本信息和基站位置信息
-        List<String> userInfoLines = loadUserData("user_info.txt");
-        List<CellInfo> cellLocLines = loadCellData("cell_loc.txt");
+这里的关键是：信息->编码->信号->解码->信息的转换过程。需要理解信息和信号的本质区别是：信息是人类可以看得懂的，信号是软件内部流转的。
 
-        // 2. 为每个基站分配索引并排序
-        indexCellLocations(cellLocLines);
+软件框架用一个JSON对象进行表达，包含以下字段：sources（信源）、sinks（信宿）、channels（信道）、encoders（编码器）、decoders（解码器）。
 
-        // 3. 创建基站索引映射表
-        Map<Integer, CellInfo> indexToCellMap = createIndexToCellMap(cellLocLines);
-        Map<String, Integer> cellToIndexMap = createCellToIndexMap(cellLocLines);
+- sources：信源，是产生信息的地方，JSON数组格式，数组中的元素是一个JSON包含两个字段：
+  + name：信源名称，字符串格式
+  + kind：信源类型，字符串格式，有两个枚举值：human和system，其中human代表是人类信源，比如使用这个软件的用户；system代表是系统信源，比如：时间、软件身份、第三方系统等
+- sinks：信宿，是接收信息的地方，JSON数组格式，数组中的元素是一个JSON包含一个字段：
+  + name：信宿名称，字符串格式
+- channels：信道，是信号传输的通道，JSON数组格式，数组中的元素是一个JSON包含三个字段：
+  + name：信道名称，字符串格式
+  + humanSignal：人类产生的信号组成部分，JSON数组格式，数组中的元素是一个JSON包含一个字段：
+    + name：信号组成部分的名称，字符串格式
+  + systemSignal：系统产生的信号组成部分，JSON数组格式，数组中的元素是一个JSON包含一个字段：
+    + name：信号组成部分的名称，字符串格式
+- encoders：编码器，是将信息编码为信号地方，JSON数组格式，数组中的元素是一个JSON包含四个字段：
+  + name：编码器名称，字符串格式
+  + sources：信源列表，其内容是顶层sources字段的内容的子集，字符串数组格式
+  + channel：编码器下游所使用的信道，其内容是顶层channels字段的内容的子集，字符串格式
+  + logic：编码器如何处理信源产生的信息，并将信息编码为信号的的详细逻辑描述，字符串格式
+- decoders：解码器，是将信号解码为信息的地方，JSON数组格式，数组中的元素是一个JSON包含四个字段：
+  + name：解码器名称，字符串格式
+  + channels：信道列表，其内容是顶层channels字段的内容的子集，字符串数组格式
+  + sinks：解码器下游所使用的信宿，其内容是顶层sinks字段的内容的子集，字符串数组格式
+  + logic：解码器如何处理信道中的信号，并将信号解码为信息的详细逻辑描述，字符串格式
 
-        // 4. 记录用户当前所在的基站
-        Map<String, String> userCurrentCell = new HashMap<>();
+例如：留言板的软件框架可能是：
 
-        // 5. 主循环：持续生成模拟数据
-        generateSimulationData(userInfoLines, indexToCellMap, cellToIndexMap, userCurrentCell);
+```json
+{
+	"sources": [{
+			"name": "time",
+			"kind": "system"
+		},
+		{
+			"name": "identity",
+			"kind": "system"
+		},
+		{
+			"name": "留言作者",
+			"kind": "human"
+		},
+		{
+			"name": "所有人",
+			"kind": "human"
+		},
+		{
+			"name": "回复作者",
+			"kind": "human"
+		}
+	],
+	"sinks": [{
+			"name": "留言作者"
+		},
+		{
+			"name": "所有人"
+		},
+		{
+			"name": "回复作者"
+		}
+	],
+	"channels": [{
+		"name": "留言",
+		"humanSignal": [{
+				"name": "留言标题"
+			},
+			{
+				"name": "留言内容"
+			}
+		],
+		"systemSignal": [{
+				"name": "留言ID"
+			},
+			{
+				"name": "留言者身份"
+			},
+			{
+				"name": "创建时间"
+			},
+			{
+				"name": "更新时间"
+			}
+		]
+	}, {
+		"name": "回复",
+		"humanSignal": [{
+			"name": "回复内容"
+		}],
+		"systemSignal": [{
+				"name": "回复ID"
+			},
+			{
+				"name": "回复者身份"
+			},
+			{
+				"name": "创建时间"
+			},
+			{
+				"name": "更新时间"
+			}
+		]
+	}],
+	"encoders": [{
+			"name": "新建留言",
+			"sources": [
+				"作者",
+				"time",
+				"identity"
+			],
+			"channel": "留言",
+			"logic": "1、信号源产生原始信息：1.1、信源[作者]：产生留言的核心信息，即留言标题和留言内容。这些是信息的主要内容；1.2、信源[时间]：产生时间信息（如当前时间戳），用于后续的创建时间和更新时间。它不产生独立于留言的信息，而是作为留言的附带属性；1.3、信源[身份ID]：产生身份信息（如作者ID），用于标识来源。它也不产生独立信息，而是作为留言的附带属性；1.4、这些信号源共同作用，输出一个原始信息集合，包括：留言标题、留言内容、时间戳、作者ID。但此时，留言ID尚未生成，原始信息不完整。2、编码器处理与编码：2.1、编码器接收来自信号源的原始信息（标题、内容、时间戳、作者ID）；2.2、编码器首先校验信息内容：2.2.1、检查留言标题和留言内容是否存在（非空），2.2.2、校验格式要求：标题长度不超过50字符，内容长度不超过10240字符。如果校验失败，编码器可能丢弃信息或触发错误处理；2.3、编码器接受时间信息，并将其附加给留言：使用时间戳设置创建时间（通常为当前时间），并初始化更新时间（通常与创建时间相同）；2.4、编码器根据身份信息（作者ID）和时间信息（时间戳）生成一个全局唯一的留言ID（例如，通过哈希或序列化组合）；2.5、至此，编码器将所有信息整合为完整的留言信号，包括：留言ID、留言标题、留言内容、作者ID、创建时间、更新时间。整合过程不产生新信息内容（标题和内容保持不变），只添加派生元数据（ID和时间）"
+		},
+		{
+			"name": "删除留言",
+			"sources": [
+				"作者",
+				"time",
+				"identity"
+			],
+			"channel": "留言",
+			"logic": "1、信号源产生原始信息：1.1、信源[作者]：产生删除目标信息，即待删除的留言ID。这是删除操作的核心标识；1.2、信源[时间]：产生时间戳信息，记录删除操作的发生时刻；1.3、信源[身份ID]：产生操作者身份验证信息，用于权限校验；1.4、这些信号源共同输出原始信息：目标留言ID、操作时间戳、操作者ID。2、编码器处理与编码：2.1、编码器接收原始信息（留言ID、时间戳、操作者ID）；2.2、编码器执行安全校验：2.2.1、验证留言ID有效性（存在性校验），2.2.2、校验操作者权限（身份ID与留言所有者的匹配性）；2.3、编码器附加时间信息：将时间戳绑定为删除操作时间，将留言删除"
+		},
+		{
+			"name": "修改留言",
+			"sources": [
+				"作者",
+				"time",
+				"identity"
+			],
+			"channel": "留言",
+			"logic": "1、信号源产生原始信息：1.1、信源[作者]：产生修改后的留言标题和留言内容，这些是信息的主要内容；1.2、信源[time]：产生当前时间戳，专门用于更新更新时间（创建时间不变）；1.3、信源[identity]：产生作者ID，用于权限验证；1.4、此外，需要指定要修改的留言ID（从输入上下文获取，例如请求参数或数据库查询），作为信息的一部分。原始信息集合包括：留言ID、修改标题、修改内容、时间戳、作者ID。2、编码器处理与编码：2.1、编码器接收原始信息；2.2、校验信息内容：2.2.1、检查修改后的留言标题和留言内容是否非空，2.2.2、校验格式要求（标题长度不超过50字符，内容长度不超过10240字符）。如果校验失败，编码器丢弃信号或触发错误处理；2.3、验证权限：比较提供的作者ID与留言的原始作者ID（从存储中检索），如果匹配则继续，否则触发权限错误；2.4、更新时间：使用时间戳设置更新时间（创建时间保持不变）；2.5、留言ID保持不变，不生成新ID；2.6、整合为更新后的留言信号，包括：留言ID（不变）、留言标题（新）、留言内容（新）、留言者身份（不变）、创建时间（不变）、更新时间（新）。整合过程仅更新可变字段（标题和内容），并派生更新时间元数据。"
+		},
+		{
+			"name": "新增回复",
+			"sources": [
+				"所有人",
+				"time",
+				"identity"
+			],
+			"channel": "回复",
+			"logic": "1、信号源产生原始信息：1.1、信源[所有人]：产生回复的核心信息，即留言ID和回复内容。留言ID标识要回复的目标留言，回复内容是回复的文本内容；1.2、信源[时间]：产生时间信息（如当前时间戳），用于后续的创建时间和更新时间。它不产生独立于回复的信息，而是作为回复的附带属性；1.3、信源[身份]：产生身份信号（如回复者ID），用于标识回复者。它也不产生独立信息，而是作为回复的附带属性；1.4、这些信号源共同作用，输出一个原始信息集合，包括：留言ID、回复内容、时间戳、回复者ID。但此时，回复ID尚未生成，原始信息不完整。2、编码器处理与编码：2.1、编码器接收来自信号源的原始信息（留言ID、回复内容、时间戳、回复者ID）；2.2、编码器首先校验信息内容：2.2.1、检查留言ID是否存在（非空且有效，例如对应数据库中的留言记录），回复内容是否存在（非空）；2.2.2、校验格式要求：回复内容长度不超过10240字符（或其他系统限制）。如果校验失败，编码器可能丢弃信号或触发错误处理；2.3、编码器接受时间信号，并将其附加给回复：使用时间戳设置创建时间（通常为当前时间），并初始化更新时间（通常与创建时间相同）；2.4、编码器根据留言ID、时间（时间戳）和身份（回复者ID）生成一个全局唯一的回复ID（例如，通过哈希函数或序列化组合确保唯一性）；2.5、至此，编码器将所有组件整合为完整的回复信号，包括：回复ID、留言ID、回复内容、回复者ID、创建时间、更新时间。整合过程不产生新信息内容（回复内容保持不变），只添加派生元数据（ID和时间）"
+		},
+		{
+			"name": "更新回复",
+			"sources": [
+				"回复作者",
+				"time",
+				"identity"
+			],
+			"channel": "回复",
+			"logic": "1、信号源产生原始信息组件：1.1、信源[回复作者]：产生更新后的回复内容信息，这是信息的主要内容；1.2、信源[time]：产生当前时间戳信息，专门用于设置更新时间（创建时间保持不变）；1.3、信源[identity]：产生身份信息（如回复者ID），用于后续的权限验证和记录更新者；这些信号源共同作用，输出一个原始信息集合，包括：更新后的回复内容、时间戳、回复者ID。但此时，回复ID尚未指定，原始信息不完整，需要外部标识要更新的回复。2、编码器处理与编码：2.1、编码器接收来自信号源的原始信息（更新后的回复内容、时间戳、身份ID），以及要更新的回复标识（如回复ID，通常从上下文或输入获取）；2.2、编码器首先校验信息内容：2.2.1、检查更新后的回复内容是否存在（非空），2.2.2、校验格式要求：内容长度不超过10240字符（参考回复结构，留言ID无需校验，因其不变）。如果校验失败，编码器可能丢弃信息或触发错误处理；2.3、编码器使用身份信号验证更新权限：检查提供的身份ID是否匹配现有回复的回复者身份或具有更新权限。如果验证失败，触发错误处理；2.4、编码器接受时间信号，并将其用于设置更新时间（创建时间保持原值，不修改）；2.5、编码器更新回复信号：修改回复内容为新内容，并设置新更新时间；2.6、至此，编码器将所有组件整合为完整的更新后回复信号，包括：回复ID（原值不变）、留言ID（原值不变）、回复内容（更新后）、回复者身份（原值不变，但用于记录）、创建时间（原值不变）、更新时间（新值）。整合过程不产生新信息内容（只修改回复内容和派生元数据如更新时间）"
+		},
+		{
+			"name": "删除回复",
+			"sources": [
+				"回复作者",
+				"time",
+				"identity"
+			],
+			"channel": "回复",
+			"logic": "1、信号源产生原始信息：1.1、信源[回复作者]：产生删除请求信息（如操作指令），表示删除意图而非内容信号；1.2、信源[time]：产生时间戳信息，用于记录删除操作的发生时间；1.3、信源[identity]：产生身份信息（如操作者ID），用于权限验证；这些信号源共同作用，输出原始信号集合：删除请求、时间戳、操作者ID。但回复ID未在信号源中产生，需外部指定目标。2、编码器处理与编码：2.1、编码器接收原始信息（删除请求、时间戳、操作者ID）及目标回复ID（从上下文获取）；2.2、编码器校验目标有效性：2.2.1、检查目标回复ID是否存在且有效；2.3、编码器使用身份信号验证权限：检查操作者ID是否匹配原回复的回复者身份或具有删除权限；2.4、编码器执行删除操作：2.4.1、移除目标回复数据；2.5、生成删除确认信号，包含：目标回复ID、操作者ID、删除时间。此信号不保留回复内容，仅记录删除事件元数据"
+		}
+	],
+	"decoders": [{
+			"name": "查看留言详情",
+			"channels": [
+				"留言",
+				"回复"
+			],
+			"sinks": [
+				"所有人"
+			],
+			"logic": "信宿[所有人]，通过当前解码器，根据channel的留言的具体留言ID，作为输入从留言信道中拉取留言的标题、内容、创建时间、更新时间、作者ID等信号，同时从回复的信道中拉取该留言ID下的所有回复，并解码为所有人可以看的懂的信息"
+		},
+		{
+			"name": "查看留言列表",
+			"channels": [
+				"留言"
+			],
+			"sinks": [
+				"所有人"
+			],
+			"logic": "信宿[所有人]，通过当前解码器，输入的pageSize和pageNumber，作为范围输入，同时通过输入keyWord作为标题的模糊搜索，从留言信道中拉取留言的ID、留言的标题、留言的创建时间和留言的更新时间，并根据更新时间进行倒排，同时返回留言的总条数"
+		}
+	]
+}
+```
+
+### 1.3 已有能力定义
+
+已有能力是一个JSON数组，数组的元素是能力单元，其详细表达如下：
+
+- name：能力单元名称
+- description：能力单元描述
+- type：能力类型，分为两类：Write和Read。Write是指：该能力单元已经完成了数据写入的功能，在设计函数时无需考虑这一部分，只要考虑如何使用好`dataStruct`描述的数据；Read是指：该能力单元已经完成了数据读取的功能，在设计函数时无需考虑这一部分，只要考虑如何写入`dataStruct`描述的数据。
+- dataStruct: 能力单元的数据结构，是一个SQL表结构
+
+例如：用户登录和注册的能力单元可能是：
+
+```json
+[
+    {
+        "name": "用户注册和登录",
+        "description": "该能力已经打通了第三方SSO系统，用户的基础信息都会被存储到dataStruct字段中的 `t_user_info`中，所以在设计函数时无需考虑登录、注册的能力，只需按需设计如何消费好  `t_user_info` 中的数据就好。API的入参默认携带用户标识helixUserId，不需要调用方传入，会在调用后续入口函数执行业务逻辑前，请求会经过身份中间件校验，获取用户ID并赋值helixUserId。",
+        "type": "Write",
+        "dataStruct": [
+            "CREATE TABLE `t_user_info` (
+   `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+   `helix_user_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Helix用户ID',
+   `user_name` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户名',
+   `alias_name` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '别名',
+   `profile_url` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '头像链接',
+   `phone_num` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '手机号',
+   `email` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '邮箱',
+   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `uk_userId` (`helix_user_id`),
+   KEY `key_userName` (`user_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='应用软件用户信息表';"
+        ]
     }
+]
+```
 
-    /**
-     * 从文件加载用户数据
-     * @param filePath 文件路径
-     * @return 用户数据行列表
-     * @throws IOException 文件读取异常
-     */
-    private static List<String> loadUserData(String filePath) throws IOException {
-        List<String> lines = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        GenerateData.class.getClassLoader().getResourceAsStream(filePath)))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                lines.add(line);
+### 1.4 函数结构定义
+
+函数结构定义如下：
+一个JSON，其详细表达如下：
+
+- name：函数名。字符串类型
+- description：函数功能描述。字符串类型
+- type：固定为：`custom`
+- nameSpace：固定为：空字符串。
+- inputParam：函数入参描述。JSON数组类型
+- outputParam：函数出参描述。JSON数组类型(outputParam必须包含`ErrorInfo`类型的参数，`ErrorInfo`是一个`complexStruct`类型，包含`code`和`msg`两个字段，如果请求没有报错，code为"0"，msg为"success")
+  + 其中 inputParam和outputParam中的每个元素都是一个JSON对象，对象的结构如下：
+    * name：参数名。字符串类型
+    * type：参数类型，int、string、float、bool、double等基础类型，或者自定义的复杂数据结构类型。字符串枚举类型
+    * isArray:：是否是数组。布尔类型
+    * required：是否必填/必返回。布尔类型
+    * description：参数描述。字符串类型
+    * enum：枚举值，按需填写，如果该参数是枚举类型，则需要填写。按需类型的数组
+- modules：固定为空数组
+- complexStruct：实现该目标函数过程中使用到的非int、string、float、bool、double等基础类型之外的复杂数据结构类型，JSON类型。
+  + 其中`complexStruct`中的JSON，每个Key值代表的是复杂结构名称，该Key的Value是一个JSON数组，代表该类型的字段描述，Value数组中的对象结构如下：
+    * name：数据结构名。字符串类型
+    * type：数据结构类型，int、string、float、bool、double等基础类型，或者自定义的复杂数据结构类型。字符串枚举类型
+    * isArray:是否数组。布尔类型
+    * required：是否必填/必返回。布尔类型
+    * description：参数描述。字符串类型
+    * enum：枚举值，按需填写，如果该参数是枚举类型，则需要填写，否则为空数组。按需类型的数组
+- dataUnit：目标函数操作的数据元，一定从[软件框架]的`channels`选取，该字段一定有值，可能是一个也可能是多个，求实现目标函数的过程中详细分析后获得。字符串枚举类型
+
+例如：一个包含功能为拉取指定条数包括点赞数的文章列表的函数数据结构输出可能是：
+
+```json
+{
+    "name": "getArticleListWithLikes",
+    "description": "获取指定数量包含点赞数的文章列表",
+    "type": "custom",
+    "nameSpace": "",
+    "dataUnit": [
+        "文章",
+        "点赞"
+    ],
+    "inputParam": [
+        {
+            "name": "count",
+            "type": "int",
+            "isArray": false,
+            "required": true,
+            "description": "需要获取的文章数量",
+            "enum": []
+        },
+        {
+            "name": "helixUserId",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "用户ID",
+            "enum": []
+        }
+    ],
+    "outputParam": [
+        {
+            "name": "articles",
+            "type": "Article",
+            "isArray": true,
+            "required": true,
+            "description": "包含点赞数的文章列表",
+            "enum": []
+        },
+        {
+            "name": "errorInfo",
+            "type": "ErrorInfo",
+            "isArray": false,
+            "required": true,
+            "description": "错误信息",
+            "enum": []
+        }
+    ],
+    "modules": [],
+    "complexStruct": {
+        "ArticleBase": [
+            {
+                "name": "id",
+                "type": "int",
+                "isArray": false,
+                "required": true,
+                "description": "文章唯一标识",
+                "enum": []
+            },
+            {
+                "name": "title",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "文章标题",
+                "enum": []
+            },
+            {
+                "name": "content",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "文章内容摘要",
+                "enum": []
+            },
+            {
+                "name": "publishTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "发布时间（ISO格式）",
+                "enum": []
+            },
+            {
+                "name": "author",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "作者名称",
+                "enum": []
             }
-        }
-        return lines;
-    }
-
-    /**
-     * 从文件加载基站数据并进行初步处理
-     * @param filePath 文件路径
-     * @return 基站信息列表
-     * @throws IOException 文件读取异常
-     */
-    private static List<CellInfo> loadCellData(String filePath) throws IOException {
-        return loadUserData(filePath).stream()
-                .map(line -> {
-                    String[] parts = line.split("\\|");
-                    CellInfo cell = new CellInfo();
-                    cell.cell = parts[0];    // 基站ID
-                    cell.lat = parts[1];     // 纬度
-                    cell.lot = parts[2];     // 经度
-                    return cell;
-                })
-                .sorted(Comparator.comparingLong(c -> Long.parseLong(c.cell))) // 按基站ID排序
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 为基站分配索引
-     * @param cells 基站列表
-     */
-    private static void indexCellLocations(List<CellInfo> cells) {
-        for (int i = 0; i < cells.size(); i++) {
-            cells.get(i).index = i;
-        }
-    }
-
-    /**
-     * 创建基站索引到基站对象的映射
-     * @param cells 基站列表
-     * @return 映射表
-     */
-    private static Map<Integer, CellInfo> createIndexToCellMap(List<CellInfo> cells) {
-        return cells.stream()
-                .collect(Collectors.toMap(c -> c.index, c -> c));
-    }
-
-    /**
-     * 创建基站ID到索引的映射
-     * @param cells 基站列表
-     * @return 映射表
-     */
-    private static Map<String, Integer> createCellToIndexMap(List<CellInfo> cells) {
-        return cells.stream()
-                .collect(Collectors.toMap(c -> c.cell, c -> c.index));
-    }
-
-    /**
-     * 生成模拟数据的主循环
-     * @param userInfo 用户信息列表
-     * @param indexToCell 基站索引映射
-     * @param cellToIndex 基站ID映射
-     * @param userCurrentCell 记录用户当前位置
-     * @throws InterruptedException 线程中断异常
-     */
-    private static void generateSimulationData(List<String> userInfo,
-                                               Map<Integer, CellInfo> indexToCell,
-                                               Map<String, Integer> cellToIndex,
-                                               Map<String, String> userCurrentCell) throws InterruptedException {
-
-        Random random = new Random();
-
-        // 持续生成数据直到程序被终止
-        while (true) {
-            // 随机选择一个用户
-            String randomUser = userInfo.get(random.nextInt(userInfo.size()));
-            String[] userParts = randomUser.split("\\|");
-            String imsi = userParts[0];      // 用户IMSI
-            String gender = userParts[1];    // 性别 (0:未知,1:男,2:女)
-            String age = userParts[2];       // 年龄
-
-            // 获取用户当前所在的基站索引，如果不存在则随机分配一个
-            int lastIndex = cellToIndex.getOrDefault(
-                    userCurrentCell.get(imsi),
-                    random.nextInt(indexToCell.size()));
-
-            // 生成移动步长 (-3到3之间的随机数)
-            int step = random.nextInt(7) - 3;
-
-            // 只有当步长为正时才移动
-            if (step > 0) {
-                // 计算可能的移动方向
-                int[] possibleMoves = {
-                        lastIndex + step < indexToCell.size() ? lastIndex + step : lastIndex - step,
-                        lastIndex - step > 0 ? lastIndex - step : lastIndex + step
-                };
-
-                // 随机选择一个方向移动
-                int nextIndex = possibleMoves[random.nextInt(2)];
-                CellInfo nextCell = indexToCell.get(nextIndex);
-
-                // 更新用户当前位置
-                userCurrentCell.put(imsi, nextCell.cell);
-
-                // 生成数据记录
-                long currentTime = System.currentTimeMillis();
-                String record = String.join("|",
-                        imsi,            // 用户ID
-                        nextCell.cell,    // 基站ID
-                        nextCell.lat,     // 纬度
-                        nextCell.lot,     // 经度
-                        String.valueOf(currentTime), // 时间戳
-                        gender,           // 性别
-                        age               // 年龄
-                );
-
-                // 输出生成的记录
-                System.out.println(record);
+        ],
+        "LikeRecord": [
+            {
+                "name": "articleId",
+                "type": "int",
+                "isArray": false,
+                "required": true,
+                "description": "关联的文章ID",
+                "enum": []
+            },
+            {
+                "name": "count",
+                "type": "int",
+                "isArray": false,
+                "required": true,
+                "description": "点赞总数",
+                "enum": []
             }
-
-            // 暂停100毫秒模拟实时数据
-            Thread.sleep(100);
-        }
+        ],
+        "Article": [
+            {
+                "name": "baseInfo",
+                "type": "ArticleBase",
+                "isArray": false,
+                "required": true,
+                "description": "基础信息",
+                "enum": []
+            },
+            {
+                "name": "likes",
+                "type": "LikeRecord",
+                "isArray": false,
+                "required": true,
+                "description": "点赞信息",
+                "enum": []
+            }
+        ],
+        "ErrorInfo": [
+            {
+                "name": "code",
+                "type": "string",
+                "required": true,
+                "description": "错误码（如：INVALID_PARAM, DB_ERROR；如果没有错误，则返回0）",
+                "enum": []
+            },
+            {
+                "name": "msg",
+                "type": "string",
+                "required": true,
+                "description": "错误信息，如果没有错误，则返回success",
+                "enum": []
+            }
+        ]
     }
 }
+```
 
-/**
- * 基站信息类，存储单个基站的数据
- */
-class CellInfo {
-    public String cell;  // 基站ID
-    public String lat;   // 纬度
-    public String lot;   // 经度
-    public int index;    // 索引位置
+### 1.5函数设计指导原则
 
-    /**
-     * 默认构造函数
-     */
-    public CellInfo() {
-    }
+- 原则1：根据用户诉求定义、软件框架定义和已有能力的定义，阅读和理解用户输入的诉求、软件框架和已有能力，设计函数
+- 原则2：函数设计时，需要考虑函数的可读性、可维护性、可扩展性、安全性，函数的可读性是指：函数名、函数入参、函数出参、函数内部逻辑的描述是否清晰；函数的可维护性是指：函数是否容易修改、扩展；函数的可扩展性是指：函数是否容易添加新的功能；函数的安全性是指：在设计入参时，有些是不可以直接传入的，需要经过中间件处理，例如：用户ID、用户角色等，需要经过身份和权限中间件校验后才能传入，否则会报错，所以设计用户ID和用户角色的一律不涉及入参
+- 原则3：需要根据用户的诉求和软件框架，按需分析如何使用好已有能力（如果没有必要使用，也可以不使用），使用已有能力时，仅需要考虑如何使用好已有能力的数据结构，根据已有的能力类型判断，Write类型的已有能力无需考虑如何写入已有能力的数据结构，Read类型的已有能力无需考虑如何读取已有能力的数据结构
+- 原则4：严格按照函数的结构定义进行输出
 
-    /**
-     * 带索引的构造函数
-     * @param index 基站索引
-     */
-    public CellInfo(int index) {
-        this.index = index;
-    }
 
-    /**
-     * 转换为字符串表示
-     * @return 格式化的基站信息
-     */
-    @Override
-    public String toString() {
-        return String.join("|", cell, lat, lot, String.valueOf(index));
-    }
-}
+## 二、协议检查、相互借鉴和优化出入参原则
 
-这是我们模拟生成用户行为数据的文件：
-package core
+- 结合用户输入的完整的诉求、诉求对应的软件框架、已有能力（如有）、软件框架和相互借鉴的函数，检查函数是否符合[函数设计原则]、[函数结构定义]，如不符合可以进行优化
+- 相互借鉴的函数全部或者部分操作了相同的数据元，所以可以在这里相互借鉴，比如字段定义是否明确、字段是否有冗余、字段是否缺失、字段类型是否合理、字段拼写是否正确
+- 函数结构是否完备，比如是否满足入参、出参、复杂数据结构等细节的要求
+- 函数名称不需要优化
+- 借鉴时, 若有借鉴两方的字段名字语义相同的, 应该偏向于采纳借鉴次数optimizeCount多的。例子有: user数据结构的id和userId、消息数据结构的msg和content。需要注意的是只有在语义相同的时候才有optimzeCount偏向, 在其他时候比如optimizeCount大, 但是借鉴过程中发现缺少某些字段的, 则应该借鉴完善, 而不偏向optimizeCount大的
 
-import com.clickhouse.client.ClickHouseDataType
-import com.clickhouse.client.data.ClickHouseBitmap
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.{IntegerType, StringType, StructType}
-import org.apache.spark.{SparkConf, SparkContext}
-import org.roaringbitmap.RoaringBitmap
-import utils.ClickhouseTool
+## 三、输出格式要求
 
-import java.util.Properties
-import scala.collection.mutable
+根据用户的输入, 检查、借鉴、优化出入参后进行输出, 输出要求是一个JSON格式数组, 包含所有优化后的函数列表, 无需额外的解释, 但是担心你没有完整输出
 
-/**
- * 用户画像位图生成器
- *
- * 功能：根据用户属性（性别、年龄）生成位图索引并存储到ClickHouse
- *
- * 位图类型定义：
- * | ID | 属性值 | 描述       |
- * |----|--------|------------|
- * | 1  | 1      | 男性用户位图 |
- * | 2  | 0      | 女性用户位图 |
- * | 3  | 10     | 10-20岁用户 |
- * | 4  | 20     | 20-40岁用户 |
- * | 5  | 40     | 40岁以上用户 |
- *
- * 输入数据：
- * 1. 用户基本信息（HDFS：/data/userInfo，格式：IMSI|性别|年龄）
- * 2. 用户位图索引表（ClickHouse：USER_INDEX）
- *
- * 输出数据：
- * 用户画像位图表（ClickHouse：TA_PORTRAIT_IMSI_BITMAP）
- */
-object CalUserPersonBitMap {
+## 任务要求
 
-  /**
-   * 主入口方法
-   * @param args 命令行参数（未使用）
-   */
-  def main(args: Array[String]): Unit = {
-    // 1. 初始化Spark配置和会话
-    val conf = new SparkConf()
-      .setMaster("local")  // 本地模式（生产环境应移除）
-    val sparkSession = SparkSession.builder()
-      .appName("CalUserPersonBitMap")
-      .config(conf)
-      .getOrCreate()
+- 第一步：根据用户诉求、软件框架定义、已有能力定义、函数结构定义理解用户输入的诉求、软件框架、已有能力和函数结构
+- 第二步：协议检查、相互借鉴和优化出入参原则，对操作了相同数据元，待相互借鉴的函数进行优化
+- 第三步：严格按照输出格式要求进行输出
 
-    // 2. 定义用户信息数据结构
-    val userInfoStruct = new StructType()
-      .add("imsi", StringType)    // 用户唯一标识
-      .add("gender", StringType)  // 性别（0:女，1:男）
-      .add("age", IntegerType)    // 年龄
+## 任务
 
-    // 3. 加载用户信息数据
-    val userInfoDf = sparkSession.read
-      .format("csv")
-      .option("sep", "|")
-      .schema(userInfoStruct)
-      .load("hdfs://bigdata01:9000/data/userInfo")
+接下来用户的输入如下：
+[用户诉求]是：
 
-    // 4. 创建临时视图
-    userInfoDf.createOrReplaceTempView("user_info")
+```json
+生成一个日历工具，能新建日程、添加提醒
+```
 
-    // 5. 配置ClickHouse连接参数
-    val url = "jdbc:clickhouse://bigdata01:8123"
-    val prop = new Properties()
-    prop.setProperty("user", "default")
-    prop.setProperty("password", "clickhouse")
+根据[用户诉求]设计的[软件框架]是：
 
-    // 6. 加载用户位图索引数据
-    val userBitmapIndex = sparkSession.read
-      .jdbc(url, "USER_INDEX", prop)
-    userBitmapIndex.createOrReplaceTempView("user_index")
-
-    // 7. 定义SQL查询（生成用户画像位图）
-    val sql =
-      """
-        |-- 步骤1：预处理用户数据，添加年龄分段标记
-        |WITH tmp_res AS (
-        |  SELECT
-        |    ui.BITMAP_ID,
-        |    gender,
-        |    age_flag
-        |  FROM (
-        |    SELECT
-        |      imsi,
-        |      gender,
-        |      CASE
-        |        WHEN (age >= 10 AND age < 20) THEN '10'
-        |        WHEN (age >= 20 AND age < 40) THEN '20'
-        |        WHEN (age >= 40) THEN '40'
-        |      END AS age_flag
-        |    FROM user_info
-        |    WHERE age >= 10  -- 只处理10岁以上的用户
-        |  ) AS tmp
-        |  JOIN user_index AS ui ON tmp.imsi = ui.IMSI
-        |)
-        |
-        |-- 步骤2：生成性别位图（男性/女性）
-        |SELECT
-        |  CASE
-        |    WHEN gender = '1' THEN 1
-        |    WHEN gender = '0' THEN 2
-        |  END AS PORTRAIT_ID,
-        |  gender AS PORTRAIT_VALUE,
-        |  CASE
-        |    WHEN gender = '1' THEN '男性'
-        |    WHEN gender = '0' THEN '女性'
-        |  END AS COMMENT,
-        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
-        |FROM tmp_res
-        |GROUP BY gender
-        |
-        |UNION
-        |
-        |-- 步骤3：生成年龄段位图
-        |SELECT
-        |  CASE
-        |    WHEN age_flag = '10' THEN 3
-        |    WHEN age_flag = '20' THEN 4
-        |    WHEN age_flag = '40' THEN 5
-        |  END AS PORTRAIT_ID,
-        |  age_flag AS PORTRAIT_VALUE,
-        |  CASE
-        |    WHEN age_flag = '10' THEN '10-20岁'
-        |    WHEN age_flag = '20' THEN '20-40岁'
-        |    WHEN age_flag = '40' THEN '40岁以上'
-        |  END AS COMMENT,
-        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
-        |FROM tmp_res
-        |GROUP BY age_flag
-        |""".stripMargin
-
-    // 8. 执行查询并写入ClickHouse
-    sparkSession.sql(sql).rdd.foreachPartition { partition =>
-      // 获取ClickHouse连接（每个分区一个连接）
-      val conn = ClickhouseTool.getConn()
-
-      try {
-        // 处理当前分区的所有记录
-        partition.foreach { row =>
-          // 解析查询结果
-          val id = row.getAs[Int]("PORTRAIT_ID")          // 位图类型ID
-          val value = row.getAs[String]("PORTRAIT_VALUE") // 属性值
-          val comment = row.getAs[String]("COMMENT")       // 描述
-
-          // 创建位图并添加用户ID
-          val bitmap = new RoaringBitmap()
-          val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
-          bitArr.foreach { x =>
-            bitmap.add(x.intValue())
-          }
-
-          // 转换为ClickHouse位图格式
-          val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
-
-          // 准备并执行插入语句
-          val stmt = conn.prepareStatement(
-            """INSERT INTO TA_PORTRAIT_IMSI_BITMAP
-              |(PORTRAIT_ID, PORTRAIT_VALUE, PORTRAIT_BITMAP, COMMENT)
-              |VALUES (?, ?, ?, ?)""".stripMargin)
-
-          stmt.setInt(1, id)
-          stmt.setString(2, value)
-          stmt.setObject(3, ckBitmap)
-          stmt.setString(4, comment)
-          stmt.executeUpdate()
-          stmt.close()
+```json
+{
+    "sources": [
+        {
+            "name": "用户",
+            "kind": "human"
+        },
+        {
+            "name": "系统管理员",
+            "kind": "human"
+        },
+        {
+            "name": "time",
+            "kind": "system"
+        },
+        {
+            "name": "identity",
+            "kind": "system"
         }
-      } finally {
-        // 确保连接关闭
-        conn.close()
-      }
-    }
+    ],
+    "sinks": [
+        {
+            "name": "用户"
+        },
+        {
+            "name": "系统管理员"
+        }
+    ],
+    "channels": [
+        {
+            "name": "日程",
+            "humanSignal": [
+                {
+                    "name": "日程标题"
+                },
+                {
+                    "name": "日程内容"
+                },
+                {
+                    "name": "开始时间"
+                },
+                {
+                    "name": "结束时间"
+                },
+                {
+                    "name": "提醒时间"
+                }
+            ],
+            "systemSignal": [
+                {
+                    "name": "日程ID"
+                },
+                {
+                    "name": "创建者身份"
+                },
+                {
+                    "name": "创建时间"
+                },
+                {
+                    "name": "更新时间"
+                },
+                {
+                    "name": "提醒状态"
+                }
+            ]
+        }
+    ],
+    "encoders": [
+        {
+            "name": "新建日程",
+            "sources": [
+                "用户",
+                "time",
+                "identity"
+            ],
+            "channel": "日程",
+            "logic": "1. 信源产生原始信息：用户提供日程标题、内容、开始时间、结束时间和提醒时间；系统时间提供当前时间戳；身份系统提供用户ID。2. 编码器处理：校验必填字段（标题、开始时间）；生成唯一日程ID（基于时间戳和用户ID哈希）；初始化创建时间和更新时间（均为当前时间）；设置提醒状态为“未触发”。整合信号：日程ID、标题、内容、开始/结束/提醒时间、创建者身份、创建/更新时间、提醒状态。"
+        },
+        {
+            "name": "更新日程",
+            "sources": [
+                "用户",
+                "系统管理员",
+                "time",
+                "identity"
+            ],
+            "channel": "日程",
+            "logic": "1. 信源产生原始信息：用户或管理员提供待更新日程ID及修改字段（标题/内容/时间等）；系统时间提供新时间戳；身份系统提供操作者ID。2. 编码器处理：校验日程ID有效性；验证操作权限（操作者需为创建者或管理员）；更新字段并重设更新时间；若提醒时间变更则重置提醒状态为“未触发”。输出信号：更新后的日程标题、内容、时间等字段及新更新时间。"
+        },
+        {
+            "name": "删除日程",
+            "sources": [
+                "用户",
+                "系统管理员",
+                "time",
+                "identity"
+            ],
+            "channel": "日程",
+            "logic": "1. 信源产生原始信息：用户或管理员提供目标日程ID；身份系统提供操作者ID；系统时间记录操作时间戳。2. 编码器处理：校验日程ID有效性；验证操作权限（操作者需为创建者或管理员）；从信道中移除目标日程信号；生成删除日志信号（含日程ID、操作者ID、删除时间）。"
+        }
+    ],
+    "decoders": [
+        {
+            "name": "查看日程列表",
+            "channels": [
+                "日程"
+            ],
+            "sinks": [
+                "用户",
+                "系统管理员"
+            ],
+            "logic": "信宿（用户或管理员）输入时间范围（如本周/本月），解码器从日程信道中筛选匹配开始时间的信号，返回摘要列表（日程ID、标题、开始时间、提醒状态），按开始时间升序排序。"
+        },
+        {
+            "name": "查看日程详情",
+            "channels": [
+                "日程"
+            ],
+            "sinks": [
+                "用户",
+                "系统管理员"
+            ],
+            "logic": "信宿（用户或管理员）提供日程ID，解码器从日程信道中提取完整信号（标题、内容、开始/结束/提醒时间、创建者、创建/更新时间、提醒状态），验证查看权限（仅创建者和管理员可访问）后返回解码信息。"
+        }
+    ]
+}
+```
 
-    // 9. 停止Spark会话
-    sparkSession.stop()
+[已有能力]是：
+
+```json
+[{"name":"用户注册和登录","description":"该能力已经打通了第三方SSO系统，用户的基础信息都会被存储到dataStruct字段中的 `t_user_info`中，所以在设计函数时无需考虑登录、注册的能力，只需按需设计如何消费好  `t_user_info` 中的数据就好。API的入参默认携带用户标识helixUserId，不需要调用方传入，会在调用后续入口函数执行业务逻辑前，请求会经过身份中间件校验，获取用户ID并赋值helixUserId。","type":"Write","dataStruct":["CREATE TABLE t_user_info (\n   id bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',\n   helix_user_id varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Helix用户ID',\n   user_name varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户名',\n   alias_name varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_c NULL DEFAULT '' COMMENT '别名',\n   profile_url varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '头像链接',\n   phone_num varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '手机号',\n   email varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '邮箱',\n   create_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',\n   update_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',\n   PRIMARY KEY (id),\n   UNIQUE KEY uk_userId (helix_user_id),\n  KEY key_userName (user_name)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='应用软件用户信息表';"]}]
+```
+
+操作了相同数据元，待相互借鉴的函数列表是：
+
+```json
+[
+  {
+    "name": "getScheduleList",
+    "optimizeCount": "1",
+    "description": "根据时间范围获取日程摘要列表，返回日程ID、标题、开始时间和提醒状态，按开始时间升序排序",
+    "nameSpace": "",
+    "type": "custom",
+    "dataUnit": [
+        "日程"
+    ],
+    "inputParam": [
+        {
+            "name": "timeRange",
+            "type": "TimeRange",
+            "isArray": false,
+            "required": true,
+            "description": "查询的时间范围",
+            "enum": [
+
+            ]
+        }
+    ],
+    "outputParam": [
+        {
+            "name": "schedules",
+            "type": "Schedule",
+            "isArray": true,
+            "required": true,
+            "description": "日程摘要列表",
+            "enum": [
+
+            ]
+        },
+        {
+            "name": "errorInfo",
+            "type": "ErrorInfo",
+            "isArray": false,
+            "required": true,
+            "description": "错误信息",
+            "enum": [
+
+            ]
+        }
+    ],
+    "modules": [
+    ],
+    "complexStruct": {
+        "ErrorInfo": [
+            {
+                "name": "code",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "错误码(0表示成功)",
+                "enum": [
+
+                ]
+            },
+            {
+                "name": "msg",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "错误信息",
+                "enum": [
+
+                ]
+            }
+        ],
+        "Schedule": [
+            {
+                "name": "id",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程唯一标识",
+                "enum": [
+
+                ]
+            },
+            {
+                "name": "title",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程标题",
+                "enum": [
+
+                ]
+            },
+            {
+                "name": "startTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程开始时间(ISO8601格式)",
+                "enum": [
+
+                ]
+            },
+            {
+                "name": "reminderStatus",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "提醒状态",
+                "enum": [
+                    "未触发",
+                    "已触发",
+                    "已关闭"
+                ]
+            }
+        ],
+        "TimeRange": [
+            {
+                "name": "rangeType",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "时间范围类型",
+                "enum": [
+                    "today",
+                    "this_week",
+                    "this_month",
+                    "next_week",
+                    "next_month"
+                ]
+            },
+            {
+                "name": "customStart",
+                "type": "string",
+                "isArray": false,
+                "required": false,
+                "description": "自定义开始时间(ISO8601格式)",
+                "enum": [
+
+                ]
+            },
+            {
+                "name": "customEnd",
+                "type": "string",
+                "isArray": false,
+                "required": false,
+                "description": "自定义结束时间(ISO8601格式)",
+                "enum": [
+
+                ]
+            }
+        ]
+    }
+  },
+  {
+    "name": "updateSchedule",
+    "optimizeCount":"0",
+    "description": "更新指定日程的信息。实现逻辑：1. 校验输入参数有效性 2. 获取当前用户ID 3. 查询现有日程数据 4. 验证操作权限 5. 构建更新数据对象（自动重置提醒状态）6. 执行数据库更新 7. 返回更新后的日程或错误信息",
+    "type": "custom",
+    "nameSpace": "",
+    "dataUnit": ["日程"],
+    "inputParam": [
+        {
+            "name": "scheduleId",
+            "type": "string",
+            "isArray": false,
+            "required": true,
+            "description": "待更新的日程唯一标识",
+            "enum": []
+        },
+        {
+            "name": "title",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "新的日程标题（可选）",
+            "enum": []
+        },
+        {
+            "name": "content",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "新的日程内容（可选）",
+            "enum": []
+        },
+        {
+            "name": "startTime",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "新的开始时间，ISO 8601格式（可选）",
+            "enum": []
+        },
+        {
+            "name": "endTime",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "新的结束时间，ISO 8601格式（可选）",
+            "enum": []
+        },
+        {
+            "name": "remindTime",
+            "type": "string",
+            "isArray": false,
+            "required": false,
+            "description": "新的提醒时间，ISO 8601格式（可选）",
+            "enum": []
+        }
+    ],
+    "outputParam": [
+        {
+            "name": "updatedSchedule",
+            "type": "Schedule",
+            "isArray": false,
+            "required": false,
+            "description": "更新后的完整日程对象（仅在操作成功时返回）",
+            "enum": []
+        },
+        {
+            "name": "errorInfo",
+            "type": "ErrorInfo",
+            "isArray": false,
+            "required": true,
+            "description": "操作结果信息",
+            "enum": []
+        }
+    ],
+    "modules": [],
+    "complexStruct": {
+        "ErrorInfo": [
+            {
+                "name": "code",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "错误码（0=成功，INVALID_PARAM=参数无效，NOT_FOUND=数据不存在，PERMISSION_DENIED=无权限，DB_ERROR=数据库错误）",
+                "enum": ["0", "INVALID_PARAM", "NOT_FOUND", "PERMISSION_DENIED", "DB_ERROR"]
+            },
+            {
+                "name": "msg",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "错误详情描述",
+                "enum": []
+            }
+        ],
+        "Schedule": [
+            {
+                "name": "scheduleId",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程唯一标识",
+                "enum": []
+            },
+            {
+                "name": "title",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程标题",
+                "enum": []
+            },
+            {
+                "name": "scheduleContent",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "日程详细内容",
+                "enum": []
+            },
+            {
+                "name": "startTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "开始时间（ISO 8601格式）",
+                "enum": []
+            },
+            {
+                "name": "endTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "结束时间（ISO 8601格式）",
+                "enum": []
+            },
+            {
+                "name": "remindTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "提醒触发时间（ISO 8601格式）",
+                "enum": []
+            },
+            {
+                "name": "creatorId",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "创建者身份标识（对应t_user_info表中的helix_user_id）",
+                "enum": []
+            },
+            {
+                "name": "createTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "创建时间（ISO 8601格式）",
+                "enum": []
+            },
+            {
+                "name": "updateTime",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "最后更新时间（ISO 8601格式）",
+                "enum": []
+            },
+            {
+                "name": "remindStatus",
+                "type": "string",
+                "isArray": false,
+                "required": true,
+                "description": "提醒状态",
+                "enum": ["未触发", "已触发", "已关闭"]
+            }
+        ]
+    }
   }
-}
+]
+```
 
-这是我们生成用户位图相关数据结构的文件：
-package core
-
-import com.clickhouse.client.ClickHouseDataType
-import com.clickhouse.client.data.ClickHouseBitmap
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.{DoubleType, LongType, StringType, StructType}
-import org.roaringbitmap.RoaringBitmap
-import utils.ClickhouseTool
-
-import java.util.Properties
-import scala.collection.mutable
-
-/**
- * 区域用户停留计算类
- * 功能：计算用户在指定区域的停留情况，并生成位图索引存储到ClickHouse
- * 执行频率：每天执行一次
- *
- * 输入数据：
- * 1. XDR数据（包含用户IMSI、位置信息和时间戳）
- * 2. 区域-基站映射数据
- * 3. 用户位图索引数据（从ClickHouse读取）
- *
- * 输出数据：
- * 区域用户位图（存储到ClickHouse的REGION_ID_IMSI_BITMAP表）
- */
-object CalRegionUserStay {
-
-  /**
-   * 主方法，程序入口
-   * @param args 命令行参数
-   */
-  def main(args: Array[String]): Unit = {
-    // 1. 初始化Spark配置和会话
-    val conf = new SparkConf().setMaster("local")
-    val sparkSession = SparkSession.builder()
-      .appName("CalRegionUserStay")
-      .config(conf)
-      .getOrCreate()
-
-    // 2. 加载XDR数据（用户信令数据）
-    val xdrPath = "hdfs://bigdata01:9000/xdr/20230204/*"
-    val xdrStruct = new StructType()
-      .add("imsi", StringType)      // 用户IMSI
-      .add("laccell", StringType)   // 基站小区ID
-      .add("lat", DoubleType)       // 纬度
-      .add("lot", DoubleType)       // 经度
-      .add("startTime", LongType)   // 开始时间戳（毫秒）
-
-    val xdrDf = sparkSession.read
-      .format("csv")
-      .option("sep", "|")
-      .schema(xdrStruct)
-      .load(xdrPath)
-
-    // 3. 加载区域-基站映射数据
-    val regionCellPath = "hdfs://bigdata01:9000/data/regionCell"
-    val regionCellStruct = new StructType()
-      .add("regionId", StringType)  // 区域ID
-      .add("laccell", StringType)   // 基站小区ID
-
-    val regionCellDf = sparkSession.read
-      .format("csv")
-      .option("sep", "|")
-      .schema(regionCellStruct)
-      .load(regionCellPath)
-
-    // 4. 从ClickHouse加载用户位图索引数据
-    val url = "jdbc:clickhouse://bigdata01:8123"
-    val prop = new Properties()
-    prop.setProperty("user", "default")
-    prop.setProperty("password", "clickhouse")
-
-    val userBitmapIndex = sparkSession.read
-      .jdbc(url, "USER_INDEX", prop)
-
-    // 5. 创建临时视图以便SQL查询
-    xdrDf.createOrReplaceTempView("xdr")
-    regionCellDf.createOrReplaceTempView("region_cell")
-    userBitmapIndex.createOrReplaceTempView("user_index")
-
-    // 6. 定义SQL查询，计算区域用户停留情况
-    val sql =
-      """
-        |SELECT
-        |  tmp.regionId,
-        |  tmp.produce_hour,
-        |  COLLECT_SET(tmp.BITMAP_ID) AS bitmapIds
-        |FROM (
-        |  SELECT
-        |    b.regionId,
-        |    FROM_UNIXTIME(a.startTime/1000, 'yyyyMMddHH') AS produce_hour,
-        |    c.BITMAP_ID
-        |  FROM xdr a
-        |  LEFT JOIN region_cell b ON a.laccell = b.laccell
-        |  LEFT JOIN user_index c ON a.imsi = c.IMSI
-        |) AS tmp
-        |GROUP BY tmp.regionId, tmp.produce_hour
-        |""".stripMargin
-
-    // 7. 执行查询并将结果写入ClickHouse
-    sparkSession.sql(sql).rdd.foreachPartition { it =>
-      // 获取ClickHouse连接
-      val conn = ClickhouseTool.getConn()
-
-      // 处理每个分区的数据
-      it.foreach { row =>
-        val regionId = row.getAs[String]("regionId")          // 区域ID
-        val produceHour = row.getAs[String]("produce_hour")   // 时间小时（格式：yyyyMMddHH）
-        val bitmap = new RoaringBitmap()                      // 创建位图对象
-
-        // 获取位图ID数组并添加到RoaringBitmap中
-        val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
-        bitArr.foreach { x =>
-          bitmap.add(x.intValue())
-        }
-
-        // 将位图转换为ClickHouse格式
-        val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
-
-        // 准备并执行插入语句
-        val stmt = conn.prepareStatement(
-          "INSERT INTO REGION_ID_IMSI_BITMAP " +
-            "(REGION_ID, PRODUCE_HOUR, IMSI_INDEXES) VALUES (?, ?, ?)")
-
-        stmt.setString(1, regionId)
-        stmt.setString(2, produceHour)
-        stmt.setObject(3, ckBitmap)
-        stmt.executeUpdate()
-        stmt.close()
-      }
-
-      // 关闭连接
-      conn.close()
-    }
-
-    // 8. 停止Spark会话
-    sparkSession.stop()
-  }
-}
-
-package core
-
-import com.clickhouse.jdbc.ClickHouseDataSource
-import org.apache.spark.{SparkConf, SparkContext}
-import ru.yandex.clickhouse.settings.ClickHouseQueryParam
-import utils.ClickhouseTool
-
-import java.util.Properties
-
-/**
- * 用户位图索引生成器
- *
- * 功能：为每个用户生成唯一的位图ID并存储到ClickHouse的USER_INDEX表中
- *
- * 主要处理流程：
- * 1. 从HDFS加载用户信息数据（格式：IMSI|性别|年龄）
- * 2. 为每个用户分配唯一的数字ID（使用zipWithUniqueId）
- * 3. 将用户IMSI和对应的唯一ID写入ClickHouse
- *
- * 执行频率：根据用户信息变化情况定期执行
- *
- * 输出表结构（ClickHouse的USER_INDEX表）：
- * | 列名     | 类型    | 描述          |
- * |----------|---------|-------------|
- * | IMSI     | String  | 用户唯一标识    |
- * | BITMAP_ID| UInt64  | 用户位图唯一ID  |
- */
-object CalUserBitmapIndex {
-
-  /**
-   * 主入口方法
-   *
-   * @param args 命令行参数（未使用）
-   */
-  def main(args: Array[String]): Unit = {
-    // 1. 初始化Spark配置
-    val conf = new SparkConf()
-      .setAppName("CalUserBitmapIndex")  // 设置应用名称
-      .setMaster("local")                // 本地模式运行（生产环境应移除）
-
-    // 2. 创建SparkContext
-    val sc = new SparkContext(conf)
-
-    // 3. 从HDFS加载用户信息数据并处理
-    sc.textFile("hdfs://bigdata01:9000/data/userInfo")  // 读取HDFS文件
-      .map { line =>
-        // 3.1 解析每行数据，提取IMSI
-        val arr = line.split("\\|")  // 按竖线分割
-        arr(0)                       // 返回IMSI（第一列）
-      }
-      // 3.2 为每个用户分配唯一ID（延迟计算，不立即执行）
-      .zipWithUniqueId()
-      // 3.3 将结果写入ClickHouse（按分区并行处理）
-      .foreachPartition { partition =>
-        // 获取ClickHouse连接（每个分区一个连接）
-        val conn = ClickhouseTool.getConn()
-        val stmt = conn.createStatement()
-
-        try {
-          // 处理当前分区的所有记录
-          partition.foreach { case (imsi, id) =>
-            // 构造并执行插入语句
-            val sql =
-              s"""
-                INSERT INTO USER_INDEX
-                (IMSI, BITMAP_ID)
-                VALUES('${imsi}','${id}')
-              """
-            stmt.executeUpdate(sql)
-          }
-        } finally {
-          // 确保连接关闭
-          stmt.close()
-          conn.close()
-        }
-      }
-
-    // 4. 停止SparkContext释放资源
-    sc.stop()
-  }
-}
-
-package core
-
-import com.clickhouse.client.ClickHouseDataType
-import com.clickhouse.client.data.ClickHouseBitmap
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.{IntegerType, StringType, StructType}
-import org.apache.spark.{SparkConf, SparkContext}
-import org.roaringbitmap.RoaringBitmap
-import utils.ClickhouseTool
-
-import java.util.Properties
-import scala.collection.mutable
-
-/**
- * 用户画像位图生成器
- *
- * 功能：根据用户属性（性别、年龄）生成位图索引并存储到ClickHouse
- *
- * 位图类型定义：
- * | ID | 属性值 | 描述       |
- * |----|--------|------------|
- * | 1  | 1      | 男性用户位图 |
- * | 2  | 0      | 女性用户位图 |
- * | 3  | 10     | 10-20岁用户 |
- * | 4  | 20     | 20-40岁用户 |
- * | 5  | 40     | 40岁以上用户 |
- *
- * 输入数据：
- * 1. 用户基本信息（HDFS：/data/userInfo，格式：IMSI|性别|年龄）
- * 2. 用户位图索引表（ClickHouse：USER_INDEX）
- *
- * 输出数据：
- * 用户画像位图表（ClickHouse：TA_PORTRAIT_IMSI_BITMAP）
- */
-object CalUserPersonBitMap {
-
-  /**
-   * 主入口方法
-   * @param args 命令行参数（未使用）
-   */
-  def main(args: Array[String]): Unit = {
-    // 1. 初始化Spark配置和会话
-    val conf = new SparkConf()
-      .setMaster("local")  // 本地模式（生产环境应移除）
-    val sparkSession = SparkSession.builder()
-      .appName("CalUserPersonBitMap")
-      .config(conf)
-      .getOrCreate()
-
-    // 2. 定义用户信息数据结构
-    val userInfoStruct = new StructType()
-      .add("imsi", StringType)    // 用户唯一标识
-      .add("gender", StringType)  // 性别（0:女，1:男）
-      .add("age", IntegerType)    // 年龄
-
-    // 3. 加载用户信息数据
-    val userInfoDf = sparkSession.read
-      .format("csv")
-      .option("sep", "|")
-      .schema(userInfoStruct)
-      .load("hdfs://bigdata01:9000/data/userInfo")
-
-    // 4. 创建临时视图
-    userInfoDf.createOrReplaceTempView("user_info")
-
-    // 5. 配置ClickHouse连接参数
-    val url = "jdbc:clickhouse://bigdata01:8123"
-    val prop = new Properties()
-    prop.setProperty("user", "default")
-    prop.setProperty("password", "clickhouse")
-
-    // 6. 加载用户位图索引数据
-    val userBitmapIndex = sparkSession.read
-      .jdbc(url, "USER_INDEX", prop)
-    userBitmapIndex.createOrReplaceTempView("user_index")
-
-    // 7. 定义SQL查询（生成用户画像位图）
-    val sql =
-      """
-        |-- 步骤1：预处理用户数据，添加年龄分段标记
-        |WITH tmp_res AS (
-        |  SELECT
-        |    ui.BITMAP_ID,
-        |    gender,
-        |    age_flag
-        |  FROM (
-        |    SELECT
-        |      imsi,
-        |      gender,
-        |      CASE
-        |        WHEN (age >= 10 AND age < 20) THEN '10'
-        |        WHEN (age >= 20 AND age < 40) THEN '20'
-        |        WHEN (age >= 40) THEN '40'
-        |      END AS age_flag
-        |    FROM user_info
-        |    WHERE age >= 10  -- 只处理10岁以上的用户
-        |  ) AS tmp
-        |  JOIN user_index AS ui ON tmp.imsi = ui.IMSI
-        |)
-        |
-        |-- 步骤2：生成性别位图（男性/女性）
-        |SELECT
-        |  CASE
-        |    WHEN gender = '1' THEN 1
-        |    WHEN gender = '0' THEN 2
-        |  END AS PORTRAIT_ID,
-        |  gender AS PORTRAIT_VALUE,
-        |  CASE
-        |    WHEN gender = '1' THEN '男性'
-        |    WHEN gender = '0' THEN '女性'
-        |  END AS COMMENT,
-        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
-        |FROM tmp_res
-        |GROUP BY gender
-        |
-        |UNION
-        |
-        |-- 步骤3：生成年龄段位图
-        |SELECT
-        |  CASE
-        |    WHEN age_flag = '10' THEN 3
-        |    WHEN age_flag = '20' THEN 4
-        |    WHEN age_flag = '40' THEN 5
-        |  END AS PORTRAIT_ID,
-        |  age_flag AS PORTRAIT_VALUE,
-        |  CASE
-        |    WHEN age_flag = '10' THEN '10-20岁'
-        |    WHEN age_flag = '20' THEN '20-40岁'
-        |    WHEN age_flag = '40' THEN '40岁以上'
-        |  END AS COMMENT,
-        |  COLLECT_SET(BITMAP_ID) AS bitmapIds
-        |FROM tmp_res
-        |GROUP BY age_flag
-        |""".stripMargin
-
-    // 8. 执行查询并写入ClickHouse
-    sparkSession.sql(sql).rdd.foreachPartition { partition =>
-      // 获取ClickHouse连接（每个分区一个连接）
-      val conn = ClickhouseTool.getConn()
-
-      try {
-        // 处理当前分区的所有记录
-        partition.foreach { row =>
-          // 解析查询结果
-          val id = row.getAs[Int]("PORTRAIT_ID")          // 位图类型ID
-          val value = row.getAs[String]("PORTRAIT_VALUE") // 属性值
-          val comment = row.getAs[String]("COMMENT")       // 描述
-
-          // 创建位图并添加用户ID
-          val bitmap = new RoaringBitmap()
-          val bitArr = row.getAs[mutable.WrappedArray[java.math.BigDecimal]]("bitmapIds")
-          bitArr.foreach { x =>
-            bitmap.add(x.intValue())
-          }
-
-          // 转换为ClickHouse位图格式
-          val ckBitmap = ClickHouseBitmap.wrap(bitmap, ClickHouseDataType.UInt32)
-
-          // 准备并执行插入语句
-          val stmt = conn.prepareStatement(
-            """INSERT INTO TA_PORTRAIT_IMSI_BITMAP
-              |(PORTRAIT_ID, PORTRAIT_VALUE, PORTRAIT_BITMAP, COMMENT)
-              |VALUES (?, ?, ?, ?)""".stripMargin)
-
-          stmt.setInt(1, id)
-          stmt.setString(2, value)
-          stmt.setObject(3, ckBitmap)
-          stmt.setString(4, comment)
-          stmt.executeUpdate()
-          stmt.close()
-        }
-      } finally {
-        // 确保连接关闭
-        conn.close()
-      }
-    }
-
-    // 9. 停止Spark会话
-    sparkSession.stop()
-  }
-}
+请按照输出格式要求，完整的输出相互借鉴、优化后的函数
