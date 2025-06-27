@@ -304,6 +304,6 @@ public class Interview150ThreeEx {
      * 除自身以外的数组乘积
      */
     public int[] productExceptSelf(int[] nums) {
-        
+
     }
 }
