@@ -304,6 +304,32 @@ public class Interview150ThreeEx {
      * 除自身以外的数组乘积
      */
     public int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] prefix = new int[len];
+        int[] suffix = new int[len];
+        int t = 1;
+        for (int i = 0; i < len; i++) {
+            t *= nums[i];
+            prefix[i] = t;
+        }
+        t = 1;
+        for (int i = len - 1; i >= 0; i--) {
+            t *= nums[i];
+            suffix[i] = t;
+        }
+        int[] res = new int[len];
+        for (int i = 0; i < len; i++) {
+            int a = i - 1 < 0 ? 1 : prefix[i - 1];
+            int b = i + 1 >= len ? 1 : suffix[i + 1];
+            res[i] = a * b;
+        }
+        return res;
+    }
 
+    /**
+     * 加油站
+     */
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        
     }
 }
