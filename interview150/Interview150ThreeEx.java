@@ -1,13 +1,17 @@
 package interview150;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import javax.print.DocFlavor.INPUT_STREAM;
 
 public class Interview150ThreeEx {
 
@@ -396,18 +400,18 @@ public class Interview150ThreeEx {
         // 1 1 1 1 1
         // 1 2 1 1 1
         // 1 2 1 2 1
-        for(int i = 1; i < len; i++) {
+        for (int i = 1; i < len; i++) {
             if (ratings[i] > ratings[i - 1] && candy[i] < candy[i - 1] + 1) {
                 candy[i] = candy[i - 1] + 1;
             }
         }
-        for(int i = len - 2; i >= 0; i--) {
+        for (int i = len - 2; i >= 0; i--) {
             if (ratings[i] > ratings[i + 1] && candy[i] < candy[i + 1] + 1) {
                 candy[i] = candy[i + 1] + 1;
             }
         }
         int res = 0;
-        for(int c : candy) {
+        for (int c : candy) {
             res += c;
         }
         return res;
@@ -417,6 +421,58 @@ public class Interview150ThreeEx {
      * 接雨水
      */
     public int trap(int[] height) {
-        
+        Deque<Integer> stack = new ArrayDeque<>();
+        int res = 0;
+
+        // 4 2 0 3 2 5
+        // i
+        // 2 + 2 + 1 +
+        for (int i = 0; i < height.length; i++) {
+            while (!stack.isEmpty() && height[stack.peek()] < height[i]) {
+                int j = stack.pop();
+                int w = stack.isEmpty() ? 0 : (i - stack.peek() - 1);
+                int h = stack.isEmpty() ? 0 : (Math.min(height[stack.peek()], height[i]) - height[j]);
+                res += w * h;
+            }
+            stack.push(i);
+        }
+        return res;
+    }
+
+    /**
+     * 罗马数字转整数
+     * 没做出来
+     * 真是废物
+     */
+    public int romanToInt(String s) {
+        Map<String, Integer> map = Map.ofEntries(
+                Map.entry("I", 1),
+                Map.entry("V", 5),
+                Map.entry("X", 10),
+                Map.entry("L", 50),
+                Map.entry("C", 100),
+                Map.entry("D", 500),
+                Map.entry("M", 1000),
+                Map.entry("IV", 4),
+                Map.entry("IX", 9),
+                Map.entry("XL", 40),
+                Map.entry("XC", 90),
+                Map.entry("CD", 400),
+                Map.entry("CM", 900));
+        int start = 0;
+        int len = s.length();
+        int res = 0;
+        while (start < len) {
+            int end = start + 1;
+            int repl = start;
+            int val = 0;
+            while (end < len && map.containsKey(s.substring(repl, end))) {
+                val = map.get(s.substring(repl, end));
+                start = end;
+                end++;
+            }
+            res += val;
+        }
+        return res;
     }
 }
