@@ -484,6 +484,115 @@ public class Interview150ThreeEx {
      * 整数转罗马数字
      */
     public String intToRoman(int num) {
-        
+        Map<Integer, String> map = Map.ofEntries(
+                Map.entry(1, "I"),
+                Map.entry(5, "V"),
+                Map.entry(10, "X"),
+                Map.entry(50, "L"),
+                Map.entry(100, "C"),
+                Map.entry(500, "D"),
+                Map.entry(1000, "M"),
+                Map.entry(4, "IV"),
+                Map.entry(9, "IX"),
+                Map.entry(40, "XL"),
+                Map.entry(90, "XC"),
+                Map.entry(400, "CD"),
+                Map.entry(900, "CM"));
+        int[] candidate = new int[] {
+                1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
+        };
+        StringBuilder sb = new StringBuilder();
+        while (num > 0) {
+            for (int i = 0; i < candidate.length; i++) {
+                if (candidate[i] > num) {
+                    continue;
+                }
+                sb.append(map.get(candidate[i]));
+                num -= candidate[i];
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 最后一个单词的长度
+     */
+    public int lengthOfLastWord(String s) {
+        int len = s.length();
+        int tail = len - 1;
+        while (s.charAt(tail) == ' ') {
+            tail--;
+        }
+        // s.charAt(tail) != ' '
+        int head = tail;
+        while (head >= 0 && s.charAt(head) != ' ') {
+            head--;
+        }
+        return tail - (head + 1) + 1;
+    }
+
+    /**
+     * 最长公共前缀
+     */
+    public String longestCommonPrefix(String[] strs) {
+        int matchIdx = 0;
+        int max = Integer.MAX_VALUE;
+        for (String s : strs) {
+            max = Math.min(max, s.length());
+        }
+        while (matchIdx < max) {
+            char c = strs[0].charAt(matchIdx);
+            for (int i = 1; i < strs.length; i++) {
+                if (strs[i].charAt(matchIdx) != c) {
+                    return strs[0].substring(0, matchIdx);
+                }
+            }
+            matchIdx++;
+        }
+        return strs[0].substring(0, matchIdx);
+    }
+
+    /**
+     * 反转字符串中的单词
+     */
+    public String reverseWords(String s) {
+        if (s.isEmpty()) {
+            return s;
+        }
+        int fast = 0, slow = 0;
+        while (s.charAt(fast) == ' ') {
+            fast++;
+        }
+        slow = fast;
+        int len = s.length();
+        List<String> list = new ArrayList<>();
+        while (slow < len) {
+            while (fast < len && s.charAt(fast) != ' ') {
+                fast++;
+            }
+            // char(fast) == ' '
+            list.add(s.substring(slow, fast));
+            slow = fast;
+            while (slow < len && s.charAt(slow) == ' ') {
+                slow++;
+            }
+            fast = slow;
+            if (slow < len) {
+                list.add(" ");
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        list.stream().forEach(e -> {
+            sb.insert(0, e);
+        });
+        return sb.toString();
+    }
+
+    /**
+     * Z字形变换
+     */
+    public String convert(String s, int numRows) {
+
     }
 }
