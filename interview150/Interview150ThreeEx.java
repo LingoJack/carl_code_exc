@@ -591,8 +591,66 @@ public class Interview150ThreeEx {
 
     /**
      * Z字形变换
+     * 没做出来，已经忘记怎么做了
+     * 看了之前的解法，想改一下还不会做
+     * 这个numRows == 1的判断还是问了AI的
+     * 而且目前还不是最优解
      */
     public String convert(String s, int numRows) {
+        if (numRows == 1) {
+            return s;
+        }
+        int len = s.length();
+        Map<Integer, List<Character>> rowCharsMap = new HashMap<>();
+        boolean rowIncreasing = true;
+        int row = 0;
+        for (int i = 0; i < len; i++) {
+            List<Character> list = rowCharsMap.getOrDefault(row, new ArrayList<>());
+            list.add(s.charAt(i));
+            rowCharsMap.put(row, list);
+            if (row == numRows - 1) {
+                rowIncreasing = false;
+            } else if (row == 0) {
+                rowIncreasing = true;
+            }
+            row += rowIncreasing ? 1 : -1;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numRows; i++) {
+            List<Character> list = rowCharsMap.getOrDefault(i, new ArrayList<>());
+            for (char c : list) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 
+    /**
+     * Z字形变换
+     * 最优解
+     * TODO 待学习
+     */
+    public String convertAwesomeSol(String s, int numRows) {
+        if (numRows < 2) {
+            return s;
+        }
+        List<StringBuilder> rows = new ArrayList<>();
+        for (int i = 0; i < numRows; i++) {
+            rows.add(new StringBuilder());
+        }
+        int flag = -1;
+        int i = 0;
+        for (char c : s.toCharArray()) {
+            rows.get(i).append(c);
+            if (i == 0 || i == numRows - 1) {
+                flag = -flag;
+            }
+            i += flag;
+        }
+        StringBuilder res = new StringBuilder();
+        for (StringBuilder row : rows) {
+            res.append(row);
+        }
+        return res.toString();
     }
 }
