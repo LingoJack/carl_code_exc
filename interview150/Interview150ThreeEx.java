@@ -443,6 +443,9 @@ public class Interview150ThreeEx {
      * 罗马数字转整数
      * 没做出来
      * 真是废物
+     * 
+     * 经过漫长的调试，终于做出来了
+     * 不过还是太狼狈
      */
     public int romanToInt(String s) {
         Map<String, Integer> map = Map.ofEntries(
@@ -460,13 +463,14 @@ public class Interview150ThreeEx {
                 Map.entry("CD", 400),
                 Map.entry("CM", 900));
         int start = 0;
+        int end = start + 1;
         int len = s.length();
         int res = 0;
         while (start < len) {
-            int end = start + 1;
+            end = start + 1;
             int repl = start;
             int val = 0;
-            while (end < len && map.containsKey(s.substring(repl, end))) {
+            while (end <= len && map.containsKey(s.substring(repl, end))) {
                 val = map.get(s.substring(repl, end));
                 start = end;
                 end++;
@@ -474,5 +478,12 @@ public class Interview150ThreeEx {
             res += val;
         }
         return res;
+    }
+
+    /**
+     * 整数转罗马数字
+     */
+    public String intToRoman(int num) {
+        
     }
 }
