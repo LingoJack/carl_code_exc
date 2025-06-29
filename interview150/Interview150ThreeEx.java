@@ -304,6 +304,119 @@ public class Interview150ThreeEx {
      * 除自身以外的数组乘积
      */
     public int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] prefix = new int[len];
+        int[] suffix = new int[len];
+        int t = 1;
+        for (int i = 0; i < len; i++) {
+            t *= nums[i];
+            prefix[i] = t;
+        }
+        t = 1;
+        for (int i = len - 1; i >= 0; i--) {
+            t *= nums[i];
+            suffix[i] = t;
+        }
+        int[] res = new int[len];
+        for (int i = 0; i < len; i++) {
+            int a = i - 1 < 0 ? 1 : prefix[i - 1];
+            int b = i + 1 >= len ? 1 : suffix[i + 1];
+            res[i] = a * b;
+        }
+        return res;
+    }
+
+    /**
+     * 加油站
+     */
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int len = cost.length;
+        int[] diff = new int[len];
+        int profit = 0;
+        for (int i = 0; i < len; i++) {
+            diff[i] = gas[i] - cost[i];
+            profit += diff[i];
+        }
+        if (profit < 0) {
+            return -1;
+        }
+        int offset = 0;
+        int sum = 0;
+        int max = 0;
+        int start = 0;
+        for (int i = 0; i < 2 * len - 1; i++) {
+            int idx = i % len;
+            if (sum < 0) {
+                sum = 0;
+                start = idx;
+            }
+            sum += diff[idx];
+            if (sum > max) {
+                offset = start;
+                max = sum;
+            }
+        }
+        return offset;
+    }
+
+    /**
+     * 加油站
+     */
+    public int canCompleteCircuitAwesomeSolution(int[] gas, int[] cost) {
+        int len = cost.length;
+        int[] profit = new int[len];
+        int sum = 0;
+        for (int i = 0; i < len; i++) {
+            profit[i] = gas[i] - cost[i];
+            sum += profit[i];
+        }
+        if (sum < 0) {
+            return -1;
+        }
+        sum = 0;
+        int start = 0;
+        for (int i = 0; i < len; i++) {
+            if (sum < 0) {
+                start = i;
+                sum = 0;
+            }
+            sum += profit[i];
+        }
+        return start;
+    }
+
+    /**
+     * 分发糖果
+     */
+    public int candy(int[] ratings) {
+        int len = ratings.length;
+        int[] candy = new int[len];
+        Arrays.fill(candy, 1);
+        // 1 3 2 2 1
+        // 1 1 1 1 1
+        // 1 2 1 1 1
+        // 1 2 1 2 1
+        for(int i = 1; i < len; i++) {
+            if (ratings[i] > ratings[i - 1] && candy[i] < candy[i - 1] + 1) {
+                candy[i] = candy[i - 1] + 1;
+            }
+        }
+        for(int i = len - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1] && candy[i] < candy[i + 1] + 1) {
+                candy[i] = candy[i + 1] + 1;
+            }
+        }
+        int res = 0;
+        for(int c : candy) {
+            res += c;
+        }
+        return res;
+    }
+
+    /**
+     * 接雨水
+     */
+    public int trap(int[] height) {
         
     }
 }
