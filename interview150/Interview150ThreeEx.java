@@ -628,7 +628,8 @@ public class Interview150ThreeEx {
     /**
      * Z字形变换
      * 最优解
-     * TODO 待学习
+     * 区别就是上一次是Map<Integer, List<Character>> map
+     * 这里直接换成List<StringBuilder> rows
      */
     public String convertAwesomeSol(String s, int numRows) {
         if (numRows < 2) {
@@ -639,13 +640,13 @@ public class Interview150ThreeEx {
             rows.add(new StringBuilder());
         }
         int flag = -1;
-        int i = 0;
+        int rowIdx = 0;
         for (char c : s.toCharArray()) {
-            rows.get(i).append(c);
-            if (i == 0 || i == numRows - 1) {
+            rows.get(rowIdx).append(c);
+            if (rowIdx == 0 || rowIdx == numRows - 1) {
                 flag = -flag;
             }
-            i += flag;
+            rowIdx += flag;
         }
         StringBuilder res = new StringBuilder();
         for (StringBuilder row : rows) {
